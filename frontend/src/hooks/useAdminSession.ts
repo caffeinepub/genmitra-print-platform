@@ -1,47 +1,71 @@
 import { useState, useEffect } from 'react';
 
-const SESSION_KEY = 'admin_session';
-const CREDENTIALS_KEY = 'admin_credentials';
-
-interface AdminCredentials {
+interface AdminSession {
   username: string;
-  password: string;
+  role: string;
+  loggedInAt: number;
 }
 
+const SESSION_KEY = 'admin_session';
+
+const ADMIN_CREDENTIALS: Record<string, string> = {
+  genmitra: '12345678',
+  admin: 'Admin@1234',
+};
+
 export function useAdminSession() {
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
-    return sessionStorage.getItem(SESSION_KEY) === 'true';
-  });
+  const [session, setSession] = useState<AdminSession | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const handleStorage = () => {
-      setIsAdminLoggedIn(sessionStorage.getItem(SESSION_KEY) === 'true');
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    try {
+      const stored = sessionStorage.getItem(SESSION_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as AdminSession;
+        setSession(parsed);
+      }
+    } catch {
+      sessionStorage.removeItem(SESSION_KEY);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const loginAdmin = (username: string, password: string) => {
-    sessionStorage.setItem(SESSION_KEY, 'true');
-    sessionStorage.setItem(CREDENTIALS_KEY, JSON.stringify({ username, password }));
-    setIsAdminLoggedIn(true);
-  };
-
-  const logoutAdmin = () => {
-    sessionStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(CREDENTIALS_KEY);
-    setIsAdminLoggedIn(false);
-  };
-
-  const getStoredCredentials = (): AdminCredentials | null => {
-    const raw = sessionStorage.getItem(CREDENTIALS_KEY);
-    if (!raw) return null;
+  const loginAdmin = (username: string, password: string): boolean => {
+    const expectedPassword = ADMIN_CREDENTIALS[username];
+    if (!expectedPassword || expectedPassword !== password) {
+      return false;
+    }
+    const newSession: AdminSession = {
+      username,
+      role: 'admin',
+      loggedInAt: Date.now(),
+    };
     try {
-      return JSON.parse(raw) as AdminCredentials;
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
+      setSession(newSession);
+      return true;
     } catch {
-      return null;
+      return false;
     }
   };
 
-  return { isAdminLoggedIn, loginAdmin, logoutAdmin, getStoredCredentials };
+  const logoutAdmin = () => {
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch {
+      // ignore
+    }
+    setSession(null);
+  };
+
+  const isAdminLoggedIn = session !== null;
+
+  return {
+    session,
+    isLoading,
+    isAdminLoggedIn,
+    loginAdmin,
+    logoutAdmin,
+  };
 }

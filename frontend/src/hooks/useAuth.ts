@@ -1,6 +1,6 @@
 import { useInternetIdentity } from './useInternetIdentity';
 import { useQueryClient } from '@tanstack/react-query';
-import { useGetCallerUserProfile, useGetCallerUserRole, useIsCallerAdmin } from './useQueries';
+import { useGetCallerUserProfile } from './useQueries';
 
 export function useAuth() {
   const { identity, login, clear, loginStatus, isInitializing, isLoggingIn } = useInternetIdentity();
@@ -8,8 +8,6 @@ export function useAuth() {
   const isAuthenticated = !!identity;
 
   const { data: userProfile, isLoading: profileLoading, isFetched: profileFetched } = useGetCallerUserProfile();
-  const { data: userRole, isLoading: roleLoading } = useGetCallerUserRole();
-  const { data: isAdmin, isLoading: adminLoading } = useIsCallerAdmin();
 
   const logout = async () => {
     await clear();
@@ -27,10 +25,6 @@ export function useAuth() {
     userProfile,
     profileLoading,
     profileFetched,
-    userRole,
-    roleLoading,
-    isAdmin: isAdmin ?? false,
-    adminLoading,
     principalId: identity?.getPrincipal().toString(),
   };
 }

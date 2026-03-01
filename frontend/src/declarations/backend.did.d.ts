@@ -138,14 +138,7 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isPincodeAvailable' : ActorMethod<[string], boolean>,
-  /**
-   * / Login with username and password. On success, assigns the caller's principal
-   * / the role stored in the users map (admin or user) via AccessControl.
-   */
   'login' : ActorMethod<[string, string], string>,
-  /**
-   * / Logout: demote the caller's principal back to guest role.
-   */
   'logout' : ActorMethod<[], undefined>,
   'removeFromCart' : ActorMethod<[string], undefined>,
   'removePincode' : ActorMethod<[string], undefined>,

@@ -1,46 +1,42 @@
-import React, { useState, useRef } from 'react';
-import { Plus, Edit, Trash2, Image, Loader2, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Card, CardContent } from '@/components/ui/card';
-import { toast } from 'sonner';
+import React, { useState } from 'react';
+import { Plus, Edit, Trash2, X, Upload } from 'lucide-react';
 import { useGetAllTemplates, useCreateTemplate, useUpdateTemplate, useDeleteTemplate } from '../../hooks/useQueries';
 import type { Template } from '../../backend';
+import { toast } from 'sonner';
 
-const emptyTemplate = (): Omit<Template, 'id'> => ({
+const emptyTemplate: Omit<Template, 'dpiSettings' | 'photoSlots'> & { dpiSettings: number; photoSlots: number } = {
+  id: '',
   name: '',
   imageData: '',
-  photoSlots: BigInt(1),
-  dpiSettings: BigInt(300),
+  photoSlots: 1,
+  dpiSettings: 300,
   previewData: '',
-});
+};
 
-function compressImageToBase64(file: File, maxPx = 800, quality = 0.75): Promise<string> {
+function compressImage(file: File, maxSize = 800, quality = 0.75): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      const img = new window.Image();
+      const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
         let { width, height } = img;
-        if (width > maxPx || height > maxPx) {
+        if (width > maxSize || height > maxSize) {
           if (width > height) {
-            height = Math.round((height * maxPx) / width);
-            width = maxPx;
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
           } else {
-            width = Math.round((width * maxPx) / height);
-            height = maxPx;
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
           }
         }
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
-        if (!ctx) return reject(new Error('Canvas context unavailable'));
+        if (!ctx) { reject(new Error('Canvas context unavailable')); return; }
         ctx.drawImage(img, 0, 0, width, height);
-        const base64 = canvas.toDataURL('image/jpeg', quality);
-        resolve(base64);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl.split(',')[1]);
       };
       img.onerror = reject;
       img.src = e.target?.result as string;
@@ -51,346 +47,275 @@ function compressImageToBase64(file: File, maxPx = 800, quality = 0.75): Promise
 }
 
 export default function TemplateManagementPage() {
-  const { data: templates = [], isLoading } = useGetAllTemplates();
+  const { data: templates, isLoading } = useGetAllTemplates();
   const createTemplate = useCreateTemplate();
   const updateTemplate = useUpdateTemplate();
   const deleteTemplate = useDeleteTemplate();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<Template | null>(null);
-  const [formData, setFormData] = useState<Omit<Template, 'id'>>(emptyTemplate());
-  const [imagePreview, setImagePreview] = useState<string>('');
-  const [previewPreview, setPreviewPreview] = useState<string>('');
-  const [isCompressing, setIsCompressing] = useState(false);
-
-  const imageInputRef = useRef<HTMLInputElement>(null);
-  const previewInputRef = useRef<HTMLInputElement>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<(Omit<Template, 'dpiSettings' | 'photoSlots'> & { dpiSettings: number; photoSlots: number }) | null>(null);
+  const [form, setForm] = useState<Omit<Template, 'dpiSettings' | 'photoSlots'> & { dpiSettings: number; photoSlots: number }>(emptyTemplate);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [previewUploading, setPreviewUploading] = useState(false);
 
   const openCreate = () => {
     setEditingTemplate(null);
-    setFormData(emptyTemplate());
-    setImagePreview('');
-    setPreviewPreview('');
-    setIsModalOpen(true);
+    setForm({ ...emptyTemplate, id: `tmpl_${Date.now()}` });
+    setShowModal(true);
   };
 
   const openEdit = (template: Template) => {
-    setEditingTemplate(template);
-    setFormData({
-      name: template.name,
-      imageData: template.imageData,
-      photoSlots: template.photoSlots,
-      dpiSettings: template.dpiSettings,
-      previewData: template.previewData,
-    });
-    setImagePreview(template.imageData || '');
-    setPreviewPreview(template.previewData || '');
-    setIsModalOpen(true);
+    const t = {
+      ...template,
+      dpiSettings: Number(template.dpiSettings),
+      photoSlots: Number(template.photoSlots),
+    };
+    setEditingTemplate(t);
+    setForm(t);
+    setShowModal(true);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingTemplate(null);
-    setFormData(emptyTemplate());
-    setImagePreview('');
-    setPreviewPreview('');
-  };
-
-  const handleImageFile = async (file: File, field: 'imageData' | 'previewData') => {
-    setIsCompressing(true);
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'imageData' | 'previewData') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const setter = field === 'imageData' ? setImageUploading : setPreviewUploading;
+    setter(true);
     try {
-      const base64 = await compressImageToBase64(file, 800, 0.75);
-      if (field === 'imageData') {
-        setFormData(prev => ({ ...prev, imageData: base64 }));
-        setImagePreview(base64);
-      } else {
-        setFormData(prev => ({ ...prev, previewData: base64 }));
-        setPreviewPreview(base64);
-      }
+      const compressed = await compressImage(file);
+      setForm(prev => ({ ...prev, [field]: compressed }));
     } catch {
-      toast.error('Failed to process image. Please try again.');
+      toast.error('Failed to process image');
     } finally {
-      setIsCompressing(false);
+      setter(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!formData.name.trim()) {
-      toast.error('Template name is required.');
-      return;
-    }
-    if (!formData.imageData) {
-      toast.error('Template image is required.');
+    if (!form.name.trim() || !form.id.trim()) {
+      toast.error('Name and ID are required');
       return;
     }
 
-    const templatePayload: Template = {
-      id: editingTemplate ? editingTemplate.id : `template_${Date.now()}`,
-      name: formData.name.trim(),
-      imageData: formData.imageData,
-      photoSlots: formData.photoSlots,
-      dpiSettings: formData.dpiSettings,
-      previewData: formData.previewData,
+    const templateData: Template = {
+      ...form,
+      dpiSettings: BigInt(form.dpiSettings),
+      photoSlots: BigInt(form.photoSlots),
     };
 
     try {
       if (editingTemplate) {
-        await updateTemplate.mutateAsync(templatePayload);
-        toast.success('Template updated successfully!');
+        await updateTemplate.mutateAsync(templateData);
+        toast.success('Template updated successfully');
       } else {
-        await createTemplate.mutateAsync(templatePayload);
-        toast.success('Template created successfully!');
+        await createTemplate.mutateAsync(templateData);
+        toast.success('Template created successfully');
       }
-      closeModal();
-    } catch (err: any) {
-      const message = err?.message || 'Unknown error';
-      toast.error(`Failed to save template: ${message}`);
+      setShowModal(false);
+    } catch {
+      toast.error('Failed to save template');
     }
   };
 
   const handleDelete = async (templateId: string) => {
-    if (!window.confirm('Are you sure you want to delete this template?')) return;
+    if (!confirm('Are you sure you want to delete this template?')) return;
     try {
       await deleteTemplate.mutateAsync(templateId);
-      toast.success('Template deleted successfully!');
-    } catch (err: any) {
-      const message = err?.message || 'Unknown error';
-      toast.error(`Failed to delete template: ${message}`);
+      toast.success('Template deleted');
+    } catch {
+      toast.error('Failed to delete template');
     }
   };
 
-  const isSaving = createTemplate.isPending || updateTemplate.isPending;
-
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Template Management</h1>
-          <p className="text-muted-foreground mt-1">Manage photo templates for the editor</p>
+          <h1 className="text-2xl font-bold text-foreground">Templates</h1>
+          <p className="text-muted-foreground text-sm mt-1">Manage photo templates</p>
         </div>
-        <Button onClick={openCreate} className="flex items-center gap-2">
-          <Plus className="w-4 h-4" />
-          Add Template
-        </Button>
+        <button
+          onClick={openCreate}
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm"
+        >
+          <Plus className="w-4 h-4" /> Add Template
+        </button>
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-48 bg-muted rounded-xl animate-pulse" />
+          ))}
         </div>
-      ) : templates.length === 0 ? (
+      ) : !templates || templates.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
-          <Image className="w-12 h-12 mx-auto mb-4 opacity-40" />
-          <p className="text-lg font-medium">No templates yet</p>
-          <p className="text-sm mt-1">Click "Add Template" to create your first template.</p>
+          <p>No templates yet. Add your first template!</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {templates.map((template) => (
-            <Card key={template.id} className="overflow-hidden">
-              <div className="aspect-square bg-muted relative">
+            <div key={template.id} className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="aspect-video bg-muted overflow-hidden">
                 {template.imageData ? (
                   <img
-                    src={template.imageData}
+                    src={`data:image/jpeg;base64,${template.imageData}`}
                     alt={template.name}
                     className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/generated/photo-print-1.dim_600x600.png'; }}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Image className="w-10 h-10 text-muted-foreground opacity-40" />
-                  </div>
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">No image</div>
                 )}
               </div>
-              <CardContent className="p-3">
-                <h3 className="font-semibold text-sm truncate">{template.name}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {Number(template.photoSlots)} slot{Number(template.photoSlots) !== 1 ? 's' : ''} · {Number(template.dpiSettings)} DPI
-                </p>
-                <div className="flex gap-2 mt-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => openEdit(template)}
-                  >
-                    <Edit className="w-3 h-3 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDelete(template.id)}
-                    disabled={deleteTemplate.isPending}
-                  >
-                    {deleteTemplate.isPending ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-3 h-3" />
-                    )}
-                  </Button>
+              <div className="p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-semibold text-foreground">{template.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {Number(template.photoSlots)} slot{Number(template.photoSlots) !== 1 ? 's' : ''} · {Number(template.dpiSettings)} DPI
+                    </p>
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    <button
+                      onClick={() => openEdit(template)}
+                      className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+                    >
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(template.id)}
+                      className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       )}
 
-      <Dialog open={isModalOpen} onOpenChange={(open) => { if (!open) closeModal(); }}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingTemplate ? 'Edit Template' : 'Add New Template'}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="templateName">Template Name *</Label>
-              <Input
-                id="templateName"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                placeholder="e.g. Classic Portrait"
-                className="mt-1"
-              />
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <h2 className="text-lg font-semibold">{editingTemplate ? 'Edit Template' : 'Add Template'}</h2>
+              <button onClick={() => setShowModal(false)} className="p-1 hover:bg-muted rounded">
+                <X className="w-5 h-5" />
+              </button>
             </div>
-
-            <div>
-              <Label htmlFor="photoSlots">Photo Slots</Label>
-              <Input
-                id="photoSlots"
-                type="number"
-                min={1}
-                max={20}
-                value={Number(formData.photoSlots)}
-                onChange={(e) => setFormData(prev => ({ ...prev, photoSlots: BigInt(parseInt(e.target.value) || 1) }))}
-                className="mt-1"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="dpiSettings">DPI Settings</Label>
-              <Input
-                id="dpiSettings"
-                type="number"
-                min={72}
-                max={1200}
-                value={Number(formData.dpiSettings)}
-                onChange={(e) => setFormData(prev => ({ ...prev, dpiSettings: BigInt(parseInt(e.target.value) || 300) }))}
-                className="mt-1"
-              />
-            </div>
-
-            {/* Template Image */}
-            <div>
-              <Label>Template Image *</Label>
-              <div
-                className="mt-1 border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors"
-                onClick={() => imageInputRef.current?.click()}
-              >
-                {imagePreview ? (
-                  <div className="relative">
-                    <img src={imagePreview} alt="Template preview" className="max-h-40 mx-auto rounded object-contain" />
-                    <button
-                      type="button"
-                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setImagePreview('');
-                        setFormData(prev => ({ ...prev, imageData: '' }));
-                        if (imageInputRef.current) imageInputRef.current.value = '';
-                      }}
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="py-4">
-                    <Image className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground">Click to upload template image</p>
-                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WebP (max 800px)</p>
-                  </div>
-                )}
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Template ID</label>
+                  <input
+                    type="text"
+                    value={form.id}
+                    onChange={(e) => setForm(prev => ({ ...prev, id: e.target.value }))}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    disabled={!!editingTemplate}
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Name</label>
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    required
+                  />
+                </div>
               </div>
-              <input
-                ref={imageInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImageFile(file, 'imageData');
-                }}
-              />
-            </div>
 
-            {/* Preview Image */}
-            <div>
-              <Label>Preview Image</Label>
-              <div
-                className="mt-1 border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors"
-                onClick={() => previewInputRef.current?.click()}
-              >
-                {previewPreview ? (
-                  <div className="relative">
-                    <img src={previewPreview} alt="Preview" className="max-h-40 mx-auto rounded object-contain" />
-                    <button
-                      type="button"
-                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setPreviewPreview('');
-                        setFormData(prev => ({ ...prev, previewData: '' }));
-                        if (previewInputRef.current) previewInputRef.current.value = '';
-                      }}
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="py-4">
-                    <Image className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground">Click to upload preview image</p>
-                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WebP (max 800px)</p>
-                  </div>
-                )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Photo Slots</label>
+                  <input
+                    type="number"
+                    value={form.photoSlots}
+                    onChange={(e) => setForm(prev => ({ ...prev, photoSlots: parseInt(e.target.value) || 1 }))}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    min="1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">DPI Settings</label>
+                  <input
+                    type="number"
+                    value={form.dpiSettings}
+                    onChange={(e) => setForm(prev => ({ ...prev, dpiSettings: parseInt(e.target.value) || 300 }))}
+                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    min="72"
+                  />
+                </div>
               </div>
-              <input
-                ref={previewInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImageFile(file, 'previewData');
-                }}
-              />
-            </div>
 
-            <DialogFooter className="pt-2">
-              <Button type="button" variant="outline" onClick={closeModal} disabled={isSaving}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSaving || isCompressing}>
-                {isSaving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : isCompressing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : editingTemplate ? (
-                  'Update Template'
-                ) : (
-                  'Create Template'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+              <div>
+                <label className="block text-sm font-medium mb-1">Template Image</label>
+                <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted transition-colors">
+                  <Upload className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {imageUploading ? 'Processing...' : form.imageData ? 'Image uploaded ✓' : 'Upload image'}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageUpload(e, 'imageData')}
+                    disabled={imageUploading}
+                  />
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Preview Image</label>
+                <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted transition-colors">
+                  <Upload className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">
+                    {previewUploading ? 'Processing...' : form.previewData ? 'Preview uploaded ✓' : 'Upload preview'}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageUpload(e, 'previewData')}
+                    disabled={previewUploading}
+                  />
+                </label>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="flex-1 py-2.5 border border-border rounded-lg text-sm font-medium hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createTemplate.isPending || updateTemplate.isPending || imageUploading || previewUploading}
+                  className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {(createTemplate.isPending || updateTemplate.isPending) ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    editingTemplate ? 'Update' : 'Create'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

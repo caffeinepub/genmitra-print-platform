@@ -1,22 +1,20 @@
 import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet, redirect } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/sonner';
 import Layout from './components/Layout';
-import AdminLayout from './components/admin/AdminLayout';
-import AdminGuard from './components/admin/AdminGuard';
-
-// Pages
-import LoginPage from './pages/LoginPage';
-import CreateAccountPage from './pages/CreateAccountPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import EditorPage from './pages/EditorPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
-import MyOrdersPage from './pages/MyOrdersPage';
 import OrderDetailPage from './pages/OrderDetailPage';
+import MyOrdersPage from './pages/MyOrdersPage';
+import CreateAccountPage from './pages/CreateAccountPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import AdminLayout from './components/admin/AdminLayout';
+import AdminGuard from './components/admin/AdminGuard';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import ProductManagementPage from './pages/admin/ProductManagementPage';
 import TemplateManagementPage from './pages/admin/TemplateManagementPage';
@@ -24,151 +22,125 @@ import OrderManagementPage from './pages/admin/OrderManagementPage';
 import CustomerManagementPage from './pages/admin/CustomerManagementPage';
 import AdminSettingsPage from './pages/admin/AdminSettingsPage';
 
-const ALLOWED_ORIGINS = [
-  'https://sole-aqua-rc6-draft.caffeine.xyz',
-  'https://caffeine.xyz',
-  'https://www.caffeine.xyz',
-  'https://caffeine.ai',
-  'https://www.caffeine.ai',
-];
-
-function OriginHandler() {
-  useEffect(() => {
-    if (window.parent && window.parent !== window) {
-      try {
-        window.parent.postMessage({ type: 'app-ready', origin: window.location.origin }, '*');
-      } catch (_) {
-        // ignore cross-origin errors
-      }
-    }
-
-    const handleMessage = (event: MessageEvent) => {
-      const isAllowed =
-        ALLOWED_ORIGINS.includes(event.origin) ||
-        event.origin === window.location.origin ||
-        event.origin === 'null' ||
-        event.origin === '';
-
-      if (!isAllowed) return;
-
-      if (event.data && (event.data.type === 'ping' || event.data.type === 'draft-editor:ping')) {
-        try {
-          const target = event.source as Window;
-          if (target) {
-            target.postMessage({ type: 'pong', origin: window.location.origin }, event.origin || '*');
-          }
-        } catch (_) {
-          // ignore
-        }
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
-
-  return null;
-}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30000,
+    },
+  },
+});
 
 // Root route
 const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <OriginHandler />
-      <Outlet />
-    </>
-  ),
+  component: () => <Outlet />,
 });
 
-// Public routes (no layout)
+// Layout route (wraps public pages)
+const layoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'layout',
+  component: Layout,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      category: search.category as string | undefined,
+    };
+  },
+});
+
+// Home page
+const homeRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/',
+  component: HomePage,
+});
+
+// Login page
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
-  validateSearch: (search: Record<string, unknown>) => ({
-    mode: typeof search.mode === 'string' ? search.mode : undefined,
-    redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
-  }),
   component: LoginPage,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      mode: search.mode as string | undefined,
+      redirect: search.redirect as string | undefined,
+    };
+  },
 });
 
+// Create account page
 const createAccountRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/create-account',
   component: CreateAccountPage,
 });
 
+// Forgot password page
 const forgotPasswordRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/forgot-password',
   component: ForgotPasswordPage,
 });
 
-// Main layout routes
-const layoutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  id: 'layout',
-  component: () => (
-    <Layout>
-      <Outlet />
-    </Layout>
-  ),
-});
-
-const homeRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/',
-  validateSearch: (search: Record<string, unknown>) => ({
-    category: typeof search.category === 'string' ? search.category : undefined,
-  }),
-  component: HomePage,
-});
-
+// Product detail page
 const productDetailRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: '/product/$productId',
   component: ProductDetailPage,
 });
 
+// Editor page
 const editorRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/editor/$productId',
+  getParentRoute: () => rootRoute,
+  path: '/editor',
   component: EditorPage,
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      productId: search.productId as string | undefined,
+      size: search.size as string | undefined,
+    };
+  },
 });
 
+// Cart page
 const cartRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: '/cart',
   component: CartPage,
 });
 
+// Checkout page
 const checkoutRoute = createRoute({
-  getParentRoute: () => layoutRoute,
+  getParentRoute: () => rootRoute,
   path: '/checkout',
   component: CheckoutPage,
 });
 
+// Order confirmation page
 const orderConfirmationRoute = createRoute({
-  getParentRoute: () => layoutRoute,
+  getParentRoute: () => rootRoute,
   path: '/order-confirmation/$orderId',
   component: OrderConfirmationPage,
 });
 
-const myOrdersRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/my-orders',
-  component: MyOrdersPage,
-});
-
+// Order detail page
 const orderDetailRoute = createRoute({
   getParentRoute: () => layoutRoute,
   path: '/order/$orderId',
   component: OrderDetailPage,
 });
 
-// Admin layout routes — wrapped with AdminGuard
-const adminLayoutRoute = createRoute({
+// My orders page
+const myOrdersRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/my-orders',
+  component: MyOrdersPage,
+});
+
+// Admin routes
+const adminRootRoute = createRoute({
   getParentRoute: () => rootRoute,
-  id: 'admin-layout',
+  id: 'admin',
   component: () => (
     <AdminGuard>
       <AdminLayout>
@@ -179,56 +151,56 @@ const adminLayoutRoute = createRoute({
 });
 
 const adminDashboardRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
+  getParentRoute: () => adminRootRoute,
   path: '/admin',
   component: AdminDashboardPage,
 });
 
 const adminProductsRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
+  getParentRoute: () => adminRootRoute,
   path: '/admin/products',
   component: ProductManagementPage,
 });
 
 const adminTemplatesRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
+  getParentRoute: () => adminRootRoute,
   path: '/admin/templates',
   component: TemplateManagementPage,
 });
 
 const adminOrdersRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
+  getParentRoute: () => adminRootRoute,
   path: '/admin/orders',
   component: OrderManagementPage,
 });
 
 const adminCustomersRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
+  getParentRoute: () => adminRootRoute,
   path: '/admin/customers',
   component: CustomerManagementPage,
 });
 
 const adminSettingsRoute = createRoute({
-  getParentRoute: () => adminLayoutRoute,
+  getParentRoute: () => adminRootRoute,
   path: '/admin/settings',
   component: AdminSettingsPage,
 });
 
 const routeTree = rootRoute.addChildren([
-  loginRoute,
-  createAccountRoute,
-  forgotPasswordRoute,
   layoutRoute.addChildren([
     homeRoute,
     productDetailRoute,
-    editorRoute,
     cartRoute,
-    checkoutRoute,
-    orderConfirmationRoute,
-    myOrdersRoute,
     orderDetailRoute,
+    myOrdersRoute,
   ]),
-  adminLayoutRoute.addChildren([
+  loginRoute,
+  createAccountRoute,
+  forgotPasswordRoute,
+  editorRoute,
+  checkoutRoute,
+  orderConfirmationRoute,
+  adminRootRoute.addChildren([
     adminDashboardRoute,
     adminProductsRoute,
     adminTemplatesRoute,
@@ -248,9 +220,9 @@ declare module '@tanstack/react-router' {
 
 export default function App() {
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
       <Toaster richColors position="top-right" />
-    </>
+    </QueryClientProvider>
   );
 }

@@ -82,7 +82,6 @@ export default function CheckoutPage() {
         shippingAddress: address,
       });
       toast.success('Order placed successfully!');
-      // Use window.location to navigate to avoid TypeScript route type issues
       window.location.href = `/order-confirmation/${encodeURIComponent(orderId)}`;
     } catch {
       toast.error('Failed to place order. Please login and try again.');
@@ -141,7 +140,7 @@ export default function CheckoutPage() {
       <Button
         variant="ghost"
         className="gap-2 mb-6 text-muted-foreground hover:text-foreground"
-        onClick={() => navigate({ to: '/cart' })}
+        onClick={() => navigate({ to: '/cart', search: { category: undefined } })}
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Cart
@@ -253,10 +252,10 @@ export default function CheckoutPage() {
                   className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
                     paymentMethod === option.value
                       ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
+                      : 'border-border hover:border-primary/40'
                   }`}
                 >
-                  <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
                     paymentMethod === option.value ? 'border-primary' : 'border-muted-foreground'
                   }`}>
                     {paymentMethod === option.value && (
@@ -278,54 +277,66 @@ export default function CheckoutPage() {
           <div className="bg-card rounded-2xl shadow-card border border-border p-6 sticky top-24">
             <h2 className="font-bold text-foreground text-lg mb-4">Order Summary</h2>
             <div className="space-y-3 mb-4">
-              {cartItems?.map((item) => (
-                <div key={item.product.id} className="flex justify-between text-sm">
-                  <span className="text-muted-foreground truncate mr-2">
-                    {item.product.name} × {Number(item.quantity)}
-                  </span>
-                  <span className="text-foreground font-medium shrink-0">
+              {cartItems?.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden shrink-0">
+                    {item.product.imageData ? (
+                      <img
+                        src={
+                          item.product.imageData.startsWith('data:') || item.product.imageData.startsWith('/')
+                            ? item.product.imageData
+                            : `data:image/jpeg;base64,${item.product.imageData}`
+                        }
+                        alt={item.product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-muted" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{item.product.name}</p>
+                    <p className="text-xs text-muted-foreground">Qty: {Number(item.quantity)}</p>
+                  </div>
+                  <p className="text-sm font-semibold text-foreground shrink-0">
                     ₹{(item.product.price * Number(item.quantity)).toFixed(0)}
-                  </span>
+                  </p>
                 </div>
               ))}
             </div>
-            <Separator className="my-3" />
+            <Separator className="my-4" />
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="text-foreground">₹{subtotal.toFixed(0)}</span>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Subtotal</span>
+                <span>₹{subtotal.toFixed(0)}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Shipping</span>
-                <span className={shipping === 0 ? 'text-green-600 font-medium' : 'text-foreground'}>
-                  {shipping === 0 ? 'FREE' : `₹${shipping}`}
-                </span>
+              <div className="flex justify-between text-muted-foreground">
+                <span>Shipping</span>
+                <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
+              </div>
+              <Separator className="my-2" />
+              <div className="flex justify-between font-bold text-foreground text-base">
+                <span>Total</span>
+                <span>₹{total.toFixed(0)}</span>
               </div>
             </div>
-            <Separator className="my-3" />
-            <div className="flex justify-between font-bold text-foreground">
-              <span>Total</span>
-              <span>₹{total.toFixed(0)}</span>
-            </div>
-
             <Button
-              className="w-full mt-6 bg-primary text-primary-foreground hover:opacity-90 rounded-xl h-12 text-base font-semibold shadow-purple gap-2"
+              className="w-full mt-6 bg-primary text-primary-foreground hover:opacity-90 rounded-xl py-6 text-base font-bold"
               onClick={handlePlaceOrder}
-              disabled={processingPayment || createOrder.isPending}
+              disabled={createOrder.isPending || processingPayment}
             >
-              {processingPayment || createOrder.isPending ? (
+              {createOrder.isPending || processingPayment ? (
                 <span className="flex items-center gap-2">
-                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent" />
-                  Processing...
+                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  Placing Order...
                 </span>
               ) : (
-                <>
-                  <CheckCircle className="h-4 w-4" />
+                <span className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5" />
                   Place Order
-                </>
+                </span>
               )}
             </Button>
-
             {shipping > 0 && (
               <p className="text-xs text-muted-foreground text-center mt-3">
                 Add ₹{(999 - subtotal).toFixed(0)} more for free shipping

@@ -209,14 +209,7 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     isPincodeAvailable(pincode: string): Promise<boolean>;
-    /**
-     * / Login with username and password. On success, assigns the caller's principal
-     * / the role stored in the users map (admin or user) via AccessControl.
-     */
     login(username: string, password: string): Promise<string>;
-    /**
-     * / Logout: demote the caller's principal back to guest role.
-     */
     logout(): Promise<void>;
     removeFromCart(productId: string): Promise<void>;
     removePincode(pincode: string): Promise<void>;

@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Plus, Trash2, Shield, MapPin } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+import { Plus, Trash2, MapPin, Shield, Info } from 'lucide-react';
 import { useAddPincode, useRemovePincode } from '../../hooks/useQueries';
 import { toast } from 'sonner';
 
@@ -12,112 +8,102 @@ export default function AdminSettingsPage() {
   const removePincode = useRemovePincode();
 
   const [newPincode, setNewPincode] = useState('');
-  const [removePincodeInput, setRemovePincodeInput] = useState('');
-  const [localPincodes, setLocalPincodes] = useState<string[]>([]);
+  const [pincodeList, setPincodeList] = useState<string[]>([]);
+  const [removeInput, setRemoveInput] = useState('');
 
   const handleAddPincode = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPincode.length !== 6) {
+    const pin = newPincode.trim();
+    if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+      toast.error('Please enter a valid 6-digit pincode');
+      return;
+    }
+    if (pincodeList.includes(pin)) {
+      toast.error('Pincode already added');
+      return;
+    }
+    try {
+      await addPincode.mutateAsync(pin);
+      setPincodeList(prev => [...prev, pin]);
+      setNewPincode('');
+      toast.success(`Pincode ${pin} added successfully`);
+    } catch {
+      toast.error('Failed to add pincode');
+    }
+  };
+
+  const handleRemovePincode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const pin = removeInput.trim();
+    if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
       toast.error('Please enter a valid 6-digit pincode');
       return;
     }
     try {
-      await addPincode.mutateAsync(newPincode);
-      setLocalPincodes((prev) => [...new Set([...prev, newPincode])]);
-      toast.success(`Pincode ${newPincode} added successfully`);
-      setNewPincode('');
-    } catch {
-      toast.error('Failed to add pincode. Make sure you are logged in as admin.');
-    }
-  };
-
-  const handleRemovePincodeFromList = async (pincode: string) => {
-    try {
-      await removePincode.mutateAsync(pincode);
-      setLocalPincodes((prev) => prev.filter((p) => p !== pincode));
-      toast.success(`Pincode ${pincode} removed`);
+      await removePincode.mutateAsync(pin);
+      setPincodeList(prev => prev.filter(p => p !== pin));
+      setRemoveInput('');
+      toast.success(`Pincode ${pin} removed successfully`);
     } catch {
       toast.error('Failed to remove pincode');
     }
   };
 
-  const handleRemovePincodeForm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (removePincodeInput.length !== 6) {
-      toast.error('Please enter a valid 6-digit pincode');
-      return;
-    }
+  const handleRemoveFromList = async (pin: string) => {
     try {
-      await removePincode.mutateAsync(removePincodeInput);
-      setLocalPincodes((prev) => prev.filter((p) => p !== removePincodeInput));
-      toast.success(`Pincode ${removePincodeInput} removed`);
-      setRemovePincodeInput('');
+      await removePincode.mutateAsync(pin);
+      setPincodeList(prev => prev.filter(p => p !== pin));
+      toast.success(`Pincode ${pin} removed`);
     } catch {
       toast.error('Failed to remove pincode');
     }
   };
 
   return (
-    <div className="space-y-8 max-w-2xl">
+    <div className="p-6 space-y-6 max-w-3xl">
       <div>
-        <h2 className="text-2xl font-bold text-foreground font-display">Settings</h2>
-        <p className="text-muted-foreground mt-1">Configure platform settings and delivery zones</p>
+        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+        <p className="text-muted-foreground text-sm mt-1">Manage platform settings</p>
       </div>
 
       {/* Pincode Management */}
-      <div className="bg-card rounded-2xl shadow-card border border-border p-6">
-        <h3 className="font-bold text-foreground text-lg mb-1 flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-primary" />
-          Delivery Pincode Management
-        </h3>
-        <p className="text-sm text-muted-foreground mb-6">
-          Add or remove pincodes where delivery is available. Customers can check delivery availability on product pages.
-        </p>
+      <div className="bg-card border border-border rounded-xl p-6 space-y-5">
+        <div className="flex items-center gap-2">
+          <MapPin className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold">Delivery Pincodes</h2>
+        </div>
 
-        {/* Add Pincode */}
-        <form onSubmit={handleAddPincode} className="flex gap-3 mb-4">
-          <div className="flex-1">
-            <Label htmlFor="newPincode">Add Delivery Pincode</Label>
-            <Input
-              id="newPincode"
-              value={newPincode}
-              onChange={(e) => setNewPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="Enter 6-digit pincode"
-              className="mt-1 rounded-xl"
-              maxLength={6}
-            />
-          </div>
-          <div className="flex items-end">
-            <Button
-              type="submit"
-              className="bg-primary text-primary-foreground hover:opacity-90 rounded-xl gap-2"
-              disabled={addPincode.isPending || newPincode.length !== 6}
-            >
-              <Plus className="h-4 w-4" />
-              {addPincode.isPending ? 'Adding...' : 'Add'}
-            </Button>
-          </div>
+        <form onSubmit={handleAddPincode} className="flex gap-2">
+          <input
+            type="text"
+            value={newPincode}
+            onChange={(e) => setNewPincode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            placeholder="Enter 6-digit pincode"
+            className="flex-1 px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            maxLength={6}
+          />
+          <button
+            type="submit"
+            disabled={addPincode.isPending}
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+          >
+            <Plus className="w-4 h-4" />
+            {addPincode.isPending ? 'Adding...' : 'Add'}
+          </button>
         </form>
 
-        {/* Local pincode list */}
-        {localPincodes.length > 0 && (
-          <div className="mb-6">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              Added This Session
-            </p>
+        {pincodeList.length > 0 && (
+          <div>
+            <p className="text-sm font-medium mb-2">Added this session:</p>
             <div className="flex flex-wrap gap-2">
-              {localPincodes.map((pin) => (
-                <div
-                  key={pin}
-                  className="flex items-center gap-1.5 bg-primary/10 text-primary rounded-lg px-3 py-1.5 text-sm font-medium"
-                >
+              {pincodeList.map((pin) => (
+                <div key={pin} className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-lg text-sm">
                   <span>{pin}</span>
                   <button
-                    onClick={() => handleRemovePincodeFromList(pin)}
-                    className="hover:text-destructive transition-colors"
-                    disabled={removePincode.isPending}
+                    onClick={() => handleRemoveFromList(pin)}
+                    className="text-muted-foreground hover:text-destructive transition-colors"
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ))}
@@ -125,90 +111,52 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        <Separator className="my-4" />
-
-        {/* Remove Pincode */}
-        <form onSubmit={handleRemovePincodeForm} className="flex gap-3">
-          <div className="flex-1">
-            <Label htmlFor="removePincode">Remove Delivery Pincode</Label>
-            <Input
-              id="removePincode"
-              value={removePincodeInput}
-              onChange={(e) => setRemovePincodeInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
-              placeholder="Enter 6-digit pincode to remove"
-              className="mt-1 rounded-xl"
+        <div className="border-t border-border pt-4">
+          <p className="text-sm font-medium mb-2">Remove a pincode:</p>
+          <form onSubmit={handleRemovePincode} className="flex gap-2">
+            <input
+              type="text"
+              value={removeInput}
+              onChange={(e) => setRemoveInput(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              placeholder="Enter pincode to remove"
+              className="flex-1 px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
               maxLength={6}
             />
-          </div>
-          <div className="flex items-end">
-            <Button
+            <button
               type="submit"
-              variant="outline"
-              className="rounded-xl gap-2 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-              disabled={removePincode.isPending || removePincodeInput.length !== 6}
+              disabled={removePincode.isPending}
+              className="flex items-center gap-1.5 px-4 py-2 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:bg-destructive/90 transition-colors disabled:opacity-50"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="w-4 h-4" />
               {removePincode.isPending ? 'Removing...' : 'Remove'}
-            </Button>
-          </div>
-        </form>
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* Access Control Info */}
-      <div className="bg-card rounded-2xl shadow-card border border-border p-6">
-        <h3 className="font-bold text-foreground text-lg mb-1 flex items-center gap-2">
-          <Shield className="h-5 w-5 text-primary" />
-          Access Control
-        </h3>
-        <p className="text-sm text-muted-foreground mb-4">
-          Role-based access control is managed through Internet Identity. Admin access is granted via the platform's access control system.
-        </p>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl">
-            <div>
-              <p className="text-sm font-medium text-foreground">Admin Role</p>
-              <p className="text-xs text-muted-foreground">Full access to all admin features</p>
-            </div>
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary">
-              Active
-            </span>
-          </div>
-          <div className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl">
-            <div>
-              <p className="text-sm font-medium text-foreground">User Role</p>
-              <p className="text-xs text-muted-foreground">Access to shopping, orders, and profile</p>
-            </div>
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-              Active
-            </span>
-          </div>
+      <div className="bg-card border border-border rounded-xl p-6 space-y-3">
+        <div className="flex items-center gap-2">
+          <Shield className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold">Access Control</h2>
+        </div>
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <p><span className="font-medium text-foreground">Admin accounts:</span> genmitra, admin</p>
+          <p><span className="font-medium text-foreground">Admin credentials</span> are managed in the backend and cannot be changed from this panel.</p>
+          <p>Users authenticate via Internet Identity. Admins use username/password credentials.</p>
         </div>
       </div>
 
       {/* Platform Info */}
-      <div className="bg-card rounded-2xl shadow-card border border-border p-6">
-        <h3 className="font-bold text-foreground text-lg mb-4 flex items-center gap-2">
-          <Settings className="h-5 w-5 text-primary" />
-          Platform Information
-        </h3>
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between py-2 border-b border-border">
-            <span className="text-muted-foreground">Platform</span>
-            <span className="text-foreground font-medium">PrintCraft Studio</span>
-          </div>
-          <div className="flex justify-between py-2 border-b border-border">
-            <span className="text-muted-foreground">Backend</span>
-            <span className="text-foreground font-medium">Internet Computer (ICP)</span>
-          </div>
-          <div className="flex justify-between py-2 border-b border-border">
-            <span className="text-muted-foreground">Storage</span>
-            <span className="text-foreground font-medium">Stable Canister Storage</span>
-          </div>
-          <div className="flex justify-between py-2">
-            <span className="text-muted-foreground">Authentication</span>
-            <span className="text-foreground font-medium">Internet Identity</span>
-          </div>
+      <div className="bg-card border border-border rounded-xl p-6 space-y-3">
+        <div className="flex items-center gap-2">
+          <Info className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold">Platform Information</h2>
+        </div>
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <p><span className="font-medium text-foreground">Platform:</span> GenMitra Photo Printing</p>
+          <p><span className="font-medium text-foreground">Backend:</span> Internet Computer (ICP)</p>
+          <p><span className="font-medium text-foreground">Version:</span> 1.0.0</p>
         </div>
       </div>
     </div>

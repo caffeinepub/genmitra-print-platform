@@ -1,213 +1,218 @@
 import React, { useState } from 'react';
-import { useNavigate, useRouterState } from '@tanstack/react-router';
-import { ShoppingCart, User, Menu, X, ChevronDown, Tag } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { Outlet, useNavigate, Link } from '@tanstack/react-router';
+import { ShoppingCart, Menu, X, ChevronDown, User, LogOut, Package } from 'lucide-react';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useGetCart } from '../hooks/useQueries';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { useQueryClient } from '@tanstack/react-query';
 import Footer from './Footer';
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
-
-const categories = [
-  { name: 'Photo Prints' },
-  { name: 'Photo Frames' },
-  { name: 'Photo Magnets' },
-  { name: 'Mugs' },
-  { name: 'Corporate Gifts' },
+const CATEGORIES = [
+  'Photo Prints',
+  'Photo Frames',
+  'Photo Magnets',
+  'Mugs',
+  'Corporate Gifts',
 ];
 
-export default function Layout({ children }: LayoutProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isAuthenticated, userProfile, logout, login, isLoggingIn, isAdmin } = useAuth();
-  const { data: cartItems } = useGetCart();
+export default function Layout() {
   const navigate = useNavigate();
-  const routerState = useRouterState();
+  const { identity, login, clear, loginStatus } = useInternetIdentity();
+  const queryClient = useQueryClient();
+  const { data: cartItems } = useGetCart();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
+  const isAuthenticated = !!identity;
   const cartCount = cartItems?.length ?? 0;
 
-  // Get the active category from the current URL search params
-  const searchParams = new URLSearchParams(routerState.location.search);
-  const activeCategory = searchParams.get('category') ?? '';
+  const handleLogout = async () => {
+    await clear();
+    queryClient.clear();
+    setUserMenuOpen(false);
+    navigate({ to: '/', search: { category: undefined } });
+  };
 
-  const handleAuthAction = async () => {
-    if (isAuthenticated) {
-      await logout();
-    } else {
-      login();
+  const handleLogin = async () => {
+    try {
+      await login();
+    } catch (error) {
+      console.error('Login error:', error);
     }
   };
 
-  const handleCategoryClick = (categoryName: string) => {
-    navigate({ to: '/', search: { category: categoryName } });
+  const handleCategoryClick = (category: string) => {
+    setCategoryMenuOpen(false);
     setMobileMenuOpen(false);
-  };
-
-  const handleLogoClick = () => {
-    navigate({ to: '/', search: { category: undefined } });
+    navigate({ to: '/', search: { category } });
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Promo Bar */}
-      <div className="bg-primary text-primary-foreground text-xs py-2 text-center flex items-center justify-center gap-3 px-4">
-        <span className="flex items-center gap-1">
-          🚚 Free delivery on orders above ₹999
-        </span>
-        <span className="opacity-50 hidden sm:inline">|</span>
-        <span className="hidden sm:flex items-center gap-1">
-          <Tag className="h-3 w-3" />
-          Use code <strong className="font-bold tracking-wide">PRINT20</strong> for 20% off
-        </span>
+      <div className="bg-primary text-primary-foreground text-center py-2 text-sm font-medium">
+        🎉 Free shipping on orders above ₹499 | Same-day delivery available!
       </div>
 
       {/* Header */}
-      <header className="bg-card border-b border-border sticky top-0 z-50 shadow-xs">
+      <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <button
-              onClick={handleLogoClick}
-              className="flex items-center gap-2 shrink-0 focus:outline-none"
-            >
+            <Link to="/" search={{ category: undefined }} className="flex items-center gap-2">
               <img
                 src="/assets/generated/logo.dim_320x80.png"
-                alt="PrintCraft Studio"
-                className="h-10 w-auto"
+                alt="GenMitra"
+                className="h-10 w-auto object-contain"
                 onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const sibling = target.nextElementSibling as HTMLElement | null;
-                  if (sibling) sibling.classList.remove('hidden');
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  const parent = (e.target as HTMLImageElement).parentElement;
+                  if (parent) {
+                    const span = document.createElement('span');
+                    span.className = 'text-2xl font-bold text-primary';
+                    span.textContent = 'GenMitra';
+                    parent.appendChild(span);
+                  }
                 }}
               />
-              <span className="hidden text-xl font-bold text-primary font-display">PrintCraft</span>
-            </button>
+            </Link>
 
-            {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-1">
-              {categories.map((cat) => {
-                const isActive = activeCategory === cat.name;
-                return (
-                  <button
-                    key={cat.name}
-                    onClick={() => handleCategoryClick(cat.name)}
-                    className={`px-3 py-2 text-sm font-medium transition-colors rounded-lg ${
-                      isActive
-                        ? 'text-primary bg-primary/10 font-semibold'
-                        : 'text-foreground hover:text-primary hover:bg-secondary'
-                    }`}
-                  >
-                    {cat.name}
-                  </button>
-                );
-              })}
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-6">
+              <div className="relative">
+                <button
+                  onClick={() => setCategoryMenuOpen(!categoryMenuOpen)}
+                  className="flex items-center gap-1 text-foreground hover:text-primary transition-colors font-medium"
+                >
+                  Categories <ChevronDown className="w-4 h-4" />
+                </button>
+                {categoryMenuOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-48 bg-background border border-border rounded-lg shadow-lg z-50">
+                    {CATEGORIES.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => handleCategoryClick(cat)}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors first:rounded-t-lg last:rounded-b-lg"
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <Link
+                to="/"
+                search={{ category: undefined }}
+                className="text-foreground hover:text-primary transition-colors font-medium"
+              >
+                Home
+              </Link>
             </nav>
 
-            {/* Actions */}
-            <div className="flex items-center gap-2">
+            {/* Right Actions */}
+            <div className="flex items-center gap-3">
               {/* Cart */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative"
-                onClick={() => navigate({ to: '/cart' })}
+              <button
+                onClick={() => navigate({ to: '/cart', search: { category: undefined } })}
+                className="relative p-2 text-foreground hover:text-primary transition-colors"
               >
-                <ShoppingCart className="h-5 w-5" />
+                <ShoppingCart className="w-6 h-6" />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                    {cartCount}
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                    {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
-              </Button>
+              </button>
 
               {/* User Menu */}
               {isAuthenticated ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="gap-2">
-                      <User className="h-4 w-4" />
-                      <span className="hidden sm:inline text-sm">
-                        {userProfile?.username || 'Account'}
-                      </span>
-                      <ChevronDown className="h-3 w-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    {isAdmin && (
-                      <>
-                        <DropdownMenuItem onClick={() => navigate({ to: '/admin' })}>
-                          Admin Panel
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                      </>
-                    )}
-                    <DropdownMenuItem onClick={() => navigate({ to: '/my-orders' })}>
-                      My Orders
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleAuthAction} className="text-destructive">
-                      Logout
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="relative">
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center gap-2 p-2 text-foreground hover:text-primary transition-colors"
+                  >
+                    <User className="w-6 h-6" />
+                    <ChevronDown className="w-4 h-4" />
+                  </button>
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-lg shadow-lg z-50">
+                      <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate({ to: '/my-orders', search: { category: undefined } });
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors flex items-center gap-2 rounded-t-lg"
+                      >
+                        <Package className="w-4 h-4" /> My Orders
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 text-sm hover:bg-muted transition-colors flex items-center gap-2 rounded-b-lg text-destructive"
+                      >
+                        <LogOut className="w-4 h-4" /> Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
-                <Button
-                  size="sm"
-                  onClick={handleAuthAction}
-                  disabled={isLoggingIn}
-                  className="bg-primary text-primary-foreground hover:opacity-90"
+                <button
+                  onClick={handleLogin}
+                  disabled={loginStatus === 'logging-in'}
+                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm disabled:opacity-50"
                 >
-                  {isLoggingIn ? 'Logging in...' : 'Login'}
-                </Button>
+                  {loginStatus === 'logging-in' ? 'Logging in...' : 'Login'}
+                </button>
               )}
 
-              {/* Mobile menu toggle */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
+              {/* Mobile Menu Toggle */}
+              <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 text-foreground hover:text-primary transition-colors"
               >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
             </div>
           </div>
         </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border bg-card animate-fade-in">
-            <div className="px-4 py-3 space-y-1">
-              {categories.map((cat) => {
-                const isActive = activeCategory === cat.name;
-                return (
+          <div className="md:hidden border-t border-border bg-background">
+            <div className="px-4 py-3 space-y-2">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  navigate({ to: '/', search: { category: undefined } });
+                }}
+                className="w-full text-left py-2 text-foreground hover:text-primary transition-colors font-medium"
+              >
+                Home
+              </button>
+              <div className="border-t border-border pt-2">
+                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Categories</p>
+                {CATEGORIES.map((cat) => (
                   <button
-                    key={cat.name}
-                    onClick={() => handleCategoryClick(cat.name)}
-                    className={`w-full text-left block px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      isActive
-                        ? 'text-primary bg-primary/10 font-semibold'
-                        : 'text-foreground hover:text-primary hover:bg-secondary'
-                    }`}
+                    key={cat}
+                    onClick={() => handleCategoryClick(cat)}
+                    className="w-full text-left py-2 text-sm text-foreground hover:text-primary transition-colors"
                   >
-                    {cat.name}
+                    {cat}
                   </button>
-                );
-              })}
-              {/* Mobile promo reminder */}
-              <div className="mt-2 pt-2 border-t border-border px-3 py-2 text-xs text-muted-foreground">
-                <Tag className="h-3 w-3 inline mr-1" />
-                Use code <strong>PRINT20</strong> for 20% off
+                ))}
               </div>
+              {!isAuthenticated && (
+                <div className="border-t border-border pt-2">
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleLogin();
+                    }}
+                    className="w-full py-2 bg-primary text-primary-foreground rounded-lg font-medium text-sm"
+                  >
+                    Login
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -215,10 +220,21 @@ export default function Layout({ children }: LayoutProps) {
 
       {/* Main Content */}
       <main className="flex-1">
-        {children}
+        <Outlet />
       </main>
 
       <Footer />
+
+      {/* Overlay for dropdowns */}
+      {(categoryMenuOpen || userMenuOpen) && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => {
+            setCategoryMenuOpen(false);
+            setUserMenuOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

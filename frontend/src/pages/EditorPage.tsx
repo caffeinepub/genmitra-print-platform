@@ -1,10 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Upload, Download, RotateCcw, ZoomIn, ZoomOut, Move } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useGetAllTemplates, useAddToCart } from '../hooks/useQueries';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import {
+  Upload,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  Type,
+  RectangleVertical,
+  Monitor,
+  ArrowRight,
+} from 'lucide-react';
+import { useAddToCart } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { toast } from 'sonner';
-import type { ProductInfo, Template } from '../backend';
+import type { ProductInfo } from '../backend';
 
 const DEMO_PRODUCT: ProductInfo = {
   id: 'demo-editor-product',
@@ -19,43 +27,61 @@ const DEMO_PRODUCT: ProductInfo = {
   dpiSettings: BigInt(300),
 };
 
-interface EditorState {
-  uploadedImage: string | null;
+type Orientation = 'portrait' | 'landscape';
+
+interface ImageState {
+  src: string | null;
   zoom: number;
   offsetX: number;
   offsetY: number;
+  rotation: number;
+}
+
+interface DragState {
   isDragging: boolean;
-  dragStartX: number;
-  dragStartY: number;
+  startX: number;
+  startY: number;
+}
+
+interface TextOverlay {
+  text: string;
+  x: number;
+  y: number;
 }
 
 export default function EditorPage() {
   const { identity } = useInternetIdentity();
-  const { data: templates } = useGetAllTemplates();
   const addToCart = useAddToCart();
 
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
-  const [editorState, setEditorState] = useState<EditorState>({
-    uploadedImage: null,
+  const [orientation, setOrientation] = useState<Orientation>('portrait');
+  const [imageState, setImageState] = useState<ImageState>({
+    src: null,
     zoom: 1,
     offsetX: 0,
     offsetY: 0,
-    isDragging: false,
-    dragStartX: 0,
-    dragStartY: 0,
+    rotation: 0,
   });
-  const [selectedSize, setSelectedSize] = useState(DEMO_PRODUCT.sizeOptions[0]);
+  const [dragState, setDragState] = useState<DragState>({
+    isDragging: false,
+    startX: 0,
+    startY: 0,
+  });
+  const [textOverlay, setTextOverlay] = useState<TextOverlay | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [selectedSize] = useState(DEMO_PRODUCT.sizeOptions[0]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const displayProduct = DEMO_PRODUCT;
+  // Frame dimensions based on orientation
+  const frameWidth = orientation === 'portrait' ? 310 : 460;
+  const frameHeight = orientation === 'portrait' ? 420 : 310;
 
-  useEffect(() => {
-    renderCanvas();
-  }, [editorState, selectedTemplate]);
+  // Canvas dimensions (inner white area)
+  const canvasWidth = frameWidth - 32;
+  const canvasHeight = frameHeight - 32;
 
-  const renderCanvas = () => {
+  const renderCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -63,260 +89,329 @@ export default function EditorPage() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Background
-    ctx.fillStyle = '#f5f5f5';
+    // White background
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw uploaded image
-    if (editorState.uploadedImage) {
+    if (imageState.src) {
       const img = new Image();
       img.onload = () => {
         ctx.save();
-        ctx.translate(canvas.width / 2 + editorState.offsetX, canvas.height / 2 + editorState.offsetY);
-        ctx.scale(editorState.zoom, editorState.zoom);
+        ctx.translate(canvas.width / 2 + imageState.offsetX, canvas.height / 2 + imageState.offsetY);
+        ctx.rotate((imageState.rotation * Math.PI) / 180);
+        ctx.scale(imageState.zoom, imageState.zoom);
         ctx.drawImage(img, -img.width / 2, -img.height / 2);
         ctx.restore();
 
-        // Draw template overlay
-        if (selectedTemplate?.imageData) {
-          const templateImg = new Image();
-          templateImg.onload = () => {
-            ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
-          };
-          templateImg.src = selectedTemplate.imageData;
+        // Draw text overlay
+        if (textOverlay) {
+          ctx.font = 'bold 20px sans-serif';
+          ctx.fillStyle = 'white';
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 2;
+          ctx.textAlign = 'center';
+          ctx.strokeText(textOverlay.text, textOverlay.x, textOverlay.y);
+          ctx.fillText(textOverlay.text, textOverlay.x, textOverlay.y);
         }
       };
-      img.src = editorState.uploadedImage;
-    } else {
-      // Placeholder
-      ctx.fillStyle = '#e0e0e0';
-      ctx.fillRect(50, 50, canvas.width - 100, canvas.height - 100);
-      ctx.fillStyle = '#999';
-      ctx.font = '16px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Upload a photo to get started', canvas.width / 2, canvas.height / 2);
-
-      if (selectedTemplate?.imageData) {
-        const templateImg = new Image();
-        templateImg.onload = () => {
-          ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
-        };
-        templateImg.src = selectedTemplate.imageData;
-      }
+      img.src = imageState.src;
     }
-  };
+  }, [imageState, textOverlay]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  useEffect(() => {
+    renderCanvas();
+  }, [renderCanvas]);
+
+  // Re-render when canvas size changes (orientation switch)
+  useEffect(() => {
+    renderCanvas();
+  }, [canvasWidth, canvasHeight, renderCanvas]);
+
+  const loadImageFile = (file: File) => {
+    if (!file.type.startsWith('image/')) return;
     const reader = new FileReader();
     reader.onload = () => {
-      setEditorState((prev) => ({ ...prev, uploadedImage: reader.result as string }));
+      setImageState({
+        src: reader.result as string,
+        zoom: 1,
+        offsetX: 0,
+        offsetY: 0,
+        rotation: 0,
+      });
     };
     reader.readAsDataURL(file);
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) loadImageFile(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) loadImageFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = () => setIsDragOver(false);
+
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    setEditorState((prev) => ({
-      ...prev,
+    if (!imageState.src) return;
+    setDragState({
       isDragging: true,
-      dragStartX: e.clientX - prev.offsetX,
-      dragStartY: e.clientY - prev.offsetY,
-    }));
+      startX: e.clientX - imageState.offsetX,
+      startY: e.clientY - imageState.offsetY,
+    });
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!editorState.isDragging) return;
-    setEditorState((prev) => ({
+    if (!dragState.isDragging) return;
+    setImageState((prev) => ({
       ...prev,
-      offsetX: e.clientX - prev.dragStartX,
-      offsetY: e.clientY - prev.dragStartY,
+      offsetX: e.clientX - dragState.startX,
+      offsetY: e.clientY - dragState.startY,
     }));
   };
 
   const handleMouseUp = () => {
-    setEditorState((prev) => ({ ...prev, isDragging: false }));
+    setDragState((prev) => ({ ...prev, isDragging: false }));
   };
 
-  const handleZoom = (delta: number) => {
-    setEditorState((prev) => ({
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.05 : 0.05;
+    setImageState((prev) => ({
       ...prev,
-      zoom: Math.max(0.5, Math.min(3, prev.zoom + delta)),
+      zoom: Math.max(0.3, Math.min(5, prev.zoom + delta)),
     }));
   };
 
-  const handleReset = () => {
-    setEditorState((prev) => ({ ...prev, zoom: 1, offsetX: 0, offsetY: 0 }));
+  const handleZoomIn = () => {
+    setImageState((prev) => ({ ...prev, zoom: Math.min(5, prev.zoom + 0.15) }));
   };
 
-  const handleDownload = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const link = document.createElement('a');
-    link.download = 'custom-photo.png';
-    link.href = canvas.toDataURL();
-    link.click();
+  const handleZoomOut = () => {
+    setImageState((prev) => ({ ...prev, zoom: Math.max(0.3, prev.zoom - 0.15) }));
   };
 
-  const handleAddToCart = async () => {
+  const handleRotate = () => {
+    setImageState((prev) => ({ ...prev, rotation: (prev.rotation + 90) % 360 }));
+  };
+
+  const handleAddText = () => {
+    const text = window.prompt('Enter text to overlay:');
+    if (text) {
+      setTextOverlay({ text, x: canvasWidth / 2, y: canvasHeight - 30 });
+    }
+  };
+
+  const handleSaveAndSelectSize = async () => {
     if (!identity) {
-      toast.error('Please login to add items to cart');
+      toast.error('Please login to save your design');
+      return;
+    }
+    if (!imageState.src) {
+      toast.error('Please upload a photo first');
       return;
     }
     try {
       const canvas = canvasRef.current;
       const customImageData = canvas ? canvas.toDataURL() : '';
       await addToCart.mutateAsync({
-        product: displayProduct,
+        product: DEMO_PRODUCT,
         quantity: BigInt(1),
         selectedSize,
         customImageData,
       });
-      toast.success('Added to cart!');
+      toast.success('Design saved and added to cart!');
     } catch {
-      toast.error('Failed to add to cart');
+      toast.error('Failed to save design');
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-foreground font-display mb-6">Photo Editor</h1>
+    <div
+      className="min-h-screen w-full flex flex-col"
+      style={{ backgroundColor: '#eef0f2' }}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+    >
+      {/* Top Bar */}
+      <div className="w-full bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+        {/* Orientation Toggle */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setOrientation('portrait')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              orientation === 'portrait'
+                ? 'bg-teal-600 text-white shadow-sm'
+                : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            <RectangleVertical className="h-4 w-4" />
+            Portrait
+          </button>
+          <button
+            onClick={() => setOrientation('landscape')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              orientation === 'landscape'
+                ? 'bg-teal-600 text-white shadow-sm'
+                : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            <Monitor className="h-4 w-4" />
+            Landscape
+          </button>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Templates Panel */}
-        <div className="lg:col-span-1 space-y-4">
-          <div className="bg-card rounded-2xl border border-border p-4">
-            <h2 className="font-semibold text-foreground mb-3">Templates</h2>
-            {!templates || templates.length === 0 ? (
-              <p className="text-xs text-muted-foreground">No templates available</p>
+        {/* Save Button */}
+        <button
+          onClick={handleSaveAndSelectSize}
+          disabled={addToCart.isPending}
+          className="flex items-center gap-2 px-5 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors disabled:opacity-60"
+        >
+          {addToCart.isPending ? (
+            <>
+              <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              Save &amp; Select Size
+              <ArrowRight className="h-4 w-4" />
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col items-center justify-center py-10 px-4">
+        {/* Frame Mockup */}
+        <div
+          className="relative flex items-center justify-center transition-all duration-300"
+          style={{
+            width: frameWidth,
+            height: frameHeight,
+            backgroundColor: '#7a5c3a',
+            borderRadius: 28,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
+            padding: 14,
+          }}
+        >
+          {/* Inner white area / canvas */}
+          <div
+            className="relative overflow-hidden bg-white"
+            style={{
+              width: canvasWidth,
+              height: canvasHeight,
+              borderRadius: 14,
+            }}
+          >
+            {imageState.src ? (
+              <canvas
+                ref={canvasRef}
+                width={canvasWidth}
+                height={canvasHeight}
+                className="block"
+                style={{ cursor: dragState.isDragging ? 'grabbing' : 'grab' }}
+                onMouseDown={handleMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onWheel={handleWheel}
+              />
             ) : (
-              <div className="grid grid-cols-2 gap-2">
-                {templates.map((template) => (
-                  <button
-                    key={template.id}
-                    onClick={() => setSelectedTemplate(template)}
-                    className={`aspect-square rounded-xl overflow-hidden border-2 transition-colors ${
-                      selectedTemplate?.id === template.id ? 'border-primary' : 'border-border'
-                    }`}
-                  >
-                    {template.previewData || template.imageData ? (
-                      <img
-                        src={template.previewData || template.imageData}
-                        alt={template.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-secondary flex items-center justify-center">
-                        <span className="text-xs text-muted-foreground text-center px-1">{template.name}</span>
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Size Selection */}
-          <div className="bg-card rounded-2xl border border-border p-4">
-            <h2 className="font-semibold text-foreground mb-3">Size</h2>
-            <div className="space-y-2">
-              {displayProduct.sizeOptions.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${
-                    selectedSize === size
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary text-foreground hover:bg-secondary/70'
+              <>
+                {/* Hidden canvas for export even without image */}
+                <canvas
+                  ref={canvasRef}
+                  width={canvasWidth}
+                  height={canvasHeight}
+                  className="hidden"
+                />
+                {/* Upload placeholder */}
+                <div
+                  className={`w-full h-full flex flex-col items-center justify-center gap-3 transition-colors ${
+                    isDragOver ? 'bg-teal-50' : 'bg-white'
                   }`}
                 >
-                  {size}
-                </button>
-              ))}
-            </div>
+                  <Upload className="h-10 w-10 text-gray-400" strokeWidth={1.5} />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-5 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors"
+                  >
+                    Select Photo
+                  </button>
+                  <p className="text-sm text-gray-400">or drag &amp; drop your image</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Canvas Area */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="bg-card rounded-2xl border border-border p-4">
-            <canvas
-              ref={canvasRef}
-              width={500}
-              height={500}
-              className="w-full rounded-xl cursor-move bg-secondary"
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-            />
-          </div>
+        {/* Icon Toolbar */}
+        <div className="mt-6 flex items-center gap-3">
+          {/* Upload */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            title="Upload Photo"
+            className="w-11 h-11 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-teal-600 transition-colors shadow-sm"
+          >
+            <Upload className="h-5 w-5" />
+          </button>
 
-          {/* Controls */}
-          <div className="bg-card rounded-2xl border border-border p-4">
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-xl gap-2"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Upload className="h-3.5 w-3.5" />
-                Upload Photo
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageUpload}
-              />
-              <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleZoom(0.1)}>
-                <ZoomIn className="h-3.5 w-3.5" />
-              </Button>
-              <Button variant="outline" size="sm" className="rounded-xl" onClick={() => handleZoom(-0.1)}>
-                <ZoomOut className="h-3.5 w-3.5" />
-              </Button>
-              <Button variant="outline" size="sm" className="rounded-xl" onClick={handleReset}>
-                <RotateCcw className="h-3.5 w-3.5" />
-              </Button>
-              <Button variant="outline" size="sm" className="rounded-xl gap-2" onClick={handleDownload}>
-                <Download className="h-3.5 w-3.5" />
-                Download
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-              <Move className="h-3 w-3" />
-              Drag to reposition your photo
-            </p>
-          </div>
+          {/* Zoom In */}
+          <button
+            onClick={handleZoomIn}
+            title="Zoom In"
+            className="w-11 h-11 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-teal-600 transition-colors shadow-sm"
+          >
+            <ZoomIn className="h-5 w-5" />
+          </button>
+
+          {/* Zoom Out */}
+          <button
+            onClick={handleZoomOut}
+            title="Zoom Out"
+            className="w-11 h-11 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-teal-600 transition-colors shadow-sm"
+          >
+            <ZoomOut className="h-5 w-5" />
+          </button>
+
+          {/* Rotate */}
+          <button
+            onClick={handleRotate}
+            title="Rotate"
+            className="w-11 h-11 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-teal-600 transition-colors shadow-sm"
+          >
+            <RotateCw className="h-5 w-5" />
+          </button>
+
+          {/* Add Text */}
+          <button
+            onClick={handleAddText}
+            title="Add Text"
+            className="w-11 h-11 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-teal-600 transition-colors shadow-sm"
+          >
+            <Type className="h-5 w-5" />
+          </button>
         </div>
 
-        {/* Product Info & Add to Cart */}
-        <div className="lg:col-span-1">
-          <div className="bg-card rounded-2xl border border-border p-4 sticky top-24 space-y-4">
-            <div className="aspect-square rounded-xl overflow-hidden bg-secondary">
-              <img
-                src={displayProduct.imageData || displayProduct.templateImageData}
-                alt={displayProduct.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div>
-              <h2 className="font-semibold text-foreground">{displayProduct.name}</h2>
-              <p className="text-sm text-muted-foreground mt-1">{displayProduct.description}</p>
-              <p className="text-xl font-bold text-foreground mt-2">₹{displayProduct.price}</p>
-              <p className="text-xs text-muted-foreground">Delivery: {displayProduct.deliveryTime}</p>
-            </div>
-            <Button
-              className="w-full bg-primary text-primary-foreground hover:opacity-90 rounded-xl"
-              onClick={handleAddToCart}
-              disabled={addToCart.isPending}
-            >
-              {addToCart.isPending ? 'Adding...' : 'Add to Cart'}
-            </Button>
-          </div>
-        </div>
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleImageUpload}
+        />
       </div>
     </div>
   );

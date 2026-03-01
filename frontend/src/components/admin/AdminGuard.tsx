@@ -1,76 +1,41 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
+import React from 'react';
+import { useNavigate, useLocation } from '@tanstack/react-router';
 import { useAdminSession } from '../../hooks/useAdminSession';
-import { useActor } from '../../hooks/useActor';
-import { Loader2 } from 'lucide-react';
 
 interface AdminGuardProps {
   children: React.ReactNode;
 }
 
 export default function AdminGuard({ children }: AdminGuardProps) {
+  const { isAdminLoggedIn, isLoading } = useAdminSession();
   const navigate = useNavigate();
-  const { isAdminLoggedIn, getStoredCredentials, logoutAdmin } = useAdminSession();
-  const { actor, isFetching } = useActor();
-  const [isReauthenticating, setIsReauthenticating] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-  const hasReauthed = useRef(false);
+  const location = useLocation();
 
-  useEffect(() => {
-    if (!isAdminLoggedIn) {
-      navigate({ to: '/login', search: { mode: 'admin', redirect: undefined } });
-      return;
-    }
-
-    // Actor not ready yet, wait
-    if (isFetching || !actor) {
-      return;
-    }
-
-    // Already re-authenticated in this session
-    if (hasReauthed.current) {
-      setIsReady(true);
-      return;
-    }
-
-    // Re-authenticate with backend to restore admin role after page refresh
-    const credentials = getStoredCredentials();
-    if (!credentials) {
-      // No credentials stored, can't re-auth — log out
-      logoutAdmin();
-      navigate({ to: '/login', search: { mode: 'admin', redirect: undefined } });
-      return;
-    }
-
-    setIsReauthenticating(true);
-    actor.login(credentials.username, credentials.password)
-      .then(() => {
-        hasReauthed.current = true;
-        setIsReady(true);
-      })
-      .catch(() => {
-        // Re-auth failed, clear session
-        logoutAdmin();
-        navigate({ to: '/login', search: { mode: 'admin', redirect: undefined } });
-      })
-      .finally(() => {
-        setIsReauthenticating(false);
+  React.useEffect(() => {
+    if (!isLoading && !isAdminLoggedIn) {
+      navigate({
+        to: '/login',
+        search: {
+          mode: 'admin',
+          redirect: location.pathname,
+        },
       });
-  }, [isAdminLoggedIn, actor, isFetching]);
+    }
+  }, [isLoading, isAdminLoggedIn, navigate, location.pathname]);
 
-  if (!isAdminLoggedIn) {
-    return null;
-  }
-
-  if (isFetching || isReauthenticating || !isReady) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3 text-muted-foreground">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-sm">Authenticating...</p>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground text-sm">Loading...</p>
         </div>
       </div>
     );
+  }
+
+  if (!isAdminLoggedIn) {
+    return null;
   }
 
   return <>{children}</>;

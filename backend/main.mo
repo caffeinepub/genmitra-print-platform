@@ -1,18 +1,19 @@
-import MixinAuthorization "authorization/MixinAuthorization";
-import AccessControl "authorization/access-control";
-import MixinStorage "blob-storage/Mixin";
 import Map "mo:core/Map";
-import Set "mo:core/Set";
 import Array "mo:core/Array";
 import Text "mo:core/Text";
+import Set "mo:core/Set";
 import Iter "mo:core/Iter";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
-import Float "mo:core/Float";
 import Time "mo:core/Time";
-import Migration "migration";
 
-(with migration = Migration.run)
+import MixinAuthorization "authorization/MixinAuthorization";
+import AccessControl "authorization/access-control";
+import Float "mo:core/Float";
+import MixinStorage "blob-storage/Mixin";
+
+
+
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -93,7 +94,7 @@ actor {
     role : Text;
   };
 
-  // ---- Stable Storage ----
+  // ---- Stable Data ----
 
   let userProfiles = Map.empty<Principal, UserProfile>();
   let products = Map.empty<Text, ProductInfo>();
@@ -106,21 +107,33 @@ actor {
   let selectedSizes = Map.empty<Principal, Text>();
   var users : Map.Map<Text, User> = Map.empty<Text, User>();
 
-  // ---- Seed User Initialization ----
+  // ---- Lifecycle Method ----
 
-  func upsertSeedUsers() {
-    users.add("genmitra", { password = "12345678"; role = "admin" });
-    users.add("admin", { password = "Admin@1234"; role = "admin" });
-    users.add("user", { password = "1234"; role = "user" });
+  system func postupgrade() {
+    upsertAdminSeeds();
   };
 
-  system func preupgrade() {};
-  system func postupgrade() { upsertSeedUsers() };
+  // ---- Admin Account Seeding ----
+
+  func upsertAdminSeeds() {
+    users.add(
+      "genmitra",
+      {
+        password = "12345678";
+        role = "admin";
+      },
+    );
+    users.add(
+      "admin",
+      {
+        password = "Admin@1234";
+        role = "admin";
+      },
+    );
+  };
 
   // ---- Authentication (Login / Logout) ----
 
-  /// Login with username and password. On success, assigns the caller's principal
-  /// the role stored in the users map (admin or user) via AccessControl.
   public shared ({ caller }) func login(username : Text, password : Text) : async Text {
     switch (users.get(username)) {
       case (null) { Runtime.trap("Invalid username or password") };
@@ -128,7 +141,6 @@ actor {
         if (user.password != password) {
           Runtime.trap("Invalid username or password");
         };
-        // Assign the appropriate role to the caller's principal
         let role : AccessControl.UserRole = if (user.role == "admin") { #admin } else { #user };
         AccessControl.assignRole(accessControlState, caller, caller, role);
         "Login successful";
@@ -136,12 +148,8 @@ actor {
     };
   };
 
-  /// Logout: demote the caller's principal back to guest role.
   public shared ({ caller }) func logout() : async () {
-    // Only act if the caller has at least user-level access
     if (AccessControl.hasPermission(accessControlState, caller, #user)) {
-      // Assign guest role by having an admin (the caller if admin, or self-demotion)
-      // We use assignRole; if caller is admin they can assign themselves
       if (AccessControl.isAdmin(accessControlState, caller)) {
         AccessControl.assignRole(accessControlState, caller, caller, #guest);
       };
@@ -171,13 +179,13 @@ actor {
     userProfiles.get(user);
   };
 
-  // ---- Admin Role Assignment ----
+  // ---- Role Assignment ----
 
   public shared ({ caller }) func assignUserRole(targetUser : Principal, role : AccessControl.UserRole) : async () {
     AccessControl.assignRole(accessControlState, caller, targetUser, role);
   };
 
-  // ---- Product Management (Admin Only for writes) ----
+  // ---- Product Management ----
 
   public shared ({ caller }) func addOrUpdateProduct(productInfo : ProductInfo) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
@@ -222,7 +230,7 @@ actor {
     Array.fromIter(products.values());
   };
 
-  // ---- Template Management (Admin Only for writes) ----
+  // ---- Template Management ----
 
   public shared ({ caller }) func addOrUpdateTemplate(template : Template) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
@@ -260,7 +268,7 @@ actor {
     Array.fromIter(templates.values());
   };
 
-  // ---- Cart Management (User Only) ----
+  // ---- Cart Management ----
 
   public shared ({ caller }) func addToCart(item : CartItem) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
@@ -426,7 +434,7 @@ actor {
     };
   };
 
-  // ---- Customer Management (Admin Only) ----
+  // ---- Customer Management ----
 
   public query ({ caller }) func getAllUsers() : async [(Principal, UserProfile)] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
@@ -465,7 +473,7 @@ actor {
     availablePincodes.contains(pincode);
   };
 
-  // ---- Address and Size Management (User Only) ----
+  // ---- Address and Size Management ----
 
   public shared ({ caller }) func saveAddress(address : ShippingAddress) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
@@ -513,3 +521,4 @@ actor {
     };
   };
 };
+

@@ -1,72 +1,70 @@
 import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, Star } from 'lucide-react';
+import { ArrowRight, Star, Package, Truck } from 'lucide-react';
 
 export default function HeroBanner() {
   const navigate = useNavigate();
 
   return (
-    <section className="relative overflow-hidden min-h-[480px] sm:min-h-[560px] flex items-center">
-      {/* Background Image */}
-      <div className="absolute inset-0">
-        <img
-          src="/assets/generated/hero-banner.dim_1440x560.png"
-          alt="Hero Banner"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/80 via-foreground/50 to-transparent" />
-      </div>
+    <section className="relative overflow-hidden bg-gradient-to-br from-[var(--primary)] via-[oklch(0.28_0.08_255)] to-[oklch(0.22_0.06_255)]">
+      {/* Background image overlay */}
+      <div
+        className="absolute inset-0 bg-cover bg-center opacity-20"
+        style={{ backgroundImage: "url('/assets/generated/hero-banner-redesign.dim_1440x600.png')" }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-[var(--primary)]/90 via-[var(--primary)]/70 to-transparent" />
 
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="max-w-xl">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+        <div className="max-w-2xl">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-sm border border-primary/30 rounded-full px-4 py-1.5 mb-6">
-            <Star className="h-3.5 w-3.5 text-brand-gold fill-brand-gold" />
-            <span className="text-xs font-semibold text-background uppercase tracking-wider">
-              Premium Quality Prints
-            </span>
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-6">
+            <Star className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+            <span className="text-white/90 text-xs font-medium">Trusted by 50,000+ customers</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-background font-display leading-tight mb-4">
-            Turn Your Memories Into
-            <span className="text-brand-gold"> Masterpieces</span>
+          {/* Headline */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-5">
+            Turn Your Photos Into
+            <span className="block text-yellow-400 mt-1">Lasting Memories</span>
           </h1>
 
-          <p className="text-lg text-background/80 mb-8 leading-relaxed">
-            Professional photo prints, custom frames, personalized gifts — delivered to your doorstep across India.
+          {/* Subtitle */}
+          <p className="text-lg text-white/75 leading-relaxed mb-8 max-w-lg">
+            Premium quality photo frames, prints, mugs, and personalized gifts. Delivered fast, crafted with love.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              size="lg"
-              className="bg-primary hover:opacity-90 text-primary-foreground shadow-purple gap-2 rounded-xl"
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap gap-4 mb-12">
+            <button
               onClick={() => navigate({ to: '/', search: { category: undefined } })}
+              className="flex items-center gap-2 bg-white text-[var(--primary)] font-bold px-7 py-3.5 rounded-xl hover:bg-white/90 transition-all duration-200 shadow-lg hover:shadow-xl text-sm"
             >
               Shop Now
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-background/40 text-background hover:bg-background/10 rounded-xl backdrop-blur-sm"
-              onClick={() => navigate({ to: '/', search: { category: undefined } })}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => navigate({ to: '/', search: { category: 'Photo Frames' } })}
+              className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold px-7 py-3.5 rounded-xl hover:bg-white/20 transition-all duration-200 text-sm"
             >
-              View Catalog
-            </Button>
+              Browse Categories
+            </button>
           </div>
 
           {/* Stats */}
-          <div className="flex gap-8 mt-10">
+          <div className="flex flex-wrap gap-8">
             {[
-              { value: '50K+', label: 'Happy Customers' },
-              { value: '4.8★', label: 'Average Rating' },
-              { value: '24hr', label: 'Fast Delivery' },
-            ].map((stat) => (
-              <div key={stat.label}>
-                <div className="text-2xl font-bold text-background">{stat.value}</div>
-                <div className="text-xs text-background/60">{stat.label}</div>
+              { icon: Star, value: '4.9★', label: 'Google Rating' },
+              { icon: Package, value: '50K+', label: 'Orders Delivered' },
+              { icon: Truck, value: '2-5 Days', label: 'Fast Delivery' },
+            ].map(({ icon: Icon, value, label }) => (
+              <div key={label} className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center">
+                  <Icon className="w-4 h-4 text-white/80" />
+                </div>
+                <div>
+                  <div className="text-white font-bold text-sm">{value}</div>
+                  <div className="text-white/60 text-xs">{label}</div>
+                </div>
               </div>
             ))}
           </div>

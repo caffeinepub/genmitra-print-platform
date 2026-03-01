@@ -63,7 +63,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <Printer className="h-5 w-5 text-primary-foreground" />
           </div>
           <div>
-            <p className="font-bold text-foreground text-sm">PrintCraft</p>
+            <p className="font-bold text-foreground text-sm">GenMitra</p>
             <p className="text-xs text-muted-foreground">Admin Panel</p>
           </div>
           <Button

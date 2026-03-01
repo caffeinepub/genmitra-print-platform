@@ -1,6 +1,186 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add second hardcoded admin seed account (admin / Admin@1234)",
-  "requirements": []
+  "title": "Fix Frontend Compilation and Runtime Errors",
+  "requirements": [
+    {
+      "id": "REQ-83",
+      "summary": "Audit and fix all frontend TypeScript compilation errors that prevent the app from building or loading in the browser, ensuring the homepage renders without blank screens or console errors",
+      "acceptanceCriteria": [
+        "The frontend TypeScript build completes without compilation errors.",
+        "The application renders its homepage without a blank screen or console errors that block rendering.",
+        "Navigation between pages works without runtime crashes.",
+        "The admin route guard correctly redirects unauthenticated users to the login page without triggering Internet Identity."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Fix any TypeScript errors in route definitions, ensure all imported components exist and are typed correctly, verify RouterProvider configuration, and ensure OriginHandler does not cause runtime errors. Check that admin routes are properly wrapped with AdminGuard and that all route paths resolve to existing page components."
+        },
+        {
+          "path": "frontend/src/components/admin/AdminGuard.tsx",
+          "operation": "modify",
+          "description": "Fix any TypeScript type errors in the guard logic, ensure useAdminSession and useActor hooks are properly typed, verify that the redirect logic does not cause infinite loops or blank screens, and ensure re-authentication with the backend actor completes without trapping. Confirm that unauthenticated users are redirected to /login without triggering Internet Identity."
+        },
+        {
+          "path": "frontend/src/hooks/useAuth.ts",
+          "operation": "modify",
+          "description": "Fix any TypeScript type mismatches between Internet Identity hooks, user profile queries, and role queries. Ensure all returned values are properly typed and that the hook does not cause runtime errors when identity or actor is unavailable. Verify that the hook correctly combines authentication state with user profile and role data."
+        },
+        {
+          "path": "frontend/src/hooks/useActor.ts",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in actor creation, ensure the backend interface types from backend.d.ts are correctly applied, verify that React Query configuration does not cause caching issues leading to stale data, and ensure the hook returns a properly typed actor instance or null without causing undefined access errors."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Fix TypeScript type errors in all query and mutation hooks, ensure all backend method signatures match the backend.d.ts interface, verify that error handling does not cause unhandled promise rejections, and confirm that query keys are consistent and do not cause cache invalidation issues. Check that all hooks properly handle actor unavailability."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in component rendering logic, ensure all child components (HeroBanner, ProductCategoryGrid, FeaturedProducts, ShopFramesBySize, OffersBanner, CustomerReviews, FAQSection) are imported correctly and do not cause runtime errors. Verify that category filtering via URL params works without crashes and that the page renders without blank screens when backend data is unavailable."
+        },
+        {
+          "path": "frontend/src/pages/LoginPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in the dual login mode logic (Internet Identity vs admin username/password), ensure useAuth and useAdminSession hooks are properly typed, verify that session management and redirect handling after authentication do not cause infinite loops or blank screens, and confirm that the Internet Identity login flow completes without errors."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminDashboardPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in dashboard summary queries and order table rendering, ensure all backend query hooks return properly typed data, verify that the page does not crash when data is unavailable, and confirm that navigation links to other admin pages are correct."
+        },
+        {
+          "path": "frontend/src/pages/admin/ProductManagementPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in product CRUD operations, image compression logic, and modal form handling. Ensure all backend mutations are properly typed, verify that image upload and compression do not cause runtime errors, and confirm that the product list renders without crashes when backend data is unavailable."
+        },
+        {
+          "path": "frontend/src/pages/admin/TemplateManagementPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in template CRUD operations and image upload handling. Ensure all backend mutations are properly typed, verify that compressed image uploads do not cause runtime errors, and confirm that the template list renders correctly."
+        },
+        {
+          "path": "frontend/src/pages/admin/OrderManagementPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in order status updates, custom image downloads, and canvas-based production file generation. Ensure all backend queries and mutations are properly typed, verify that canvas rendering does not cause runtime errors, and confirm that the order list displays correctly."
+        },
+        {
+          "path": "frontend/src/pages/admin/CustomerManagementPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in customer list rendering and expandable row logic. Ensure all backend queries are properly typed, verify that user order history fetching does not cause runtime errors, and confirm that the customer table displays without crashes."
+        },
+        {
+          "path": "frontend/src/pages/admin/AdminSettingsPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in pincode management forms and optimistic state updates. Ensure all backend mutations are properly typed, verify that form validation works correctly, and confirm that toast notifications display without errors."
+        },
+        {
+          "path": "frontend/src/pages/ProductDetailPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in product detail rendering, size/media/frame selection logic, pincode availability checking, and navigation to the editor. Ensure all backend queries are properly typed and that the page renders without crashes when product data is unavailable."
+        },
+        {
+          "path": "frontend/src/pages/EditorPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in canvas-based image manipulation, zoom/rotation/position controls, text overlay logic, and add-to-cart functionality. Ensure all canvas operations are type-safe and do not cause runtime errors when user uploads an image."
+        },
+        {
+          "path": "frontend/src/pages/CartPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in cart item rendering, address collection forms, pincode validation, payment method selection, and order placement logic. Ensure all backend queries and mutations are properly typed and that the multi-step checkout flow works without crashes."
+        },
+        {
+          "path": "frontend/src/pages/CheckoutPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in address and payment form handling, input validation, and order creation logic. Ensure all backend mutations are properly typed and that the mock payment modal renders without errors."
+        },
+        {
+          "path": "frontend/src/pages/OrderConfirmationPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in order tracking query and confirmation screen rendering. Ensure the useTrackOrder hook is properly typed and that the page displays order details without crashes."
+        },
+        {
+          "path": "frontend/src/pages/OrderDetailPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in order detail rendering, status tracker display, and item list with images. Ensure the order query is properly typed and that the page renders without crashes when order data is fetched."
+        },
+        {
+          "path": "frontend/src/pages/MyOrdersPage.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in order list rendering, status badges, and navigation to order details. Ensure the orders query is properly typed and that skeleton loaders and empty states display correctly."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in the main layout component, including header rendering (logo, category dropdown, cart count, auth controls), promo bar, mobile menu, and Footer integration. Ensure all child components are properly imported and that the layout renders without crashes."
+        },
+        {
+          "path": "frontend/src/components/HeroBanner.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in hero section rendering, CTA button navigation, and stats display. Ensure the background image path is correct and references the generated asset at frontend/public/assets/generated/hero-banner.dim_1440x560.png, and that the component renders without crashes."
+        },
+        {
+          "path": "frontend/src/components/FeaturedProducts.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in product grid rendering, backend query handling with demo data fallback, add-to-cart functionality, and product navigation. Ensure all backend queries are properly typed and that the component renders without crashes when backend is unavailable."
+        },
+        {
+          "path": "frontend/src/components/ProductCategoryGrid.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in category grid rendering and navigation logic. Ensure all category images reference the correct generated assets in frontend/public/assets/generated/ and that clicking a category navigates correctly."
+        },
+        {
+          "path": "frontend/src/components/ShopFramesBySize.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in frame size grid rendering and navigation to the Photo Frames category page. Ensure all size images reference the correct generated assets in frontend/public/assets/generated/ and that the component renders without crashes."
+        },
+        {
+          "path": "frontend/src/components/admin/AdminLayout.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in admin sidebar navigation, logout button functionality, and mobile overlay logic. Ensure the layout renders correctly and that navigation between admin pages works without crashes."
+        },
+        {
+          "path": "frontend/src/main.tsx",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in the application entry point, ensure QueryClientProvider and InternetIdentityProvider are correctly configured with proper types, and verify that the root App component mounts without errors. Confirm that the providers do not cause runtime initialization errors."
+        },
+        {
+          "path": "frontend/src/hooks/useInternetIdentity.ts",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in the Internet Identity context and provider, ensure AuthClient initialization and delegation validity checks are properly typed, and verify that login/logout flows do not cause runtime errors or infinite loops."
+        },
+        {
+          "path": "frontend/src/hooks/useAdminSession.ts",
+          "operation": "modify",
+          "description": "Fix TypeScript errors in the admin session hook, ensure sessionStorage read/write operations are type-safe, verify that hardcoded credential validation works correctly, and confirm that login/logout functions do not cause runtime errors."
+        }
+      ]
+    },
+    {
+      "id": "REQ-84",
+      "summary": "Ensure the frontend build output directory is correctly configured and that the deployed frontend canister serves the React app without blank screens or path resolution errors",
+      "acceptanceCriteria": [
+        "Running the deployment pipeline produces no configuration or path resolution errors.",
+        "The frontend canister serves the built React app at the root URL.",
+        "The backend canister is reachable and responds to query/update calls.",
+        "The deployed app opens correctly in a browser without a blank or error screen."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Verify that the HTML shell correctly mounts the React app at the #root div, that the TypeScript entry point path is correct (should reference src/main.tsx), and that no asset paths are broken. Ensure the HTML does not cause a blank screen on initial load."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Verify that the router configuration does not cause path resolution errors when the app is deployed to a canister. Ensure all route paths are relative and that the app can be served from both development and production environments without blank screens."
+        }
+      ]
+    }
+  ]
 }

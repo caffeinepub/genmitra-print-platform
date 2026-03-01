@@ -1,403 +1,169 @@
-import React, { useState } from 'react';
-import { ShoppingCart, Star, Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { ShoppingCart, Star, Heart, ArrowRight } from 'lucide-react';
 import { useGetAllProducts, useAddToCart } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
+import { demoProducts } from '../lib/demoProducts';
 import { toast } from 'sonner';
-import { useNavigate } from '@tanstack/react-router';
-import type { ProductInfo } from '../backend';
-
-const DEMO_PRODUCTS: ProductInfo[] = [
-  // Photo Prints
-  {
-    id: 'demo-print-1',
-    name: 'Classic Photo Print',
-    price: 49,
-    category: 'Photo Prints',
-    sizeOptions: ['4×6"', '5×7"', '8×10"'],
-    imageData: '/assets/generated/demo-frame-photo-print.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-photo-print.dim_400x400.png',
-    deliveryTime: '3-5 days',
-    description: 'High-quality glossy photo prints',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-print-2',
-    name: 'Matte Photo Print',
-    price: 59,
-    category: 'Photo Prints',
-    sizeOptions: ['4×6"', '5×7"', '8×10"'],
-    imageData: '/assets/generated/demo-frame-photo-print.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-photo-print.dim_400x400.png',
-    deliveryTime: '3-5 days',
-    description: 'Premium matte finish photo prints',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-print-3',
-    name: 'Canvas Photo Print',
-    price: 299,
-    category: 'Photo Prints',
-    sizeOptions: ['8×10"', '11×14"', '16×20"'],
-    imageData: '/assets/generated/demo-frame-photo-print.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-photo-print.dim_400x400.png',
-    deliveryTime: '5-7 days',
-    description: 'Stunning canvas prints for your walls',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-print-4',
-    name: 'Panoramic Print',
-    price: 199,
-    category: 'Photo Prints',
-    sizeOptions: ['12×36"', '16×48"'],
-    imageData: '/assets/generated/demo-frame-photo-print.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-photo-print.dim_400x400.png',
-    deliveryTime: '5-7 days',
-    description: 'Wide panoramic photo prints',
-    dpiSettings: BigInt(300),
-  },
-  // Photo Frames
-  {
-    id: 'demo-frame-1',
-    name: 'Classic Wood Frame',
-    price: 349,
-    category: 'Photo Frames',
-    sizeOptions: ['4×6"', '5×7"', '8×10"'],
-    imageData: '/assets/generated/demo-frame-photo-frame.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-photo-frame.dim_400x400.png',
-    deliveryTime: '5-7 days',
-    description: 'Elegant wooden photo frame',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-frame-2',
-    name: 'Modern Metal Frame',
-    price: 449,
-    category: 'Photo Frames',
-    sizeOptions: ['5×7"', '8×10"', '11×14"'],
-    imageData: '/assets/generated/demo-frame-photo-frame.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-photo-frame.dim_400x400.png',
-    deliveryTime: '5-7 days',
-    description: 'Sleek modern metal photo frame',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-frame-3',
-    name: 'Collage Frame',
-    price: 599,
-    category: 'Photo Frames',
-    sizeOptions: ['12×16"', '16×20"'],
-    imageData: '/assets/generated/demo-frame-photo-frame.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-photo-frame.dim_400x400.png',
-    deliveryTime: '7-10 days',
-    description: 'Multi-photo collage frame',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-frame-4',
-    name: 'Floating Frame',
-    price: 699,
-    category: 'Photo Frames',
-    sizeOptions: ['8×10"', '11×14"'],
-    imageData: '/assets/generated/demo-frame-photo-frame.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-photo-frame.dim_400x400.png',
-    deliveryTime: '7-10 days',
-    description: 'Elegant floating glass frame',
-    dpiSettings: BigInt(300),
-  },
-  // Photo Magnets
-  {
-    id: 'demo-magnet-1',
-    name: 'Square Photo Magnet',
-    price: 99,
-    category: 'Photo Magnets',
-    sizeOptions: ['2×2"', '3×3"'],
-    imageData: '/assets/generated/demo-frame-photo-magnet.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-photo-magnet.dim_400x400.png',
-    deliveryTime: '3-5 days',
-    description: 'Custom square photo magnets',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-magnet-2',
-    name: 'Round Photo Magnet',
-    price: 119,
-    category: 'Photo Magnets',
-    sizeOptions: ['2" round', '3" round'],
-    imageData: '/assets/generated/demo-frame-photo-magnet.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-photo-magnet.dim_400x400.png',
-    deliveryTime: '3-5 days',
-    description: 'Cute round photo magnets',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-magnet-3',
-    name: 'Magnet Set of 6',
-    price: 499,
-    category: 'Photo Magnets',
-    sizeOptions: ['2×2"', '3×3"'],
-    imageData: '/assets/generated/demo-frame-photo-magnet.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-photo-magnet.dim_400x400.png',
-    deliveryTime: '3-5 days',
-    description: 'Set of 6 custom photo magnets',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-magnet-4',
-    name: 'Fridge Magnet Strip',
-    price: 149,
-    category: 'Photo Magnets',
-    sizeOptions: ['2×6"'],
-    imageData: '/assets/generated/demo-frame-photo-magnet.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-photo-magnet.dim_400x400.png',
-    deliveryTime: '3-5 days',
-    description: 'Photo strip fridge magnet',
-    dpiSettings: BigInt(300),
-  },
-  // Mugs
-  {
-    id: 'demo-mug-1',
-    name: 'Classic Photo Mug',
-    price: 299,
-    category: 'Mugs',
-    sizeOptions: ['11oz', '15oz'],
-    imageData: '/assets/generated/demo-frame-mug.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-mug.dim_400x400.png',
-    deliveryTime: '5-7 days',
-    description: 'Custom printed ceramic mug',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-mug-2',
-    name: 'Magic Color Mug',
-    price: 399,
-    category: 'Mugs',
-    sizeOptions: ['11oz'],
-    imageData: '/assets/generated/demo-frame-mug.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-mug.dim_400x400.png',
-    deliveryTime: '5-7 days',
-    description: 'Color-changing magic photo mug',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-mug-3',
-    name: 'Travel Photo Mug',
-    price: 499,
-    category: 'Mugs',
-    sizeOptions: ['14oz', '16oz'],
-    imageData: '/assets/generated/demo-frame-mug.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-mug.dim_400x400.png',
-    deliveryTime: '5-7 days',
-    description: 'Insulated travel mug with photo',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-mug-4',
-    name: 'Couple Mug Set',
-    price: 699,
-    category: 'Mugs',
-    sizeOptions: ['11oz'],
-    imageData: '/assets/generated/demo-frame-mug.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-mug.dim_400x400.png',
-    deliveryTime: '5-7 days',
-    description: 'Matching couple photo mugs',
-    dpiSettings: BigInt(300),
-  },
-  // Corporate Gifts
-  {
-    id: 'demo-corp-1',
-    name: 'Corporate Photo Frame',
-    price: 799,
-    category: 'Corporate Gifts',
-    sizeOptions: ['5×7"', '8×10"'],
-    imageData: '/assets/generated/demo-frame-corporate-gift.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-corporate-gift.dim_400x400.png',
-    deliveryTime: '7-10 days',
-    description: 'Premium corporate photo frame gift',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-corp-2',
-    name: 'Branded Mug Set',
-    price: 1299,
-    category: 'Corporate Gifts',
-    sizeOptions: ['Set of 10', 'Set of 25'],
-    imageData: '/assets/generated/demo-frame-corporate-gift.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-corporate-gift.dim_400x400.png',
-    deliveryTime: '10-14 days',
-    description: 'Branded mugs for corporate gifting',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-corp-3',
-    name: 'Photo Calendar',
-    price: 499,
-    category: 'Corporate Gifts',
-    sizeOptions: ['A4', 'A3'],
-    imageData: '/assets/generated/demo-frame-corporate-gift.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-corporate-gift.dim_400x400.png',
-    deliveryTime: '7-10 days',
-    description: 'Custom photo calendar for offices',
-    dpiSettings: BigInt(300),
-  },
-  {
-    id: 'demo-corp-4',
-    name: 'Executive Gift Box',
-    price: 1999,
-    category: 'Corporate Gifts',
-    sizeOptions: ['Standard'],
-    imageData: '/assets/generated/demo-frame-corporate-gift.dim_400x400.png',
-    templateImageData: '/assets/generated/demo-frame-corporate-gift.dim_400x400.png',
-    deliveryTime: '10-14 days',
-    description: 'Premium executive photo gift box',
-    dpiSettings: BigInt(300),
-  },
-];
-
-interface ProductCardProps {
-  product: ProductInfo;
-}
-
-function ProductCard({ product }: ProductCardProps) {
-  const { identity } = useInternetIdentity();
-  const addToCart = useAddToCart();
-  const navigate = useNavigate();
-  const [liked, setLiked] = useState(false);
-
-  const handleCardClick = () => {
-    navigate({ to: '/product/$productId', params: { productId: product.id } });
-  };
-
-  const handleAddToCart = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!identity) {
-      toast.error('Please login to add items to cart');
-      return;
-    }
-    try {
-      await addToCart.mutateAsync({
-        product,
-        quantity: BigInt(1),
-        selectedSize: product.sizeOptions[0] || '',
-        customImageData: '',
-      });
-      toast.success(`${product.name} added to cart!`);
-    } catch {
-      toast.error('Failed to add to cart');
-    }
-  };
-
-  const handleLikeClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setLiked(!liked);
-  };
-
-  const imageSrc =
-    product.imageData ||
-    product.templateImageData ||
-    '/assets/generated/frame-product-mockup.dim_800x800.png';
-
-  return (
-    <div
-      className="bg-card rounded-2xl shadow-card border border-border overflow-hidden group hover:shadow-card-hover transition-all duration-300 cursor-pointer"
-      onClick={handleCardClick}
-    >
-      <div className="relative aspect-square overflow-hidden bg-secondary">
-        <img
-          src={imageSrc}
-          alt={product.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-        <button
-          onClick={handleLikeClick}
-          className="absolute top-3 right-3 p-2 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card transition-colors"
-        >
-          <Heart
-            className={`h-4 w-4 transition-colors ${liked ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`}
-          />
-        </button>
-      </div>
-      <div className="p-4">
-        <h3 className="font-semibold text-foreground text-sm leading-tight">{product.name}</h3>
-        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
-        <div className="flex items-center gap-1 mt-2">
-          {[1, 2, 3, 4, 5].map((s) => (
-            <Star key={s} className="h-3 w-3 fill-amber-400 text-amber-400" />
-          ))}
-          <span className="text-xs text-muted-foreground ml-1">(24)</span>
-        </div>
-        <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-foreground">₹{product.price}</span>
-          <Button
-            size="sm"
-            className="bg-primary text-primary-foreground hover:opacity-90 rounded-xl gap-1 text-xs"
-            onClick={handleAddToCart}
-            disabled={addToCart.isPending}
-          >
-            <ShoppingCart className="h-3 w-3" />
-            {addToCart.isPending ? 'Adding...' : 'Add'}
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 interface FeaturedProductsProps {
   category?: string;
 }
 
 export default function FeaturedProducts({ category }: FeaturedProductsProps) {
-  const { data: backendProducts, isLoading } = useGetAllProducts();
+  const navigate = useNavigate();
+  const { identity } = useInternetIdentity();
+  const { data: backendProducts = [], isLoading } = useGetAllProducts();
+  const addToCartMutation = useAddToCart();
 
-  const allProducts =
-    backendProducts && backendProducts.length > 0 ? backendProducts : DEMO_PRODUCTS;
-
+  const allProducts = backendProducts.length > 0 ? backendProducts : demoProducts;
   const displayProducts = category
     ? allProducts.filter((p) => p.category === category)
-    : allProducts;
+    : allProducts.slice(0, 8);
 
-  if (isLoading) {
-    return (
-      <section className="py-12 px-4 max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="bg-card rounded-2xl border border-border overflow-hidden animate-pulse">
-              <div className="aspect-square bg-secondary" />
-              <div className="p-4 space-y-2">
-                <div className="h-4 bg-secondary rounded w-3/4" />
-                <div className="h-3 bg-secondary rounded w-1/2" />
-                <div className="h-8 bg-secondary rounded mt-3" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    );
-  }
+  const handleAddToCart = async (e: React.MouseEvent, product: typeof demoProducts[0]) => {
+    e.stopPropagation();
+    if (!identity) {
+      toast.error('Please login to add items to cart');
+      navigate({ to: '/login', search: { mode: undefined, redirect: undefined } });
+      return;
+    }
+    try {
+      await addToCartMutation.mutateAsync({
+        product: product as any,
+        quantity: BigInt(1),
+        selectedSize: product.sizeOptions[0] || '',
+        customImageData: '',
+      });
+      toast.success('Added to cart!');
+    } catch {
+      toast.error('Failed to add to cart');
+    }
+  };
+
+  const handleProductClick = (productId: string) => {
+    navigate({ to: '/product/$productId', params: { productId }, search: { category: undefined } });
+  };
 
   return (
-    <section className="py-12 px-4 max-w-7xl mx-auto">
-      {category && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-foreground font-display">{category}</h2>
-          <p className="text-muted-foreground mt-1">
-            {displayProducts.length} product{displayProducts.length !== 1 ? 's' : ''} found
-          </p>
+    <section className="py-16 bg-muted/30">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="flex items-end justify-between mb-10">
+          <div>
+            <p className="text-sm font-semibold text-[var(--accent)] uppercase tracking-widest mb-2">
+              {category ? category : 'Featured'}
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground">
+              {category ? `${category} Products` : 'Popular Products'}
+            </h2>
+          </div>
+          {!category && (
+            <button
+              onClick={() => navigate({ to: '/', search: { category: undefined } })}
+              className="hidden sm:flex items-center gap-2 text-sm font-semibold text-[var(--accent)] hover:text-[var(--accent)]/80 transition-colors"
+            >
+              View All <ArrowRight className="w-4 h-4" />
+            </button>
+          )}
         </div>
-      )}
-      {displayProducts.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-muted-foreground text-lg">No products found in this category.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {displayProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      )}
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-card rounded-2xl overflow-hidden animate-pulse">
+                <div className="aspect-square bg-muted" />
+                <div className="p-4 space-y-2">
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-3 bg-muted rounded w-1/2" />
+                  <div className="h-8 bg-muted rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Products Grid */}
+        {!isLoading && (
+          <>
+            {displayProducts.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ShoppingCart className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">No products found</h3>
+                <p className="text-muted-foreground">No products available in this category yet.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                {displayProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    onClick={() => handleProductClick(product.id)}
+                    className="group bg-card rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-border/50"
+                  >
+                    {/* Product Image */}
+                    <div className="relative aspect-square overflow-hidden bg-muted">
+                      {product.imageData ? (
+                        <img
+                          src={
+                            product.imageData.startsWith('data:') || product.imageData.startsWith('/')
+                              ? product.imageData
+                              : `data:image/jpeg;base64,${product.imageData}`
+                          }
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
+                          <ShoppingCart className="w-12 h-12 text-muted-foreground/40" />
+                        </div>
+                      )}
+                      {/* Wishlist */}
+                      <button
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white shadow-sm"
+                      >
+                        <Heart className="w-4 h-4 text-muted-foreground hover:text-red-500 transition-colors" />
+                      </button>
+                      {/* Category Badge */}
+                      <div className="absolute top-3 left-3">
+                        <span className="bg-white/90 backdrop-blur-sm text-xs font-semibold text-foreground px-2.5 py-1 rounded-full shadow-sm">
+                          {product.category}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Product Info */}
+                    <div className="p-4">
+                      <h3 className="font-semibold text-foreground text-sm leading-tight mb-1 line-clamp-2 group-hover:text-[var(--accent)] transition-colors">
+                        {product.name}
+                      </h3>
+                      <div className="flex items-center gap-1 mb-3">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                        ))}
+                        <span className="text-xs text-muted-foreground ml-1">(4.9)</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold text-foreground">₹{product.price}</span>
+                        <button
+                          onClick={(e) => handleAddToCart(e, product as any)}
+                          className="flex items-center gap-1.5 bg-[var(--primary)] text-primary-foreground text-xs font-semibold px-3 py-2 rounded-lg hover:bg-[var(--primary)]/90 transition-all duration-200"
+                        >
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </section>
   );
 }

@@ -1,4 +1,63 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-audit-and-fix-all-frontend-typescript-compilation-errors-in-the-react-application-that-could-prevent-the-frontend-bundle-from-building-or-the-app-from-loading-in-the-browser-check-frontend-src-app-tsx-all-page-components-hooks-and-utility-files-for-type-errors-missing-imports-undefined-variables-or-broken-module-references-ensure-the-frontend-builds-and-renders-without-a-blank-screen-or-uncaught-javascript-errors-on-initial-load",
+      "featureTitle": "Audit and fix all frontend TypeScript compilation errors in the React application that could prevent the frontend bundle from building or the app from loading in the browser. Check `frontend/src/App.tsx`, all page components, hooks, and utility files for type errors, missing imports, undefined variables, or broken module references. Ensure the frontend builds and renders without a blank screen or uncaught JavaScript errors on initial load.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/FeaturedProducts.tsx",
+        "frontend/src/components/Layout.tsx",
+        "frontend/src/components/admin/AdminGuard.tsx",
+        "frontend/src/hooks/useAdminSession.ts",
+        "frontend/src/hooks/useAuth.ts",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/CheckoutPage.tsx",
+        "frontend/src/pages/HomePage.tsx",
+        "frontend/src/pages/LoginPage.tsx",
+        "frontend/src/pages/MyOrdersPage.tsx",
+        "frontend/src/pages/OrderConfirmationPage.tsx",
+        "frontend/src/pages/ProductDetailPage.tsx",
+        "frontend/src/pages/admin/AdminDashboardPage.tsx",
+        "frontend/src/pages/admin/AdminSettingsPage.tsx",
+        "frontend/src/pages/admin/CustomerManagementPage.tsx",
+        "frontend/src/pages/admin/OrderManagementPage.tsx",
+        "frontend/src/pages/admin/ProductManagementPage.tsx",
+        "frontend/src/pages/admin/TemplateManagementPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-83"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-verify-and-fix-the-canister-configuration-dfx-json-or-equivalent-to-ensure-both-the-frontend-and-backend-canisters-are-correctly-specified-the-frontend-asset-canister-points-to-the-correct-build-output-directory-and-the-backend-canister-entry-point-resolves-to-backend-main-mo-ensure-the-full-stack-deployment-pipeline-backend-compile-frontend-build-asset-upload-completes-without-errors",
+      "featureTitle": "Verify and fix the canister configuration (`dfx.json` or equivalent) to ensure both the frontend and backend canisters are correctly specified, the frontend asset canister points to the correct build output directory, and the backend canister entry point resolves to `backend/main.mo`. Ensure the full-stack deployment pipeline (backend compile → frontend build → asset upload) completes without errors.",
+      "files": [
+        "frontend/src/App.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-84"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

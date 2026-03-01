@@ -1,92 +1,74 @@
 import React, { useState } from 'react';
-import { Plus, X } from 'lucide-react';
+import { Plus, Minus } from 'lucide-react';
 
-const faqData = [
+const faqs = [
   {
-    question: 'What is a photo frame?',
-    answer: 'A photo frame is a decorative border used to display and protect photographs. Our frames come in various materials including wood, metal, and acrylic, with options for single or multiple photos.',
+    question: 'What file formats do you accept for photo uploads?',
+    answer: 'We accept JPEG, PNG, and HEIC formats. For best print quality, we recommend uploading high-resolution images (at least 300 DPI). Our system will automatically optimize your image for the best output.',
   },
   {
-    question: 'What are coloured photo frames?',
-    answer: 'Coloured photo frames are frames available in a variety of vibrant colors beyond traditional wood tones. They add a pop of personality to your space and can complement your home decor.',
+    question: 'How long does delivery take?',
+    answer: 'Standard delivery takes 3-5 business days. Express delivery (1-2 days) is available for select pin codes. You can check delivery availability by entering your pin code on the product page.',
   },
   {
-    question: 'Is there any specific quantity?',
-    answer: 'No minimum quantity is required for most products. You can order as little as one print or frame. For bulk corporate orders, we offer special pricing — contact us for details.',
+    question: 'Can I customize the size of my photo frame?',
+    answer: 'Yes! We offer a wide range of sizes from 4×6" to 20×24". You can select your preferred size on the product page. Custom sizes are also available — contact our support team for more details.',
   },
   {
-    question: 'Is there any picture limit for a collage?',
-    answer: 'Our collage frames can accommodate anywhere from 2 to 20 photos depending on the size and design you choose. Each slot is clearly defined in the product preview.',
+    question: 'What is your return and refund policy?',
+    answer: 'We offer a 100% satisfaction guarantee. If you\'re not happy with your order, contact us within 7 days of delivery and we\'ll either reprint your order or issue a full refund — no questions asked.',
   },
   {
-    question: 'What is Spotify photo frames?',
-    answer: 'Spotify photo frames feature a scannable Spotify code alongside your photo, allowing anyone to scan it and instantly play your favorite song. A perfect personalized gift for music lovers.',
+    question: 'How do I track my order?',
+    answer: 'Once your order is shipped, you\'ll receive a tracking link via email and SMS. You can also track your order by logging into your account and visiting the "My Orders" section.',
   },
   {
-    question: 'What is a matte finish?',
-    answer: 'A matte finish is a non-glossy, smooth surface that reduces glare and reflections. It gives photos a sophisticated, gallery-quality look and is ideal for portraits and artistic prints.',
-  },
-  {
-    question: 'What are the various sizes you provide?',
-    answer: 'We offer prints and frames in sizes ranging from 4×6" wallet size to 24×36" large format. Popular sizes include 5×7", 8×10", 11×14", and 16×20". Custom sizes are also available on request.',
-  },
-  {
-    question: 'What is a canvas print?',
-    answer: 'A canvas print is your photo printed on high-quality canvas material and stretched over a wooden frame. It gives your image a fine-art, gallery-worthy appearance without needing a separate frame.',
+    question: 'Do you offer bulk or corporate orders?',
+    answer: 'Absolutely! We offer special pricing for bulk orders (50+ units) and corporate gifting. Contact our team at care@genmitra.in or call +91 8871707079 for a custom quote.',
   },
 ];
 
-function FAQItem({ question, answer }: { question: string; answer: string }) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="border border-border rounded-xl overflow-hidden">
-      <button
-        className="w-full flex items-center justify-between p-4 text-left hover:bg-secondary/50 transition-colors"
-        onClick={() => setOpen(!open)}
-      >
-        <span className="font-medium text-foreground pr-4">{question}</span>
-        <div className={`shrink-0 w-7 h-7 rounded-full border-2 border-primary flex items-center justify-center transition-transform duration-200 ${open ? 'bg-primary' : ''}`}>
-          {open ? (
-            <X className="h-3.5 w-3.5 text-primary-foreground" />
-          ) : (
-            <Plus className="h-3.5 w-3.5 text-primary" />
-          )}
-        </div>
-      </button>
-      <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          open ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <div className="px-4 pb-4 text-sm text-muted-foreground leading-relaxed border-t border-border pt-3">
-          {answer}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function FAQSection() {
-  const leftFAQs = faqData.slice(0, 4);
-  const rightFAQs = faqData.slice(4, 8);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div className="text-center mb-10">
-        <h2 className="section-title mb-3">Frequently Asked Questions</h2>
-        <p className="text-muted-foreground">Everything you need to know about our products</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="space-y-3">
-          {leftFAQs.map((faq) => (
-            <FAQItem key={faq.question} question={faq.question} answer={faq.answer} />
-          ))}
+    <section className="py-16 bg-muted/30">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="text-center mb-12">
+          <p className="text-sm font-semibold text-[var(--accent)] uppercase tracking-widest mb-2">FAQ</p>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-3">Frequently Asked Questions</h2>
+          <p className="text-muted-foreground">Everything you need to know about our products and services</p>
         </div>
+
+        {/* FAQ Items */}
         <div className="space-y-3">
-          {rightFAQs.map((faq) => (
-            <FAQItem key={faq.question} question={faq.question} answer={faq.answer} />
+          {faqs.map((faq, index) => (
+            <div
+              key={index}
+              className={`bg-card border rounded-xl overflow-hidden transition-all duration-200 ${
+                openIndex === index ? 'border-[var(--accent)]/30 shadow-card' : 'border-border hover:border-border/80'
+              }`}
+            >
+              <button
+                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                className="w-full flex items-center justify-between px-6 py-4 text-left"
+              >
+                <span className={`font-semibold text-sm sm:text-base pr-4 ${openIndex === index ? 'text-[var(--accent)]' : 'text-foreground'}`}>
+                  {faq.question}
+                </span>
+                <div className={`shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors duration-200 ${
+                  openIndex === index ? 'bg-[var(--accent)] text-accent-foreground' : 'bg-muted text-muted-foreground'
+                }`}>
+                  {openIndex === index ? <Minus className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                </div>
+              </button>
+              {openIndex === index && (
+                <div className="px-6 pb-5 animate-fade-in">
+                  <p className="text-sm text-muted-foreground leading-relaxed">{faq.answer}</p>
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>

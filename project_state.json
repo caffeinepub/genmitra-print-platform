@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 29,
+  "projectStateVersion": 55,
   "summary": "Production-ready full-stack online printing and personalized gift platform (similar to Printo.in) with original branding. Frontend: Next.js 14, Tailwind CSS, Redux Toolkit, Fabric.js, PWA. Backend: Node.js + Express, PostgreSQL (Supabase), Sharp, Razorpay, WhatsApp API. Deployment: Vercel (frontend), Railway/Render (backend), Supabase (DB/storage).",
   "architectural_notes": [
     "Frontend: Next.js 14 + Tailwind CSS + Redux Toolkit + Fabric.js, deployed on Vercel",
@@ -20,9 +20,10 @@
     "Save functionality broken for both products and templates in admin panel — backend createProduct/updateProduct and createTemplate/updateTemplate calls not properly handling base64 image data from file upload controls",
     "Admin gets 'Unauthorized: Only admins can manage products' error when saving products/templates even when logged in as admin — JWT role validation failing in backend middleware or token not attached correctly in frontend requests",
     "Admin route /admin has no route guard — unauthenticated users can access the admin panel directly without logging in",
-    "Visiting /admin while logged out triggers Internet Identity (id.ai) instead of showing custom username/password login form — admin auth must bypass Internet Identity entirely"
+    "Visiting /admin while logged out triggers Internet Identity (id.ai) instead of showing custom username/password login form — admin auth must bypass Internet Identity entirely",
+    "Admin login failing — credential validation not working for either admin account (genmitra/12345678 or admin/Admin@1234)"
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-implement-a-jwt-based-authentication-system-with-two-roles-user-and-admin-store-all-users-in-the-backend-motoko-actor-stable-storage-support-create-account-login-forgot-password-and-password-update-hardcoded-seed-credentials-user-username-genmitra-password-1234-and-admin-username-genmitra-password-12345678-after-login-route-users-to-the-main-website-and-admins-to-the-admin-panel",
@@ -263,6 +264,254 @@
         "REQ-42"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-footer-copyright-bar-text-from-2026-pixelcraft-all-rights-reserved-to-2026-genmitra-all-rights-reserved-in-frontend-src-components-footer-tsx",
+      "title": "Update the footer copyright bar text from '© 2026 PixelCraft. All Rights Reserved.' to '© 2026 GenMitra. All Rights Reserved.' in `frontend/src/components/Footer.tsx`.",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-contact-email-displayed-in-the-footer-from-care-pixelcraft-in-to-care-genmitra-in-in-frontend-src-components-footer-tsx",
+      "title": "Update the contact email displayed in the footer from 'care@pixelcraft.in' to 'care@genmitra.in' in `frontend/src/components/Footer.tsx`.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-the-entire-frontend-codebase-for-any-remaining-references-to-pixelcraft-in-page-titles-meta-tags-header-logos-alt-text-constants-or-any-visible-ui-text-and-replace-them-with-genmitra-to-ensure-consistent-branding-throughout-the-application",
+      "title": "Audit the entire frontend codebase for any remaining references to 'PixelCraft' (in page titles, meta tags, header logos, alt text, constants, or any visible UI text) and replace them with 'GenMitra' to ensure consistent branding throughout the application.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-pages-editorpage-tsx-to-match-the-uploaded-reference-layout-exactly-the-page-must-have-a-clean-light-gray-eef0f2-full-page-background-with-no-sidebar-the-top-bar-must-contain-on-the-left-a-portrait-button-teal-green-filled-with-a-portrait-rectangle-icon-and-a-landscape-button-outlined-with-a-monitor-icon-as-toggle-controls-on-the-right-a-teal-save-select-size-button-the-center-of-the-page-must-display-a-large-centered-photo-frame-mockup-with-a-thick-brown-rounded-rectangle-border-white-interior-and-a-drop-shadow-inside-the-frame-before-a-photo-is-uploaded-show-a-gray-upload-arrow-icon-above-a-teal-select-photo-button-and-or-drag-drop-your-image-helper-text-below-the-frame-render-a-horizontal-toolbar-row-of-icon-only-circular-rounded-buttons-upload-zoom-in-zoom-out-rotate-and-add-text-t-the-toolbar-must-be-centered-beneath-the-frame-after-a-photo-is-uploaded-the-photo-must-fill-the-white-interior-of-the-frame-and-be-fully-manipulable-drag-zoom-rotate-within-the-frame-boundary-the-portrait-landscape-toggle-must-resize-the-frame-accordingly-preserve-all-existing-editor-functionality-image-upload-drag-to-reposition-zoom-rotation-text-overlay-low-resolution-warning-save-design-action",
+      "title": "Redesign `frontend/src/pages/EditorPage.tsx` to match the uploaded reference layout exactly. The page must have a clean light-gray (`#eef0f2`) full-page background with no sidebar. The top bar must contain: on the left, a 'Portrait' button (teal/green filled, with a portrait-rectangle icon) and a 'Landscape' button (outlined, with a monitor icon) as toggle controls; on the right, a teal 'Save & Select Size →' button. The center of the page must display a large, centered photo frame mockup with a thick brown rounded-rectangle border, white interior, and a drop shadow. Inside the frame (before a photo is uploaded), show a gray upload arrow icon above a teal 'Select Photo' button and 'or drag & drop your image' helper text. Below the frame, render a horizontal toolbar row of icon-only circular/rounded buttons: Upload, Zoom In (+), Zoom Out (−), Rotate, and Add Text (T). The toolbar must be centered beneath the frame. After a photo is uploaded, the photo must fill the white interior of the frame and be fully manipulable (drag, zoom, rotate) within the frame boundary. The portrait/landscape toggle must resize the frame accordingly. Preserve all existing editor functionality (image upload, drag-to-reposition, zoom, rotation, text overlay, low-resolution warning, save design action).",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-components-productcategorygrid-tsx-to-match-the-reference-image-layout-exactly-the-section-must-have-a-light-off-white-background-at-the-top-render-a-centered-bold-dark-serif-heading-shop-by-category-with-a-smaller-warm-amber-brown-subtitle-beneath-it-find-the-perfect-personalized-gift-for-every-occasion-below-the-heading-display-5-category-cards-in-a-horizontal-row-photo-prints-photo-frames-photo-magnets-custom-mugs-and-corporate-gifts-each-card-must-be-a-white-rounded-rectangle-card-with-a-soft-shadow-containing-a-square-warm-beige-cream-icon-container-rounded-corners-with-a-brown-stroke-icon-inside-and-the-category-name-as-bold-dark-text-centered-below-the-icon-the-icon-container-background-must-be-a-very-light-warm-peach-cream-fef3e8-or-similar-use-appropriate-icons-a-photo-image-icon-for-photo-prints-a-hashtag-grid-frame-icon-for-photo-frames-a-magnet-icon-for-photo-magnets-a-mug-coffee-cup-icon-for-custom-mugs-and-a-gift-box-icon-for-corporate-gifts-clicking-each-card-must-still-navigate-to-the-correct-category-filtered-product-listing-the-category-label-mugs-must-be-displayed-as-custom-mugs-to-match-the-reference-image",
+      "title": "Redesign `frontend/src/components/ProductCategoryGrid.tsx` to match the reference image layout exactly. The section must have a light off-white background. At the top, render a centered bold dark serif heading 'Shop by Category' with a smaller warm-amber/brown subtitle beneath it: 'Find the perfect personalized gift for every occasion'. Below the heading, display 5 category cards in a horizontal row: 'Photo Prints', 'Photo Frames', 'Photo Magnets', 'Custom Mugs', and 'Corporate Gifts'. Each card must be a white rounded-rectangle card with a soft shadow, containing a square warm-beige/cream icon container (rounded corners) with a brown stroke icon inside, and the category name as bold dark text centered below the icon. The icon container background must be a very light warm peach/cream (`#fef3e8` or similar). Use appropriate icons: a photo/image icon for Photo Prints, a hashtag/grid-frame icon for Photo Frames, a magnet icon for Photo Magnets, a mug/coffee cup icon for Custom Mugs, and a gift box icon for Corporate Gifts. Clicking each card must still navigate to the correct category-filtered product listing. The category label 'Mugs' must be displayed as 'Custom Mugs' to match the reference image.",
+      "reqIds": [
+        "REQ-52"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-the-overall-application-visual-theme-and-layout-to-match-the-reference-site-at-https-preview-designflow-maker-lovable-app-adopt-its-clean-modern-aesthetic-dark-navy-charcoal-sidebar-or-top-navigation-light-content-area-backgrounds-bold-sans-serif-typography-card-based-layouts-with-subtle-shadows-and-a-cohesive-accent-color-scheme-consistent-with-the-reference-apply-this-theme-consistently-across-all-pages-and-components",
+      "title": "Redesign the overall application visual theme and layout to match the reference site at https://preview--designflow-maker.lovable.app/. Adopt its clean, modern aesthetic: dark navy/charcoal sidebar or top navigation, light content area backgrounds, bold sans-serif typography, card-based layouts with subtle shadows, and a cohesive accent color scheme consistent with the reference. Apply this theme consistently across all pages and components.",
+      "reqIds": [
+        "REQ-53"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-the-main-navigation-header-in-frontend-src-components-layout-tsx-to-match-the-reference-site-s-header-style-clean-horizontal-top-bar-with-logo-on-the-left-primary-navigation-links-centered-or-inline-and-auth-cart-controls-on-the-right-use-the-same-visual-weight-spacing-and-hover-active-states-as-shown-on-the-reference-site",
+      "title": "Redesign the main navigation header in `frontend/src/components/Layout.tsx` to match the reference site's header style: clean horizontal top bar with logo on the left, primary navigation links centered or inline, and auth/cart controls on the right. Use the same visual weight, spacing, and hover/active states as shown on the reference site.",
+      "reqIds": [
+        "REQ-54"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-the-homepage-frontend-src-pages-homepage-tsx-and-its-section-components-herobanner-productcategorygrid-featuredproducts-shopframesbysize-offersbanner-trustfeatures-customerreviews-faqsection-to-match-the-layout-structure-section-spacing-typography-and-card-styles-of-the-reference-site-preserve-all-existing-functional-behavior-category-navigation-product-fetching-accordion-faq-reviews-pagination-while-updating-the-visual-presentation",
+      "title": "Redesign the HomePage (`frontend/src/pages/HomePage.tsx`) and its section components (HeroBanner, ProductCategoryGrid, FeaturedProducts, ShopFramesBySize, OffersBanner, TrustFeatures, CustomerReviews, FAQSection) to match the layout structure, section spacing, typography, and card styles of the reference site. Preserve all existing functional behavior (category navigation, product fetching, accordion FAQ, reviews pagination) while updating the visual presentation.",
+      "reqIds": [
+        "REQ-55"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-the-productdetailpage-frontend-src-pages-productdetailpage-tsx-to-match-the-reference-site-s-product-detail-layout-prominent-product-image-on-the-left-product-info-name-price-options-cta-buttons-on-the-right-clean-white-card-container-with-soft-shadow-and-matching-button-styles",
+      "title": "Redesign the ProductDetailPage (`frontend/src/pages/ProductDetailPage.tsx`) to match the reference site's product detail layout: prominent product image on the left, product info (name, price, options, CTA buttons) on the right, clean white card container with soft shadow, and matching button styles.",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-the-loginpage-frontend-src-pages-loginpage-tsx-and-createaccountpage-frontend-src-pages-createaccountpage-tsx-to-match-the-reference-site-s-auth-page-visual-style-centered-card-layout-clean-input-fields-styled-primary-action-button-and-matching-brand-presentation-preserve-all-existing-auth-logic-admin-vs-user-login-modes-internet-identity-for-users-credential-based-for-admin",
+      "title": "Redesign the LoginPage (`frontend/src/pages/LoginPage.tsx`) and CreateAccountPage (`frontend/src/pages/CreateAccountPage.tsx`) to match the reference site's auth page visual style: centered card layout, clean input fields, styled primary action button, and matching brand presentation. Preserve all existing auth logic (admin vs user login modes, Internet Identity for users, credential-based for admin).",
+      "reqIds": [
+        "REQ-59"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-src-index-css-and-frontend-tailwind-config-js-to-define-the-new-design-system-tokens-colors-typography-scale-spacing-border-radius-shadows-derived-from-the-reference-site-s-visual-style-replace-or-extend-the-current-purple-based-palette-with-the-reference-site-s-color-scheme-and-ensure-all-tailwind-utility-classes-used-in-redesigned-components-map-to-these-new-tokens",
+      "title": "Update `frontend/src/index.css` and `frontend/tailwind.config.js` to define the new design system tokens (colors, typography scale, spacing, border-radius, shadows) derived from the reference site's visual style. Replace or extend the current purple-based palette with the reference site's color scheme, and ensure all Tailwind utility classes used in redesigned components map to these new tokens.",
+      "reqIds": [
+        "REQ-60"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-the-footer-frontend-src-components-footer-tsx-to-match-the-reference-site-s-footer-layout-and-visual-style-while-retaining-all-existing-content-store-links-company-links-support-links-important-links-contact-info-phone-and-care-genmitra-in-social-icons-payment-icons-and-the-2026-genmitra-all-rights-reserved-copyright-bar",
+      "title": "Redesign the Footer (`frontend/src/components/Footer.tsx`) to match the reference site's footer layout and visual style, while retaining all existing content: store links, company links, support links, important links, contact info (phone and care@genmitra.in), social icons, payment icons, and the '© 2026 GenMitra. All Rights Reserved.' copyright bar.",
+      "reqIds": [
+        "REQ-61"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-why-choose-us-the-genmitra-promise-section-from-the-homepage-this-section-contains-four-blocks-4-9-google-rating-nationwide-delivery-100-quality-guarantee-and-24-7-customer-support-and-is-rendered-by-frontend-src-components-trustfeatures-tsx-remove-its-usage-from-frontend-src-pages-homepage-tsx-so-it-no-longer-appears-on-the-homepage",
+      "title": "Remove the 'Why Choose Us / The GenMitra Promise' section from the homepage. This section contains four blocks — '4.9★ Google Rating', 'Nationwide Delivery', '100% Quality Guarantee', and '24/7 Customer Support' — and is rendered by `frontend/src/components/TrustFeatures.tsx`. Remove its usage from `frontend/src/pages/HomePage.tsx` so it no longer appears on the homepage.",
+      "reqIds": [
+        "REQ-62"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-pages-productdetailpage-tsx-to-match-the-uploaded-reference-layout-exactly-the-page-must-display-1-left-side-a-large-product-image-with-prev-next-carousel-arrow-buttons-on-either-side-and-dot-indicators-with-a-video-icon-beneath-2-right-side-product-name-in-bold-uppercase-a-strikethrough-original-price-alongside-a-large-teal-discounted-price-and-free-shipping-label-a-full-width-orange-customise-now-button-with-an-edit-icon-and-a-light-teal-check-delivery-card-containing-a-subtitle-enter-your-pincode-to-check-delivery-availability-a-pincode-text-input-with-a-location-pin-icon-and-a-teal-check-button-use-a-clean-white-background-with-no-sidebar-preserve-all-existing-functional-behavior-fetching-product-data-by-id-from-the-backend-pincode-delivery-check-and-navigating-to-the-editor-on-customise-now",
+      "title": "Redesign `frontend/src/pages/ProductDetailPage.tsx` to match the uploaded reference layout exactly. The page must display: (1) Left side — a large product image with prev/next carousel arrow buttons on either side and dot indicators with a video icon beneath; (2) Right side — product name in bold uppercase, a strikethrough original price alongside a large teal discounted price and 'Free Shipping' label, a full-width orange 'CUSTOMISE NOW' button with an edit icon, and a light-teal 'Check Delivery' card containing a subtitle 'Enter your pincode to check delivery availability', a pincode text input with a location pin icon, and a teal 'Check' button. Use a clean white background with no sidebar. Preserve all existing functional behavior: fetching product data by ID from the backend, pincode delivery check, and navigating to the editor on 'Customise Now'.",
+      "reqIds": [
+        "REQ-63"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-product-not-found-error-shown-on-the-productdetailpage-audit-the-usegetproduct-query-hook-in-frontend-src-hooks-usequeries-ts-and-frontend-src-pages-productdetailpage-tsx-to-ensure-the-product-id-is-correctly-extracted-from-the-route-parameters-and-passed-to-the-backend-getproduct-call-verify-that-the-backend-getproduct-function-in-backend-main-mo-correctly-looks-up-the-product-by-id-from-the-stable-products-map-and-returns-it-if-the-id-type-e-g-nat-vs-text-or-the-lookup-key-format-is-mismatched-between-frontend-and-backend-fix-the-mismatch-so-a-valid-product-id-resolves-to-the-correct-product-record-instead-of-returning-a-not-found-state",
+      "title": "Fix the 'Product not found' error shown on the ProductDetailPage. Audit the `useGetProduct` query hook in `frontend/src/hooks/useQueries.ts` and `frontend/src/pages/ProductDetailPage.tsx` to ensure the product ID is correctly extracted from the route parameters and passed to the backend `getProduct` call. Verify that the backend `getProduct` function in `backend/main.mo` correctly looks up the product by ID from the stable products map and returns it. If the ID type (e.g., Nat vs. Text) or the lookup key format is mismatched between frontend and backend, fix the mismatch so a valid product ID resolves to the correct product record instead of returning a not-found state.",
+      "reqIds": [
+        "REQ-64"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-the-backend-backend-main-mo-stable-products-map-to-confirm-that-demo-seeded-products-are-correctly-stored-with-keys-that-match-the-ids-being-passed-from-the-frontend-if-seeded-products-are-stored-with-nat-keys-but-the-frontend-is-passing-text-ids-or-vice-versa-fix-the-type-coercion-on-the-frontend-query-hook-so-the-lookup-succeeds-additionally-verify-that-system-func-init-and-system-func-postupgrade-correctly-upsert-all-demo-product-seeds-so-they-are-always-present-after-every-deploy",
+      "title": "Audit the backend `backend/main.mo` stable products map to confirm that demo/seeded products are correctly stored with keys that match the IDs being passed from the frontend. If seeded products are stored with Nat keys but the frontend is passing Text IDs (or vice versa), fix the type coercion on the frontend query hook so the lookup succeeds. Additionally verify that `system func init()` and `system func postupgrade()` correctly upsert all demo product seeds so they are always present after every deploy.",
+      "reqIds": [
+        "REQ-65"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-generate-and-add-realistic-demo-product-images-for-the-shop-photo-frames-by-sizes-section-in-frontend-src-components-shopframesbysize-tsx-each-size-card-4-6-6-8-9-12-12-12-12-18-14-18-18-24-20-24-must-display-a-photo-frame-mockup-image-showing-a-dark-wooden-bordered-frame-containing-a-lifestyle-family-or-portrait-photo-placed-on-a-surface-or-against-a-wall-matching-the-visual-style-of-the-uploaded-reference-images-use-the-generated-static-image-assets-from-frontend-public-assets-generated-and-render-them-as-the-card-thumbnail-images",
+      "title": "Generate and add realistic demo product images for the 'Shop Photo Frames by Sizes' section in `frontend/src/components/ShopFramesBySize.tsx`. Each size card (4×6\", 6×8\", 9×12\", 12×12\", 12×18\", 14×18\", 18×24\", 20×24\") must display a photo frame mockup image showing a dark/wooden bordered frame containing a lifestyle family or portrait photo, placed on a surface or against a wall — matching the visual style of the uploaded reference images. Use the generated static image assets from `frontend/public/assets/generated/` and render them as the card thumbnail images.",
+      "reqIds": [
+        "REQ-66"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-seeded-demo-products-in-frontend-src-lib-demoproducts-ts-and-backend-migration-mo-to-use-the-newly-generated-realistic-product-images-stored-in-frontend-public-assets-generated-for-all-five-categories-photo-prints-photo-frames-photo-magnets-mugs-and-corporate-gifts-replace-any-placeholder-stock-url-image-references-with-paths-to-the-generated-assets-so-that-product-cards-across-all-category-pages-display-appealing-realistic-demo-visuals",
+      "title": "Update the seeded demo products in `frontend/src/lib/demoProducts.ts` and `backend/migration.mo` to use the newly generated realistic product images (stored in `frontend/public/assets/generated/`) for all five categories: Photo Prints, Photo Frames, Photo Magnets, Mugs, and Corporate Gifts. Replace any placeholder/stock URL image references with paths to the generated assets so that product cards across all category pages display appealing, realistic demo visuals.",
+      "reqIds": [
+        "REQ-67"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-placeholder-generated-images-in-frontend-src-components-shopframesbysize-tsx-with-the-newly-generated-realistic-photo-frame-mockup-images-stored-in-frontend-public-assets-generated-each-size-card-must-display-a-photorealistic-frame-mockup-a-dark-or-wooden-bordered-frame-containing-a-lifestyle-family-or-portrait-photo-placed-on-a-surface-or-against-a-wall-matching-the-visual-style-shown-in-the-uploaded-reference-images-image-5-png-image-6-png-size-cards-to-update-4-6-desktop-stand-6-8-desk-wall-mount-9-12-wall-mount-12-12-wall-mount-12-18-wall-mount-14-18-wall-mount-18-24-wall-mount-20-24-wall-mount-each-card-must-show-the-mount-type-subtitle-beneath-the-size-label-e-g-desktop-stand-only-desk-wall-mount-wall-mount",
+      "title": "Replace the placeholder/generated images in `frontend/src/components/ShopFramesBySize.tsx` with the newly generated realistic photo frame mockup images (stored in `frontend/public/assets/generated/`). Each size card must display a photorealistic frame mockup — a dark or wooden bordered frame containing a lifestyle family or portrait photo, placed on a surface or against a wall — matching the visual style shown in the uploaded reference images (image-5.png, image-6.png). Size cards to update: 4×6\" (desktop stand), 6×8\" (desk & wall mount), 9×12\" (wall mount), 12×12\" (wall mount), 12×18\" (wall mount), 14×18\" (wall mount), 18×24\" (wall mount), 20×24\" (wall mount). Each card must show the mount type subtitle beneath the size label (e.g., 'Desktop stand only', 'Desk & wall mount', 'Wall Mount').",
+      "reqIds": [
+        "REQ-68"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-pages-productdetailpage-tsx-to-match-the-layout-shown-in-the-uploaded-reference-image-image-7-png-the-right-hand-product-info-panel-must-include-1-product-title-in-bold-with-a-share-icon-2-a-short-product-description-paragraph-followed-by-a-bullet-point-list-e-g-print-media-standard-coated-paper-premium-textured-paper-comes-with-strong-table-standing-option-multiple-frame-styles-to-choose-from-photo-frame-comes-with-clear-acrylic-3-a-bold-delivery-highlight-line-place-your-order-before-3-pm-and-receive-same-day-delivery-in-bengaluru-hyderabad-chennai-and-delhi-4-a-labeled-dropdown-for-print-media-with-options-coated-matte-paper-premium-textured-paper-5-a-labeled-custom-visual-dropdown-for-frame-styles-see-req-70-6-a-labeled-dropdown-for-orientation-with-options-portrait-landscape-7-a-labeled-numeric-input-for-quantity-range-1-100-with-helper-text-choose-a-quantity-between-1-100-for-instant-ordering-for-higher-quantities-you-will-be-allowed-to-request-quotations-from-sales-team-8-price-displayed-in-orange-teal-as-price-inclusive-of-all-taxes-with-a-per-quantity-breakdown-for-1-qty-price-piece-and-a-buy-in-bulk-and-save-link-9-a-full-width-purple-upload-your-files-button-with-an-upload-icon-clicking-this-navigates-authenticated-users-to-the-editor-page-for-this-product-same-behavior-as-the-former-customise-now-button-10-an-estimate-delivery-section-with-a-pincode-text-input-preserve-all-existing-functional-behavior-fetching-product-data-by-id-from-the-backend-pincode-delivery-check-and-auth-gated-navigation-to-the-editor",
+      "title": "Redesign `frontend/src/pages/ProductDetailPage.tsx` to match the layout shown in the uploaded reference image (image-7.png). The right-hand product info panel must include: (1) Product title in bold with a share icon, (2) A short product description paragraph followed by a bullet-point list (e.g., 'Print Media: Standard coated paper | Premium textured paper', 'Comes with strong table standing option', 'Multiple frame styles to choose from', 'Photo frame comes with clear acrylic'), (3) A bold delivery highlight line ('Place your order before 3 PM and receive same-day delivery in Bengaluru, Hyderabad, Chennai, and Delhi'), (4) A labeled dropdown for 'Print Media' with options: 'Coated Matte Paper', 'Premium Textured Paper', (5) A labeled custom visual dropdown for 'Frame Styles' (see REQ-70), (6) A labeled dropdown for 'Orientation' with options: 'Portrait', 'Landscape', (7) A labeled numeric input for 'Quantity' (range 1–100) with helper text 'Choose a quantity between 1–100 for instant ordering. For higher quantities, you will be allowed to request quotations from Sales Team.', (8) Price displayed in orange/teal as '₹[price] inclusive of all taxes' with a per-quantity breakdown ('for 1 Qty (₹[price] / piece)') and a 'Buy in bulk and save' link, (9) A full-width purple 'Upload your Files' button with an upload icon — clicking this navigates authenticated users to the editor page for this product (same behavior as the former 'Customise Now' button), (10) An 'Estimate Delivery' section with a pincode text input. Preserve all existing functional behavior: fetching product data by ID from the backend, pincode delivery check, and auth-gated navigation to the editor.",
+      "reqIds": [
+        "REQ-69"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-custom-visual-dropdown-component-for-the-frame-styles-selector-on-frontend-src-pages-productdetailpage-tsx-matching-the-design-shown-in-the-uploaded-reference-image-image-8-png-the-dropdown-trigger-must-display-the-currently-selected-frame-style-name-when-opened-the-dropdown-panel-must-render-a-scrollable-list-of-frame-style-options-each-showing-1-a-square-thumbnail-image-of-the-frame-corner-preview-a-small-cropped-corner-image-showing-the-frame-moulding-texture-color-and-2-the-frame-style-name-as-text-beside-the-thumbnail-the-selected-option-must-be-highlighted-with-a-purple-background-frame-style-options-to-include-plain-black-plain-brown-goldline-brown-gold-sash-brown-zigzag-brown-generate-corner-preview-thumbnail-images-for-each-frame-style-and-store-them-in-frontend-public-assets-generated-the-component-must-not-use-the-native-html-select-element-it-must-be-a-fully-custom-react-dropdown-built-with-tailwind-css",
+      "title": "Implement a custom visual dropdown component for the 'Frame Styles' selector on `frontend/src/pages/ProductDetailPage.tsx`, matching the design shown in the uploaded reference image (image-8.png). The dropdown trigger must display the currently selected frame style name. When opened, the dropdown panel must render a scrollable list of frame style options, each showing: (1) a square thumbnail image of the frame corner preview (a small cropped corner image showing the frame moulding texture/color), and (2) the frame style name as text beside the thumbnail. The selected option must be highlighted with a purple background. Frame style options to include: 'Plain Black', 'Plain Brown', 'Goldline Brown', 'Gold Sash (Brown)', 'Zigzag Brown'. Generate corner-preview thumbnail images for each frame style and store them in `frontend/public/assets/generated/`. The component must not use the native HTML `<select>` element — it must be a fully custom React dropdown built with Tailwind CSS.",
+      "reqIds": [
+        "REQ-70"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-generate-and-add-realistic-sample-product-images-for-all-five-product-categories-photo-prints-photo-frames-photo-magnets-mugs-and-corporate-gifts-covering-all-seeded-demo-products-each-category-should-have-visually-distinct-appealing-images-photo-prints-flat-art-prints-wall-art-photo-frames-framed-family-portrait-photos-on-a-surface-or-wall-photo-magnets-refrigerator-magnets-with-photos-mugs-white-ceramic-mugs-with-printed-photo-designs-corporate-gifts-branded-gift-sets-desk-items-store-all-generated-images-as-static-assets-in-frontend-public-assets-generated-with-descriptive-filenames",
+      "title": "Generate and add realistic sample product images for all five product categories — Photo Prints, Photo Frames, Photo Magnets, Mugs, and Corporate Gifts — covering all seeded demo products. Each category should have visually distinct, appealing images: Photo Prints (flat art prints, wall art), Photo Frames (framed family/portrait photos on a surface or wall), Photo Magnets (refrigerator magnets with photos), Mugs (white ceramic mugs with printed photo designs), Corporate Gifts (branded gift sets, desk items). Store all generated images as static assets in `frontend/public/assets/generated/` with descriptive filenames.",
+      "reqIds": [
+        "REQ-71"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-seeded-demo-products-in-frontend-src-lib-demoproducts-ts-so-that-every-demo-product-record-references-one-of-the-newly-generated-sample-images-stored-in-frontend-public-assets-generated-as-its-image-field-each-product-must-have-a-unique-category-appropriate-image-assigned-remove-any-remaining-placeholder-url-references-e-g-picsum-unsplash-lorempixel-or-empty-strings-from-all-demo-product-records",
+      "title": "Update the seeded demo products in `frontend/src/lib/demoProducts.ts` so that every demo product record references one of the newly generated sample images (stored in `frontend/public/assets/generated/`) as its image field. Each product must have a unique, category-appropriate image assigned. Remove any remaining placeholder URL references (e.g., picsum, unsplash, lorempixel, or empty strings) from all demo product records.",
+      "reqIds": [
+        "REQ-72"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-frontend-src-pages-loginpage-tsx-to-ensure-that-when-a-user-navigates-to-any-admin-route-while-unauthenticated-the-login-page-renders-only-the-credential-based-form-username-password-fields-for-genmitra-12345678-it-must-not-trigger-display-or-link-to-internet-identity-in-admin-login-mode-on-successful-credential-validation-set-the-admin-session-state-and-redirect-to-admin-or-the-originally-requested-admin-url-internet-identity-must-remain-available-only-for-the-regular-user-login-flow",
+      "title": "Audit and fix `frontend/src/pages/LoginPage.tsx` to ensure that when a user navigates to any `/admin` route while unauthenticated, the login page renders ONLY the credential-based form (username/password fields for genmitra / 12345678). It must not trigger, display, or link to Internet Identity in admin login mode. On successful credential validation, set the admin session state and redirect to `/admin` (or the originally requested admin URL). Internet Identity must remain available only for the regular user login flow.",
+      "reqIds": [
+        "REQ-74"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-frontend-src-components-admin-adminguard-tsx-to-ensure-it-never-calls-login-from-useinternetidentity-or-any-internet-identity-hook-the-guard-must-only-check-the-local-credential-based-admin-session-via-useadminsession-and-redirect-unauthenticated-visitors-to-login-redirect-admin-or-the-appropriate-admin-login-url-if-the-session-is-valid-allow-the-route-to-render",
+      "title": "Audit and fix `frontend/src/components/admin/AdminGuard.tsx` to ensure it never calls `login()` from `useInternetIdentity` or any Internet Identity hook. The guard must only check the local credential-based admin session (via `useAdminSession`) and redirect unauthenticated visitors to `/login?redirect=/admin` (or the appropriate admin login URL). If the session is valid, allow the route to render.",
+      "reqIds": [
+        "REQ-75"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-admin-session-credential-validation-in-frontend-src-hooks-useadminsession-ts-to-correctly-accept-both-hardcoded-admin-accounts-1-username-genmitra-password-12345678-and-2-username-admin-password-admin-1234-the-login-function-must-validate-the-entered-credentials-against-both-accounts-and-set-session-state-with-role-admin-on-a-match",
+      "title": "Fix the admin session credential validation in `frontend/src/hooks/useAdminSession.ts` to correctly accept both hardcoded admin accounts: (1) username `genmitra`, password `12345678`, and (2) username `admin`, password `Admin@1234`. The `login` function must validate the entered credentials against both accounts and set session state with role `admin` on a match.",
+      "reqIds": [
+        "REQ-76"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-frontend-src-hooks-useadminsession-ts-to-ensure-the-credential-validation-logic-correctly-accepts-both-hardcoded-admin-accounts-1-username-genmitra-password-12345678-and-2-username-admin-password-admin-1234-and-sets-session-state-with-role-admin-on-a-successful-match-the-login-function-must-not-reject-valid-credentials-due-to-typos-strict-equality-issues-or-stale-cached-state",
+      "title": "Audit and fix `frontend/src/hooks/useAdminSession.ts` to ensure the credential validation logic correctly accepts both hardcoded admin accounts — (1) username `genmitra`, password `12345678` and (2) username `admin`, password `Admin@1234` — and sets session state with role `admin` on a successful match. The `login` function must not reject valid credentials due to typos, strict equality issues, or stale cached state.",
+      "reqIds": [
+        "REQ-78"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-frontend-src-pages-loginpage-tsx-to-ensure-the-admin-login-mode-triggered-when-arriving-from-an-admin-route-renders-only-the-credential-based-username-password-form-and-correctly-calls-the-login-function-from-useadminsession-verify-there-is-no-early-return-missing-state-update-or-form-submission-bug-that-silently-swallows-the-login-action-on-successful-credential-validation-the-page-must-redirect-the-user-to-admin-or-the-originally-requested-admin-url",
+      "title": "Audit and fix `frontend/src/pages/LoginPage.tsx` to ensure the admin login mode (triggered when arriving from an `/admin` route) renders only the credential-based username/password form and correctly calls the `login` function from `useAdminSession`. Verify there is no early return, missing state update, or form submission bug that silently swallows the login action. On successful credential validation, the page must redirect the user to `/admin` (or the originally requested admin URL).",
+      "reqIds": [
+        "REQ-79"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-the-regular-user-login-flow-in-frontend-src-pages-loginpage-tsx-to-ensure-internet-identity-authentication-completes-successfully-for-non-admin-users-verify-that-the-login-function-from-useinternetidentity-is-called-correctly-and-that-after-successful-internet-identity-authentication-the-user-is-redirected-to-the-main-website-not-the-admin-panel-fix-any-broken-async-handling-missing-await-or-incorrect-redirect-logic-in-the-user-login-path",
+      "title": "Audit and fix the regular user login flow in `frontend/src/pages/LoginPage.tsx` to ensure Internet Identity authentication completes successfully for non-admin users. Verify that the `login` function from `useInternetIdentity` is called correctly and that after successful Internet Identity authentication the user is redirected to the main website (not the admin panel). Fix any broken async handling, missing await, or incorrect redirect logic in the user login path.",
+      "reqIds": [
+        "REQ-80"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-all-frontend-typescript-compilation-errors-in-the-react-application-that-could-prevent-the-frontend-bundle-from-building-or-the-app-from-loading-in-the-browser-check-frontend-src-app-tsx-all-page-components-hooks-and-utility-files-for-type-errors-missing-imports-undefined-variables-or-broken-module-references-ensure-the-frontend-builds-and-renders-without-a-blank-screen-or-uncaught-javascript-errors-on-initial-load",
+      "title": "Audit and fix all frontend TypeScript compilation errors in the React application that could prevent the frontend bundle from building or the app from loading in the browser. Check `frontend/src/App.tsx`, all page components, hooks, and utility files for type errors, missing imports, undefined variables, or broken module references. Ensure the frontend builds and renders without a blank screen or uncaught JavaScript errors on initial load.",
+      "reqIds": [
+        "REQ-83"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-verify-and-fix-the-canister-configuration-dfx-json-or-equivalent-to-ensure-both-the-frontend-and-backend-canisters-are-correctly-specified-the-frontend-asset-canister-points-to-the-correct-build-output-directory-and-the-backend-canister-entry-point-resolves-to-backend-main-mo-ensure-the-full-stack-deployment-pipeline-backend-compile-frontend-build-asset-upload-completes-without-errors",
+      "title": "Verify and fix the canister configuration (`dfx.json` or equivalent) to ensure both the frontend and backend canisters are correctly specified, the frontend asset canister points to the correct build output directory, and the backend canister entry point resolves to `backend/main.mo`. Ensure the full-stack deployment pipeline (backend compile → frontend build → asset upload) completes without errors.",
+      "reqIds": [
+        "REQ-84"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -481,6 +730,110 @@
       "summary": "In `backend/main.mo`, add a second hardcoded admin seed account with username `admin` and password `Admin@1234` (role: `admin`) to both `system func init()` and `system func postupgrade()`. This account must be upserted into stable storage alongside the existing `genmitra` admin seed every time the canister is initialized or upgraded, so that logging in with username `admin` and password `Admin@1234` grants admin access.",
       "reqIds": [
         "REQ-46"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-44",
+      "summary": "Update `frontend/index.html` page title and any meta description tags to use 'GenMitra' instead of 'PixelCraft' so the brand name is correct in browser tabs and search engine snippets.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-45",
+      "summary": "Update the editor page to a new design/layout as specified by the user",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-46",
+      "summary": "Redesign the application UI to match the layout, style, and user experience of https://preview--designflow-maker.lovable.app/ — including all visual design, navigation, page layouts, and component styles",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-51",
+      "summary": "Redesign the CartPage (`frontend/src/pages/CartPage.tsx`) and CheckoutPage (`frontend/src/pages/CheckoutPage.tsx`) to match the reference site's cart and checkout visual style: clean list-based cart items, clear price summary panel, styled form inputs for shipping address, and matching button hierarchy.",
+      "reqIds": [
+        "REQ-57"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-52",
+      "summary": "Redesign the admin panel pages (`AdminDashboardPage`, `ProductManagementPage`, `TemplateManagementPage`, `OrderManagementPage`, `CustomerManagementPage`, `AdminSettingsPage`) and `AdminLayout.tsx` to match the reference site's admin/dashboard visual style: clean sidebar navigation, data tables with consistent row styling, stat cards on the dashboard, and matching form modal designs. Preserve all existing admin functionality.",
+      "reqIds": [
+        "REQ-58"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-53",
+      "summary": "Remove the 'Why Choose Us / The GenMitra Promise' section (with Google Rating, Nationwide Delivery, Quality Guarantee, and Customer Support blocks) from the homepage",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-54",
+      "summary": "After user clicks/opens a photo frame product, they should be taken directly into the editor/customization page with the frame preloaded",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-55",
+      "summary": "Add realistic demo product images to all seeded demo products across all categories (Photo Prints, Photo Frames, Photo Magnets, Mugs, Corporate Gifts) so product cards display appealing visual examples matching a reference style",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-56",
+      "summary": "Redesign Product Detail Page to include: product title + description with bullet points, dropdowns for Print Media, Frame Styles (visual dropdown with corner preview images: Plain Black, Plain Brown, Goldline Brown, Gold Sash Brown, Zigzag Brown, etc.), Orientation, and Quantity; price in orange/teal with tax info; 'Upload your Files' purple button leading to editor; and Estimate Delivery pincode field",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-57",
+      "summary": "Frame Styles dropdown on Product Detail Page must be a custom visual dropdown showing a corner-preview image of each frame style alongside its name (Plain Black, Plain Brown, Goldline Brown, Gold Sash Brown, Zigzag Brown, etc.) — not a plain text dropdown",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-58",
+      "summary": "Add sample/demo images for all products across all categories so every product card displays a real visual instead of a placeholder",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-61",
+      "summary": "Update `backend/migration.mo` (or the seed initialization in `backend/main.mo`) so that the seeded/demo product records for all five categories store the updated image paths (relative paths matching the generated assets in `frontend/public/assets/generated/`) in their image fields. Ensure `system func init()` and `system func postupgrade()` upsert these updated product records so the images are always present after every deploy.",
+      "reqIds": [
+        "REQ-73"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-65",
+      "summary": "Ensure `backend/main.mo` `system func init()` and `system func postupgrade()` upsert both admin seed accounts — (1) username `genmitra`, password `12345678`, role `admin` and (2) username `admin`, password `Admin@1234`, role `admin` — into stable storage on every canister initialization and upgrade, so that both admin credentials are always available after every deploy.",
+      "reqIds": [
+        "REQ-77"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-69",
+      "summary": "Verify that `backend/main.mo` `system func init()` and `system func postupgrade()` correctly upsert both admin seed accounts — (1) username `genmitra`, password `12345678`, role `admin` and (2) username `admin`, password `Admin@1234`, role `admin` — and the regular user seed (username `genmitra`, password `1234`, role `user`) into stable storage on every canister initialization and upgrade, so that seed credentials and their roles are always present after every deploy.",
+      "reqIds": [
+        "REQ-81"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-70",
+      "summary": "Audit and fix any compilation or runtime errors in `backend/main.mo` and `backend/migration.mo` that are preventing the canister from deploying successfully. Ensure all Motoko syntax is valid, all imported modules resolve correctly, all stable variable declarations are compatible, and the actor compiles without errors so the canister can be initialized and upgraded.",
+      "reqIds": [
+        "REQ-82"
       ],
       "status": "pending"
     }

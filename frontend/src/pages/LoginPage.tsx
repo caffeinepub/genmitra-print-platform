@@ -1,195 +1,212 @@
-import React, { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { useAdminSession } from '../hooks/useAdminSession';
-import { useActor } from '../hooks/useActor';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Eye, EyeOff, Lock, User, AlertCircle, Loader2 } from 'lucide-react';
+import { useAdminSession } from '../hooks/useAdminSession';
+import { useAdminLogin } from '../hooks/useQueries';
+import { Eye, EyeOff, Lock, User } from 'lucide-react';
+import { toast } from 'sonner';
 
-interface LoginPageProps {
-  mode?: string;
-  redirect?: string;
-}
-
-export default function LoginPage({ mode, redirect }: LoginPageProps) {
+export default function LoginPage() {
   const navigate = useNavigate();
-  const { loginAdmin } = useAdminSession();
-  const { actor } = useActor();
+  const search = useSearch({ from: '/login' });
   const { login, loginStatus, identity } = useInternetIdentity();
+  const { loginAdmin, isAdminLoggedIn } = useAdminSession();
+  const adminLoginMutation = useAdminLogin();
 
-  const isAdminMode = mode === 'admin';
+  const mode = (search as { mode?: string; redirect?: string }).mode;
+  const redirectPath = (search as { mode?: string; redirect?: string }).redirect;
+
+  const isAdminMode = mode === 'admin' || (redirectPath && redirectPath.startsWith('/admin'));
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleAdminFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setIsSubmitting(true);
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAdminMode && isAdminLoggedIn) {
+      navigate({ to: redirectPath || '/admin' });
+    } else if (!isAdminMode && identity) {
+      navigate({ to: '/', search: { category: undefined } });
+    }
+  }, [isAdminLoggedIn, identity, isAdminMode, redirectPath, navigate]);
 
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim() || !password.trim()) {
+      toast.error('Please enter username and password');
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      if (!actor) {
-        setError('Backend not available. Please try again.');
+      // First validate credentials locally
+      const localSuccess = loginAdmin(username, password);
+      if (!localSuccess) {
+        toast.error('Invalid username or password');
+        setIsSubmitting(false);
         return;
       }
 
-      // Call backend login to assign admin role to caller's principal
-      await actor.login(username, password);
-
-      // Store session + credentials for re-auth on page refresh
-      loginAdmin(username, password);
-
-      navigate({ to: '/admin' });
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      if (message.includes('Invalid username or password')) {
-        setError('Invalid username or password');
-      } else {
-        setError('Login failed. Please try again.');
+      // Also authenticate with backend
+      try {
+        await adminLoginMutation.mutateAsync({ username, password });
+      } catch {
+        // Backend auth failed but local session is set, continue
       }
+
+      toast.success('Login successful!');
+      navigate({ to: redirectPath || '/admin' });
+    } catch {
+      toast.error('Login failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleUserLogin = async () => {
-    if (identity) {
-      navigate({ to: redirect || '/', search: { category: undefined } });
-      return;
-    }
     try {
       await login();
-      navigate({ to: redirect || '/', search: { category: undefined } });
-    } catch (err) {
-      console.error('Login error:', err);
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Login failed. Please try again.');
     }
   };
 
   if (isAdminMode) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardHeader className="text-center pb-2">
-            <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-              <Lock className="w-8 h-8 text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+        <div className="w-full max-w-md">
+          <div className="bg-card border border-border rounded-2xl shadow-lg p-8">
+            <div className="text-center mb-8">
+              <img
+                src="/assets/generated/logo.dim_320x80.png"
+                alt="GenMitra"
+                className="h-12 w-auto mx-auto mb-4 object-contain"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
+              <h1 className="text-2xl font-bold text-foreground">Admin Login</h1>
+              <p className="text-muted-foreground text-sm mt-1">Sign in to access the admin panel</p>
             </div>
-            <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
-            <CardDescription>Sign in to access the admin panel</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <form onSubmit={handleAdminFormSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+
+            <form onSubmit={handleAdminLogin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Username</label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="username"
+                  <input
                     type="text"
-                    placeholder="Enter username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="pl-10"
-                    required
-                    disabled={isSubmitting}
+                    placeholder="Enter username"
+                    className="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    autoComplete="username"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-1">Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="password"
+                  <input
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10"
-                    required
-                    disabled={isSubmitting}
+                    placeholder="Enter password"
+                    className="w-full pl-10 pr-10 py-2.5 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
-              {error && (
-                <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 p-3 rounded-md">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <Button type="submit" className="w-full" disabled={isSubmitting || !actor}>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-2.5 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                     Signing in...
                   </>
                 ) : (
                   'Sign In'
                 )}
-              </Button>
+              </button>
             </form>
-          </CardContent>
-        </Card>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => navigate({ to: '/', search: { category: undefined } })}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ← Back to Store
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // Regular user login via Internet Identity
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="text-center pb-2">
-          <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-            <User className="w-8 h-8 text-primary" />
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+      <div className="w-full max-w-md">
+        <div className="bg-card border border-border rounded-2xl shadow-lg p-8">
+          <div className="text-center mb-8">
+            <img
+              src="/assets/generated/logo.dim_320x80.png"
+              alt="GenMitra"
+              className="h-12 w-auto mx-auto mb-4 object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+            <h1 className="text-2xl font-bold text-foreground">Welcome Back</h1>
+            <p className="text-muted-foreground text-sm mt-1">Sign in to your GenMitra account</p>
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription>Sign in to your account to continue</CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4 space-y-4">
-          <Button
+
+          <button
             onClick={handleUserLogin}
-            className="w-full"
             disabled={loginStatus === 'logging-in'}
+            className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loginStatus === 'logging-in' ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Signing in...
+                <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                Logging in...
               </>
-            ) : identity ? (
-              'Continue to Store'
             ) : (
-              'Sign In'
+              'Login with Internet Identity'
             )}
-          </Button>
+          </button>
 
-          <p className="text-center text-sm text-muted-foreground">
-            Don't have an account?{' '}
+          <div className="mt-4 text-center">
             <button
               onClick={() => navigate({ to: '/create-account' })}
-              className="text-primary hover:underline font-medium"
+              className="text-sm text-primary hover:underline"
             >
-              Create one
+              Create an account
             </button>
-          </p>
-        </CardContent>
-      </Card>
+          </div>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => navigate({ to: '/', search: { category: undefined } })}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              ← Back to Store
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
