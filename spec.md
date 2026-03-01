@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix "disallowed origin" CORS errors in the frontend by allowing the Caffeine preview domain `https://sole-aqua-rc6-draft.caffeine.xyz` across all origin checks.
+**Goal:** Add a second hardcoded admin seed account (`admin` / `Admin@1234`) to the backend so it is always available after initialization or upgrade.
 
 **Planned changes:**
-- Add `https://sole-aqua-rc6-draft.caffeine.xyz` to all hardcoded origin whitelist arrays in the frontend codebase
-- Update all `window.addEventListener('message', ...)` handlers that perform origin checks to permit the Caffeine preview domain
-- Remove or update any Content-Security-Policy meta tags in `index.html` that would block scripts, frames, or connections from the Caffeine preview domain
-- Ensure all `postMessage` calls in the canvas-based editor (EditorPage.tsx) and related components explicitly allow this origin
+- In `backend/main.mo`, upsert a user record with username `admin`, password `Admin@1234`, and role `admin` inside `system func init()`
+- In `backend/main.mo`, upsert the same `admin` / `Admin@1234` / role `admin` record inside `system func postupgrade()`
+- Ensure the existing `genmitra` admin and user seeds remain unaffected
 
-**User-visible outcome:** The canvas customization editor loads and functions correctly (image upload, drag, zoom, rotation) on the Caffeine preview deployment without any "disallowed origin" errors in the browser console.
+**User-visible outcome:** Logging in with username `admin` and password `Admin@1234` grants admin access and redirects to the admin panel.

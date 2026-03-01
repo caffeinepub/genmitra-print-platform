@@ -182,6 +182,8 @@ export interface backendInterface {
     assignUserRole(targetUser: Principal, role: UserRole): Promise<void>;
     clearCart(): Promise<void>;
     createOrder(paymentMethod: string, shippingAddress: ShippingAddress): Promise<string>;
+    createProduct(product: ProductInfo): Promise<void>;
+    createTemplate(template: Template): Promise<void>;
     deleteProduct(productId: string): Promise<void>;
     deleteTemplate(templateId: string): Promise<void>;
     getAllOrders(): Promise<Array<Order>>;
@@ -207,6 +209,15 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     isPincodeAvailable(pincode: string): Promise<boolean>;
+    /**
+     * / Login with username and password. On success, assigns the caller's principal
+     * / the role stored in the users map (admin or user) via AccessControl.
+     */
+    login(username: string, password: string): Promise<string>;
+    /**
+     * / Logout: demote the caller's principal back to guest role.
+     */
+    logout(): Promise<void>;
     removeFromCart(productId: string): Promise<void>;
     removePincode(pincode: string): Promise<void>;
     saveAddress(address: ShippingAddress): Promise<void>;
@@ -215,6 +226,8 @@ export interface backendInterface {
     setProductionFileData(orderId: string, fileData: string): Promise<void>;
     trackOrder(orderId: string): Promise<Order>;
     updateOrderStatus(orderId: string, newStatus: OrderStatus): Promise<void>;
+    updateProduct(productInfo: ProductInfo): Promise<void>;
+    updateTemplate(template: Template): Promise<void>;
 }
 import type { CartItem as _CartItem, Order as _Order, OrderStatus as _OrderStatus, ProductInfo as _ProductInfo, ShippingAddress as _ShippingAddress, Template as _Template, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -426,6 +439,34 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.createOrder(arg0, arg1);
+            return result;
+        }
+    }
+    async createProduct(arg0: ProductInfo): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createProduct(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createProduct(arg0);
+            return result;
+        }
+    }
+    async createTemplate(arg0: Template): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createTemplate(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createTemplate(arg0);
             return result;
         }
     }
@@ -714,6 +755,34 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async login(arg0: string, arg1: string): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.login(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.login(arg0, arg1);
+            return result;
+        }
+    }
+    async logout(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.logout();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.logout();
+            return result;
+        }
+    }
     async removeFromCart(arg0: string): Promise<void> {
         if (this.processError) {
             try {
@@ -823,6 +892,34 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.updateOrderStatus(arg0, to_candid_OrderStatus_n22(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
+    async updateProduct(arg0: ProductInfo): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateProduct(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateProduct(arg0);
+            return result;
+        }
+    }
+    async updateTemplate(arg0: Template): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateTemplate(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateTemplate(arg0);
             return result;
         }
     }

@@ -1,74 +1,32 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-03-01T04:04:02.360Z",
-  "summary": "The diff implements origin-handling logic in App.tsx via an OriginHandler component that adds 'https://sole-aqua-rc6-draft.caffeine.xyz' to an ALLOWED_ORIGINS array and handles postMessage events. However, several REQ-24 and REQ-25 acceptance criteria are only partially addressed: EditorPage.tsx itself is not shown to have origin-specific changes, no index.html CSP meta tag audit is evidenced, and the message event listener only handles ping/pong — it does not address the actual 'draft-editor:error disallowed origin' error which likely originates from the editor's own origin-check logic.",
+  "generatedAt": "2026-03-01T09:00:46.948Z",
+  "summary": "REQ-46 is largely implemented. The diff adds a second hardcoded admin seed (username: admin, password: Admin@1234, role: admin) to both the upsertSeedUsers() helper (called in postupgrade) and the migration.mo file. The existing genmitra seeds are preserved. However, there is no explicit system func init() call to upsertSeedUsers(), which is one of the acceptance criteria. The frontend login flow is unchanged (non-goal), so that AC is implicitly satisfied by the backend change.",
   "missing_requirements": [
     {
-      "id": "REQ-24",
-      "requirement": "In EditorPage.tsx specifically, add the application origin to the list of allowed origins and ensure all postMessage calls/origin-checking logic in the canvas editor explicitly allow this origin.",
-      "reason": "The diff summary for EditorPage.tsx only mentions field name updates (imageData/templateImageData/customImageData). No origin whitelist or postMessage origin-check changes are shown in EditorPage.tsx itself. The OriginHandler in App.tsx handles generic ping/pong but does not address origin checks internal to the canvas editor component.",
+      "id": "REQ-46",
+      "requirement": "The system func init() in backend/main.mo must upsert the admin / Admin@1234 / role admin record into stable storage.",
+      "reason": "The diff shows a upsertSeedUsers() helper called in postupgrade(), but there is no system func init() defined or shown calling upsertSeedUsers(). The diff only shows system func preupgrade() {} and system func postupgrade() { upsertSeedUsers() }. The init() function is absent from the diff, so this acceptance criterion is not confirmed as implemented.",
       "evidence": [
-        "frontend/src/pages/EditorPage.tsx",
-        "frontend-file-summaries.txt"
-      ]
-    },
-    {
-      "id": "REQ-25",
-      "requirement": "Audit and update Content-Security-Policy meta tags in index.html to include 'https://sole-aqua-rc6-draft.caffeine.xyz' as a permitted origin.",
-      "reason": "No changes to index.html are present in the diff. The REQ-25 AC explicitly requires verifying no CSP meta tag blocks the Caffeine preview domain, but this file is absent from the diff.",
-      "evidence": []
-    },
-    {
-      "id": "REQ-25",
-      "requirement": "Audit ALL hardcoded origin whitelist arrays across the entire frontend codebase and update each to include the Caffeine preview domain.",
-      "reason": "Only App.tsx shows a new ALLOWED_ORIGINS array. The diff does not show evidence of a full audit of other files for existing origin whitelist arrays or message event listeners with origin checks beyond App.tsx.",
-      "evidence": [
-        "frontend/src/App.tsx"
+        "backend/main.mo"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Multiple unrelated UI files were modified including HeroBanner.tsx, ShopFramesBySize.tsx, CheckoutPage.tsx, CreateAccountPage.tsx, ForgotPasswordPage.tsx, LoginPage.tsx, MyOrdersPage.tsx, OrderConfirmationPage.tsx, ProductDetailPage.tsx, AdminLayout.tsx, and Layout.tsx with no apparent connection to the CORS/origin fix.",
-      "reason": "The build request is a frontend-only origin configuration fix scoped to origin whitelists, postMessage handlers, and CSP. Modifications to unrelated UI pages and layout components were not requested.",
+      "description": "A 'user' seed account (username: user, password: 1234, role: user) is upserted in both migration.mo and upsertSeedUsers(), but only the genmitra user seed (username: genmitra, password: 1234) was part of the original requirements. Adding a separate 'user' username seed was not requested.",
+      "reason": "The build request constraints specify the existing genmitra user seed (username: genmitra, password: 1234, role: user) should be preserved, but the diff adds a new 'user' / '1234' seed that was never mentioned in the requirements.",
       "evidence": [
-        "frontend/src/components/HeroBanner.tsx",
-        "frontend/src/components/ShopFramesBySize.tsx",
-        "frontend/src/pages/CheckoutPage.tsx",
-        "frontend/src/pages/CreateAccountPage.tsx",
-        "frontend/src/pages/ForgotPasswordPage.tsx",
-        "frontend/src/pages/LoginPage.tsx",
-        "frontend/src/pages/MyOrdersPage.tsx",
-        "frontend/src/pages/OrderConfirmationPage.tsx",
-        "frontend/src/pages/ProductDetailPage.tsx",
-        "frontend/src/components/admin/AdminLayout.tsx",
-        "frontend/src/components/Layout.tsx"
-      ]
-    },
-    {
-      "description": "The OriginHandler component implements a ping/pong postMessage handshake protocol, notifying parent frames with an 'app-ready' message on mount and responding to ping messages.",
-      "reason": "The build request only asks to add the origin to allowed lists and fix origin-check errors. Implementing a ping/pong handshake protocol was not part of the requirements.",
-      "evidence": [
-        "frontend/src/App.tsx"
+        "backend/migration.mo",
+        "backend/main.mo"
       ]
     }
   ],
-  "confidence": 0.72,
+  "confidence": 0.78,
   "changed_files": [
-    "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/HeroBanner.tsx",
-    "frontend/src/components/Layout.tsx",
-    "frontend/src/components/ShopFramesBySize.tsx",
-    "frontend/src/components/admin/AdminLayout.tsx",
-    "frontend/src/pages/CheckoutPage.tsx",
-    "frontend/src/pages/CreateAccountPage.tsx",
-    "frontend/src/pages/ForgotPasswordPage.tsx",
-    "frontend/src/pages/LoginPage.tsx",
-    "frontend/src/pages/MyOrdersPage.tsx",
-    "frontend/src/pages/OrderConfirmationPage.tsx",
-    "frontend/src/pages/ProductDetailPage.tsx",
+    "backend/main.mo",
+    "backend/migration.mo",
     "project_state.json"
   ]
 }

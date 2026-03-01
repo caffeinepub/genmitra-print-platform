@@ -82,6 +82,8 @@ export interface backendInterface {
     assignUserRole(targetUser: Principal, role: UserRole): Promise<void>;
     clearCart(): Promise<void>;
     createOrder(paymentMethod: string, shippingAddress: ShippingAddress): Promise<string>;
+    createProduct(product: ProductInfo): Promise<void>;
+    createTemplate(template: Template): Promise<void>;
     deleteProduct(productId: string): Promise<void>;
     deleteTemplate(templateId: string): Promise<void>;
     getAllOrders(): Promise<Array<Order>>;
@@ -107,6 +109,15 @@ export interface backendInterface {
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     isPincodeAvailable(pincode: string): Promise<boolean>;
+    /**
+     * / Login with username and password. On success, assigns the caller's principal
+     * / the role stored in the users map (admin or user) via AccessControl.
+     */
+    login(username: string, password: string): Promise<string>;
+    /**
+     * / Logout: demote the caller's principal back to guest role.
+     */
+    logout(): Promise<void>;
     removeFromCart(productId: string): Promise<void>;
     removePincode(pincode: string): Promise<void>;
     saveAddress(address: ShippingAddress): Promise<void>;
@@ -115,4 +126,6 @@ export interface backendInterface {
     setProductionFileData(orderId: string, fileData: string): Promise<void>;
     trackOrder(orderId: string): Promise<Order>;
     updateOrderStatus(orderId: string, newStatus: OrderStatus): Promise<void>;
+    updateProduct(productInfo: ProductInfo): Promise<void>;
+    updateTemplate(template: Template): Promise<void>;
 }

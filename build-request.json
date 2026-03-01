@@ -1,55 +1,39 @@
 {
   "kind": "build_request",
-  "title": "Fix disallowed origin CORS errors in the canvas editor",
-  "priority": "high",
+  "title": "Add second hardcoded admin seed account (admin / Admin@1234)",
+  "projectName": "GenMitra Print",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-24",
-      "text": "In the canvas-based customization editor (EditorPage.tsx) and any component that embeds or communicates with an iframe or postMessage-based draft editor, add the application origin 'https://sole-aqua-rc6-draft.caffeine.xyz' to the list of allowed origins. Ensure all postMessage calls and any origin-checking logic explicitly allow this origin so that 'disallowed origin' errors are eliminated.",
-      "target": "frontend",
+      "id": "REQ-46",
+      "text": "In `backend/main.mo`, add a second hardcoded admin seed account with username `admin` and password `Admin@1234` (role: `admin`) to both `system func init()` and `system func postupgrade()`. This account must be upserted into stable storage alongside the existing `genmitra` admin seed every time the canister is initialized or upgraded, so that logging in with username `admin` and password `Admin@1234` grants admin access.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-recent-6"
         ],
         "quotes": [
-          "draft-editor:error disallowed origin: https://sole-aqua-rc6-draft.caffeine.xyz"
+          "I'll add a seeded admin account with a new set of credentials (username: `admin`, password: `Admin@1234`) in addition to the existing `genmitra` admin."
         ]
       },
       "acceptanceCriteria": [
-        "No 'draft-editor:error disallowed origin' messages appear in the browser console when the editor page is loaded at https://sole-aqua-rc6-draft.caffeine.xyz.",
-        "The canvas customization editor loads and functions correctly (image upload, drag, zoom, rotation) without being blocked by origin checks.",
-        "postMessage communication between the editor and any parent frame (or vice versa) succeeds without origin errors.",
-        "The fix applies to all pages/components that trigger the disallowed origin error, not just a single file."
-      ]
-    },
-    {
-      "id": "REQ-25",
-      "text": "Audit the entire frontend codebase for any hardcoded origin whitelist arrays, window.addEventListener('message', ...) handlers with origin checks, or Content-Security-Policy meta tags that restrict frame/script sources. Update all such locations to include 'https://sole-aqua-rc6-draft.caffeine.xyz' as a permitted origin, and remove any wildcard or overly restrictive origin filters that would block the deployed Caffeine preview domain.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "fix all and allwo orgin"
-        ]
-      },
-      "acceptanceCriteria": [
-        "All origin whitelist arrays in the frontend include 'https://sole-aqua-rc6-draft.caffeine.xyz'.",
-        "No Content-Security-Policy meta tag in index.html blocks scripts, frames, or connect-src from the Caffeine preview domain.",
-        "Any message event listeners that reject unknown origins are updated to permit the Caffeine preview domain.",
-        "The application runs without CORS or origin-related console errors on the preview deployment."
+        "The `system func init()` in `backend/main.mo` upserts a user record with username `admin`, password `Admin@1234`, and role `admin` into stable storage.",
+        "The `system func postupgrade()` in `backend/main.mo` also upserts the same `admin` / `Admin@1234` / role `admin` record, ensuring it is present after every canister upgrade.",
+        "The existing `genmitra` admin seed (password: 12345678) and `genmitra` user seed (password: 1234) are unaffected.",
+        "Logging in via the frontend with username `admin` and password `Admin@1234` successfully authenticates as admin and redirects to the admin panel.",
+        "The backend migration file (`backend/migration.mo`) is updated if needed to carry forward the new seed on upgrade without losing existing user records."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files listed in frontend.immutablePaths (useInternetIdentity.ts, useActor.ts, main.tsx, frontend/src/components/ui).",
-    "Do not alter backend CORS settings in main.mo — this is a frontend-only origin configuration fix."
+    "Do not change or remove the existing genmitra admin seed (username: genmitra, password: 12345678, role: admin).",
+    "Do not change or remove the existing genmitra user seed (username: genmitra, password: 1234, role: user).",
+    "All Motoko logic must remain in the single actor file backend/main.mo."
   ],
   "nonGoals": [
-    "Changing backend canister security policies.",
-    "Adding new editor features or modifying editor functionality beyond fixing the origin error.",
-    "Changing the visual design or layout of any page."
+    "Adding a UI for dynamically creating admin accounts from the admin panel.",
+    "Changing any frontend authentication flow or login page.",
+    "Modifying any existing product, template, or order logic."
   ],
   "imageRequirements": {
     "required": [],

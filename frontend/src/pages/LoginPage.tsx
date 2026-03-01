@@ -1,98 +1,195 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Eye, EyeOff, Printer } from 'lucide-react';
+import { useAdminSession } from '../hooks/useAdminSession';
+import { useActor } from '../hooks/useActor';
+import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '../hooks/useAuth';
-import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Eye, EyeOff, Lock, User, AlertCircle, Loader2 } from 'lucide-react';
 
-export default function LoginPage() {
+interface LoginPageProps {
+  mode?: string;
+  redirect?: string;
+}
+
+export default function LoginPage({ mode, redirect }: LoginPageProps) {
   const navigate = useNavigate();
-  const { login, isLoggingIn, isAuthenticated, isAdmin, adminLoading, profileLoading } = useAuth();
-  const [_showPassword, setShowPassword] = useState(false);
+  const { loginAdmin } = useAdminSession();
+  const { actor } = useActor();
+  const { login, loginStatus, identity } = useInternetIdentity();
 
-  useEffect(() => {
-    if (isAuthenticated && !adminLoading && !profileLoading) {
-      if (isAdmin) {
-        navigate({ to: '/admin' });
-      } else {
-        navigate({ to: '/', search: { category: undefined } });
-      }
-    }
-  }, [isAuthenticated, isAdmin, adminLoading, profileLoading, navigate]);
+  const isAdminMode = mode === 'admin';
 
-  const handleLogin = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleAdminFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsSubmitting(true);
+
     try {
-      login();
-    } catch (error) {
-      toast.error('Login failed. Please try again.');
+      if (!actor) {
+        setError('Backend not available. Please try again.');
+        return;
+      }
+
+      // Call backend login to assign admin role to caller's principal
+      await actor.login(username, password);
+
+      // Store session + credentials for re-auth on page refresh
+      loginAdmin(username, password);
+
+      navigate({ to: '/admin' });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes('Invalid username or password')) {
+        setError('Invalid username or password');
+      } else {
+        setError('Login failed. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4 shadow-purple">
-            <Printer className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <h1 className="text-3xl font-bold text-foreground font-display">PrintCraft Studio</h1>
-          <p className="text-muted-foreground mt-2">Premium Personalized Printing</p>
-        </div>
+  const handleUserLogin = async () => {
+    if (identity) {
+      navigate({ to: redirect || '/', search: { category: undefined } });
+      return;
+    }
+    try {
+      await login();
+      navigate({ to: redirect || '/', search: { category: undefined } });
+    } catch (err) {
+      console.error('Login error:', err);
+    }
+  };
 
-        {/* Card */}
-        <div className="bg-card rounded-3xl shadow-card-hover p-8 border border-border">
-          <h2 className="text-2xl font-bold text-foreground mb-2">Welcome back</h2>
-          <p className="text-muted-foreground mb-6 text-sm">
-            Sign in with Internet Identity to continue
-          </p>
+  if (isAdminMode) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardHeader className="text-center pb-2">
+            <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+              <Lock className="w-8 h-8 text-primary" />
+            </div>
+            <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
+            <CardDescription>Sign in to access the admin panel</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <form onSubmit={handleAdminFormSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="username"
+                    type="text"
+                    placeholder="Enter username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="pl-10"
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
 
-          <div className="space-y-4">
-            <Button
-              className="w-full bg-primary text-primary-foreground hover:opacity-90 rounded-xl h-12 text-base font-semibold shadow-purple"
-              onClick={handleLogin}
-              disabled={isLoggingIn}
-            >
-              {isLoggingIn ? (
-                <span className="flex items-center gap-2">
-                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent" />
-                  Connecting...
-                </span>
-              ) : (
-                'Login with Internet Identity'
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 pr-10"
+                    required
+                    disabled={isSubmitting}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-2 text-destructive text-sm bg-destructive/10 p-3 rounded-md">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
               )}
-            </Button>
-          </div>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              New to PrintCraft?{' '}
-              <button
-                onClick={() => navigate({ to: '/create-account' })}
-                className="text-primary font-semibold hover:underline"
-              >
-                Create Account
-              </button>
-            </p>
-          </div>
-
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => navigate({ to: '/forgot-password' })}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              Forgot password?
-            </button>
-          </div>
-        </div>
-
-        {/* Info */}
-        <div className="mt-6 bg-card/50 rounded-2xl p-4 border border-border">
-          <p className="text-xs text-muted-foreground text-center">
-            🔒 Secured by Internet Identity — your privacy is protected
-          </p>
-        </div>
+              <Button type="submit" className="w-full" disabled={isSubmitting || !actor}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
+    );
+  }
+
+  // Regular user login via Internet Identity
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="text-center pb-2">
+          <div className="mx-auto mb-4 w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+            <User className="w-8 h-8 text-primary" />
+          </div>
+          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+          <CardDescription>Sign in to your account to continue</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-4 space-y-4">
+          <Button
+            onClick={handleUserLogin}
+            className="w-full"
+            disabled={loginStatus === 'logging-in'}
+          >
+            {loginStatus === 'logging-in' ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Signing in...
+              </>
+            ) : identity ? (
+              'Continue to Store'
+            ) : (
+              'Sign In'
+            )}
+          </Button>
+
+          <p className="text-center text-sm text-muted-foreground">
+            Don't have an account?{' '}
+            <button
+              onClick={() => navigate({ to: '/create-account' })}
+              className="text-primary hover:underline font-medium"
+            >
+              Create one
+            </button>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

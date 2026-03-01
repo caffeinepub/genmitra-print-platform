@@ -14,7 +14,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '../../hooks/useAuth';
+import { useAdminSession } from '../../hooks/useAdminSession';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -31,14 +31,13 @@ const navItems = [
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { logout, userProfile } = useAuth();
+  const { logoutAdmin } = useAdminSession();
   const navigate = useNavigate();
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
 
-  const handleLogout = async () => {
-    await logout();
-    // Navigate to home after logout since /login may not always be registered
+  const handleLogout = () => {
+    logoutAdmin();
     navigate({ to: '/', search: { category: undefined } });
   };
 
@@ -104,7 +103,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="px-3 py-4 border-t border-border space-y-2">
           <div className="px-3 py-2">
             <p className="text-xs font-semibold text-foreground truncate">
-              {userProfile?.username || 'Admin'}
+              Admin
             </p>
             <p className="text-xs text-muted-foreground">Administrator</p>
           </div>

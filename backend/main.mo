@@ -4,15 +4,15 @@ import MixinStorage "blob-storage/Mixin";
 import Map "mo:core/Map";
 import Set "mo:core/Set";
 import Array "mo:core/Array";
-import Iter "mo:core/Iter";
 import Text "mo:core/Text";
+import Iter "mo:core/Iter";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Float "mo:core/Float";
 import Time "mo:core/Time";
+import Migration "migration";
 
-
-
+(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -26,8 +26,8 @@ actor {
     price : Float;
     description : Text;
     sizeOptions : [Text];
-    imageData : Text;
-    templateImageData : Text;
+    imageData : Text; // Base64 image as Text
+    templateImageData : Text; // Base64 image as Text
     deliveryTime : Text;
     category : Text;
     dpiSettings : Nat;
@@ -36,7 +36,7 @@ actor {
   public type Template = {
     id : Text;
     name : Text;
-    imageData : Text;
+    imageData : Text; // Base64 image as Text
     photoSlots : Nat;
     dpiSettings : Nat;
     previewData : Text;
@@ -88,6 +88,11 @@ actor {
     createdAt : Int;
   };
 
+  public type User = {
+    password : Text;
+    role : Text;
+  };
+
   // ---- Stable Storage ----
 
   let userProfiles = Map.empty<Principal, UserProfile>();
@@ -99,6 +104,49 @@ actor {
   let availablePincodes = Set.empty<Text>();
   let userAddresses = Map.empty<Principal, ShippingAddress>();
   let selectedSizes = Map.empty<Principal, Text>();
+  var users : Map.Map<Text, User> = Map.empty<Text, User>();
+
+  // ---- Seed User Initialization ----
+
+  func upsertSeedUsers() {
+    users.add("genmitra", { password = "12345678"; role = "admin" });
+    users.add("admin", { password = "Admin@1234"; role = "admin" });
+    users.add("user", { password = "1234"; role = "user" });
+  };
+
+  system func preupgrade() {};
+  system func postupgrade() { upsertSeedUsers() };
+
+  // ---- Authentication (Login / Logout) ----
+
+  /// Login with username and password. On success, assigns the caller's principal
+  /// the role stored in the users map (admin or user) via AccessControl.
+  public shared ({ caller }) func login(username : Text, password : Text) : async Text {
+    switch (users.get(username)) {
+      case (null) { Runtime.trap("Invalid username or password") };
+      case (?user) {
+        if (user.password != password) {
+          Runtime.trap("Invalid username or password");
+        };
+        // Assign the appropriate role to the caller's principal
+        let role : AccessControl.UserRole = if (user.role == "admin") { #admin } else { #user };
+        AccessControl.assignRole(accessControlState, caller, caller, role);
+        "Login successful";
+      };
+    };
+  };
+
+  /// Logout: demote the caller's principal back to guest role.
+  public shared ({ caller }) func logout() : async () {
+    // Only act if the caller has at least user-level access
+    if (AccessControl.hasPermission(accessControlState, caller, #user)) {
+      // Assign guest role by having an admin (the caller if admin, or self-demotion)
+      // We use assignRole; if caller is admin they can assign themselves
+      if (AccessControl.isAdmin(accessControlState, caller)) {
+        AccessControl.assignRole(accessControlState, caller, caller, #guest);
+      };
+    };
+  };
 
   // ---- User Profile Functions (required by frontend) ----
 
@@ -138,6 +186,20 @@ actor {
     products.add(productInfo.id, productInfo);
   };
 
+  public shared ({ caller }) func createProduct(product : ProductInfo) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can create products");
+    };
+    products.add(product.id, product);
+  };
+
+  public shared ({ caller }) func updateProduct(productInfo : ProductInfo) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can update products");
+    };
+    products.add(productInfo.id, productInfo);
+  };
+
   public shared ({ caller }) func deleteProduct(productId : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can delete products");
@@ -165,6 +227,20 @@ actor {
   public shared ({ caller }) func addOrUpdateTemplate(template : Template) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can manage templates");
+    };
+    templates.add(template.id, template);
+  };
+
+  public shared ({ caller }) func createTemplate(template : Template) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can create templates");
+    };
+    templates.add(template.id, template);
+  };
+
+  public shared ({ caller }) func updateTemplate(template : Template) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can update templates");
     };
     templates.add(template.id, template);
   };

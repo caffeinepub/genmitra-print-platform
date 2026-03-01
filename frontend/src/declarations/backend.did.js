@@ -122,6 +122,8 @@ export const idlService = IDL.Service({
   'assignUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'clearCart' : IDL.Func([], [], []),
   'createOrder' : IDL.Func([IDL.Text, ShippingAddress], [IDL.Text], []),
+  'createProduct' : IDL.Func([ProductInfo], [], []),
+  'createTemplate' : IDL.Func([Template], [], []),
   'deleteProduct' : IDL.Func([IDL.Text], [], []),
   'deleteTemplate' : IDL.Func([IDL.Text], [], []),
   'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
@@ -169,6 +171,8 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'isPincodeAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+  'login' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
+  'logout' : IDL.Func([], [], []),
   'removeFromCart' : IDL.Func([IDL.Text], [], []),
   'removePincode' : IDL.Func([IDL.Text], [], []),
   'saveAddress' : IDL.Func([ShippingAddress], [], []),
@@ -177,6 +181,8 @@ export const idlService = IDL.Service({
   'setProductionFileData' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'trackOrder' : IDL.Func([IDL.Text], [Order], ['query']),
   'updateOrderStatus' : IDL.Func([IDL.Text, OrderStatus], [], []),
+  'updateProduct' : IDL.Func([ProductInfo], [], []),
+  'updateTemplate' : IDL.Func([Template], [], []),
 });
 
 export const idlInitArgs = [];
@@ -296,6 +302,8 @@ export const idlFactory = ({ IDL }) => {
     'assignUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'clearCart' : IDL.Func([], [], []),
     'createOrder' : IDL.Func([IDL.Text, ShippingAddress], [IDL.Text], []),
+    'createProduct' : IDL.Func([ProductInfo], [], []),
+    'createTemplate' : IDL.Func([Template], [], []),
     'deleteProduct' : IDL.Func([IDL.Text], [], []),
     'deleteTemplate' : IDL.Func([IDL.Text], [], []),
     'getAllOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
@@ -343,6 +351,8 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'isPincodeAvailable' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+    'login' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
+    'logout' : IDL.Func([], [], []),
     'removeFromCart' : IDL.Func([IDL.Text], [], []),
     'removePincode' : IDL.Func([IDL.Text], [], []),
     'saveAddress' : IDL.Func([ShippingAddress], [], []),
@@ -351,6 +361,8 @@ export const idlFactory = ({ IDL }) => {
     'setProductionFileData' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'trackOrder' : IDL.Func([IDL.Text], [Order], ['query']),
     'updateOrderStatus' : IDL.Func([IDL.Text, OrderStatus], [], []),
+    'updateProduct' : IDL.Func([ProductInfo], [], []),
+    'updateTemplate' : IDL.Func([Template], [], []),
   });
 };
 

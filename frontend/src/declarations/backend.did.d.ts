@@ -108,6 +108,8 @@ export interface _SERVICE {
   'assignUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'clearCart' : ActorMethod<[], undefined>,
   'createOrder' : ActorMethod<[string, ShippingAddress], string>,
+  'createProduct' : ActorMethod<[ProductInfo], undefined>,
+  'createTemplate' : ActorMethod<[Template], undefined>,
   'deleteProduct' : ActorMethod<[string], undefined>,
   'deleteTemplate' : ActorMethod<[string], undefined>,
   'getAllOrders' : ActorMethod<[], Array<Order>>,
@@ -136,6 +138,15 @@ export interface _SERVICE {
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isPincodeAvailable' : ActorMethod<[string], boolean>,
+  /**
+   * / Login with username and password. On success, assigns the caller's principal
+   * / the role stored in the users map (admin or user) via AccessControl.
+   */
+  'login' : ActorMethod<[string, string], string>,
+  /**
+   * / Logout: demote the caller's principal back to guest role.
+   */
+  'logout' : ActorMethod<[], undefined>,
   'removeFromCart' : ActorMethod<[string], undefined>,
   'removePincode' : ActorMethod<[string], undefined>,
   'saveAddress' : ActorMethod<[ShippingAddress], undefined>,
@@ -144,6 +155,8 @@ export interface _SERVICE {
   'setProductionFileData' : ActorMethod<[string, string], undefined>,
   'trackOrder' : ActorMethod<[string], Order>,
   'updateOrderStatus' : ActorMethod<[string, OrderStatus], undefined>,
+  'updateProduct' : ActorMethod<[ProductInfo], undefined>,
+  'updateTemplate' : ActorMethod<[Template], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

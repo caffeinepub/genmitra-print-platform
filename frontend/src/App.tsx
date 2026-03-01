@@ -1,8 +1,9 @@
-import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet } from '@tanstack/react-router';
+import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet, redirect } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { Toaster } from '@/components/ui/sonner';
 import Layout from './components/Layout';
 import AdminLayout from './components/admin/AdminLayout';
+import AdminGuard from './components/admin/AdminGuard';
 
 // Pages
 import LoginPage from './pages/LoginPage';
@@ -33,7 +34,6 @@ const ALLOWED_ORIGINS = [
 
 function OriginHandler() {
   useEffect(() => {
-    // Notify parent frame that the app is ready (for Caffeine draft/preview embedding)
     if (window.parent && window.parent !== window) {
       try {
         window.parent.postMessage({ type: 'app-ready', origin: window.location.origin }, '*');
@@ -49,9 +49,7 @@ function OriginHandler() {
         event.origin === 'null' ||
         event.origin === '';
 
-      if (!isAllowed) {
-        return;
-      }
+      if (!isAllowed) return;
 
       if (event.data && (event.data.type === 'ping' || event.data.type === 'draft-editor:ping')) {
         try {
@@ -86,6 +84,10 @@ const rootRoute = createRootRoute({
 const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/login',
+  validateSearch: (search: Record<string, unknown>) => ({
+    mode: typeof search.mode === 'string' ? search.mode : undefined,
+    redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
+  }),
   component: LoginPage,
 });
 
@@ -163,14 +165,16 @@ const orderDetailRoute = createRoute({
   component: OrderDetailPage,
 });
 
-// Admin layout routes
+// Admin layout routes — wrapped with AdminGuard
 const adminLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'admin-layout',
   component: () => (
-    <AdminLayout>
-      <Outlet />
-    </AdminLayout>
+    <AdminGuard>
+      <AdminLayout>
+        <Outlet />
+      </AdminLayout>
+    </AdminGuard>
   ),
 });
 

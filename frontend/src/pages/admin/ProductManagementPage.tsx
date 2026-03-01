@@ -1,384 +1,502 @@
 import React, { useState, useRef } from 'react';
-import { Plus, Pencil, Trash2, X, Package, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Image, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useGetAllProducts, useAddOrUpdateProduct, useDeleteProduct } from '../../hooks/useQueries';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { useGetAllProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '../../hooks/useQueries';
 import type { ProductInfo } from '../../backend';
 
-const CATEGORIES = [
-  'Photo Frames',
-  'Photo Prints',
-  'Photo Magnets',
-  'Mugs',
-  'Corporate Gifts',
-  'Posters',
-  'Photobooks',
-];
+const CATEGORIES = ['Photo Frames', 'Mugs', 'Photo Prints', 'Photo Magnets', 'Corporate Gifts'];
 
-const emptyProduct: ProductInfo = {
-  id: '',
+const emptyProduct = (): Omit<ProductInfo, 'id'> => ({
   name: '',
-  description: '',
   price: 0,
-  category: 'Photo Frames',
+  description: '',
   sizeOptions: [],
   imageData: '',
   templateImageData: '',
-  deliveryTime: '3-5 days',
+  deliveryTime: '5-7 business days',
+  category: CATEGORIES[0],
   dpiSettings: BigInt(300),
-};
+});
 
-function ImageUploadField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (base64: string) => void;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+function compressImageToBase64(file: File, maxPx = 800, quality = 0.75): Promise<string> {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      onChange(reader.result as string);
+    reader.onload = (e) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        if (width > maxPx || height > maxPx) {
+          if (width > height) {
+            height = Math.round((height * maxPx) / width);
+            width = maxPx;
+          } else {
+            width = Math.round((width * maxPx) / height);
+            height = maxPx;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject(new Error('Canvas context unavailable'));
+        ctx.drawImage(img, 0, 0, width, height);
+        const base64 = canvas.toDataURL('image/jpeg', quality);
+        resolve(base64);
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
     };
+    reader.onerror = reject;
     reader.readAsDataURL(file);
-  };
-
-  return (
-    <div>
-      <Label>{label}</Label>
-      <div className="mt-1 space-y-2">
-        {value ? (
-          <div className="relative w-full h-32 rounded-xl overflow-hidden border border-border bg-secondary">
-            <img src={value} alt="Preview" className="w-full h-full object-cover" />
-            <button
-              type="button"
-              onClick={() => onChange('')}
-              className="absolute top-2 right-2 bg-foreground/70 text-background rounded-full p-1 hover:bg-foreground transition-colors"
-            >
-              <X className="h-3 w-3" />
-            </button>
-          </div>
-        ) : (
-          <div
-            className="w-full h-32 rounded-xl border-2 border-dashed border-border bg-secondary/40 flex flex-col items-center justify-center cursor-pointer hover:bg-secondary/70 transition-colors"
-            onClick={() => inputRef.current?.click()}
-          >
-            <Upload className="h-6 w-6 text-muted-foreground mb-1" />
-            <span className="text-xs text-muted-foreground">Click to upload image</span>
-          </div>
-        )}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-full rounded-xl gap-2"
-          onClick={() => inputRef.current?.click()}
-        >
-          <Upload className="h-3.5 w-3.5" />
-          {value ? 'Change Image' : 'Upload Image'}
-        </Button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleFileChange}
-        />
-      </div>
-    </div>
-  );
+  });
 }
 
 export default function ProductManagementPage() {
-  const { data: products, isLoading } = useGetAllProducts();
-  const addOrUpdate = useAddOrUpdateProduct();
+  const { data: products = [], isLoading } = useGetAllProducts();
+  const createProduct = useCreateProduct();
+  const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
 
-  const [showForm, setShowForm] = useState(false);
-  const [editProduct, setEditProduct] = useState<ProductInfo>(emptyProduct);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ProductInfo | null>(null);
+  const [formData, setFormData] = useState<Omit<ProductInfo, 'id'>>(emptyProduct());
   const [sizeInput, setSizeInput] = useState('');
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [templateImagePreview, setTemplateImagePreview] = useState<string>('');
+  const [isCompressing, setIsCompressing] = useState(false);
 
-  const handleEdit = (product: ProductInfo) => {
-    setEditProduct(product);
-    setSizeInput(product.sizeOptions.join(', '));
-    setShowForm(true);
-  };
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const templateImageInputRef = useRef<HTMLInputElement>(null);
 
-  const handleNew = () => {
-    setEditProduct({ ...emptyProduct, id: `prod-${Date.now()}` });
+  const openCreate = () => {
+    setEditingProduct(null);
+    setFormData(emptyProduct());
     setSizeInput('');
-    setShowForm(true);
+    setImagePreview('');
+    setTemplateImagePreview('');
+    setIsModalOpen(true);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
+  const openEdit = (product: ProductInfo) => {
+    setEditingProduct(product);
+    setFormData({
+      name: product.name,
+      price: product.price,
+      description: product.description,
+      sizeOptions: [...product.sizeOptions],
+      imageData: product.imageData,
+      templateImageData: product.templateImageData,
+      deliveryTime: product.deliveryTime,
+      category: product.category,
+      dpiSettings: product.dpiSettings,
+    });
+    setSizeInput('');
+    setImagePreview(product.imageData || '');
+    setTemplateImagePreview(product.templateImageData || '');
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingProduct(null);
+    setFormData(emptyProduct());
+    setSizeInput('');
+    setImagePreview('');
+    setTemplateImagePreview('');
+  };
+
+  const handleImageFile = async (file: File, field: 'imageData' | 'templateImageData') => {
+    setIsCompressing(true);
+    try {
+      const base64 = await compressImageToBase64(file, 800, 0.75);
+      if (field === 'imageData') {
+        setFormData(prev => ({ ...prev, imageData: base64 }));
+        setImagePreview(base64);
+      } else {
+        setFormData(prev => ({ ...prev, templateImageData: base64 }));
+        setTemplateImagePreview(base64);
+      }
+    } catch {
+      toast.error('Failed to process image. Please try again.');
+    } finally {
+      setIsCompressing(false);
+    }
+  };
+
+  const addSize = () => {
+    const trimmed = sizeInput.trim();
+    if (trimmed && !formData.sizeOptions.includes(trimmed)) {
+      setFormData(prev => ({ ...prev, sizeOptions: [...prev.sizeOptions, trimmed] }));
+      setSizeInput('');
+    }
+  };
+
+  const removeSize = (size: string) => {
+    setFormData(prev => ({ ...prev, sizeOptions: prev.sizeOptions.filter(s => s !== size) }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editProduct.name.trim()) {
-      toast.error('Product name is required');
+
+    if (!formData.name.trim()) {
+      toast.error('Product name is required.');
       return;
     }
+    if (!formData.imageData) {
+      toast.error('Product image is required.');
+      return;
+    }
+    if (formData.price <= 0) {
+      toast.error('Price must be greater than 0.');
+      return;
+    }
+
+    const productPayload: ProductInfo = {
+      id: editingProduct ? editingProduct.id : `product_${Date.now()}`,
+      name: formData.name.trim(),
+      price: formData.price,
+      description: formData.description.trim(),
+      sizeOptions: formData.sizeOptions,
+      imageData: formData.imageData,
+      templateImageData: formData.templateImageData,
+      deliveryTime: formData.deliveryTime.trim() || '5-7 business days',
+      category: formData.category,
+      dpiSettings: formData.dpiSettings,
+    };
+
     try {
-      const sizes = sizeInput
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-      await addOrUpdate.mutateAsync({ ...editProduct, sizeOptions: sizes });
-      toast.success('Product saved!');
-      setShowForm(false);
-    } catch {
-      toast.error('Failed to save product');
+      if (editingProduct) {
+        await updateProduct.mutateAsync(productPayload);
+        toast.success('Product updated successfully!');
+      } else {
+        await createProduct.mutateAsync(productPayload);
+        toast.success('Product created successfully!');
+      }
+      closeModal();
+    } catch (err: any) {
+      const message = err?.message || 'Unknown error';
+      toast.error(`Failed to save product: ${message}`);
     }
   };
 
   const handleDelete = async (productId: string) => {
-    if (!confirm('Delete this product?')) return;
+    if (!window.confirm('Are you sure you want to delete this product?')) return;
     try {
       await deleteProduct.mutateAsync(productId);
-      toast.success('Product deleted');
-    } catch {
-      toast.error('Failed to delete product');
+      toast.success('Product deleted successfully!');
+    } catch (err: any) {
+      const message = err?.message || 'Unknown error';
+      toast.error(`Failed to delete product: ${message}`);
     }
   };
 
+  const isSaving = createProduct.isPending || updateProduct.isPending;
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-6">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-foreground font-display">Products</h2>
+          <h1 className="text-2xl font-bold text-foreground">Product Management</h1>
           <p className="text-muted-foreground mt-1">Manage your product catalog</p>
         </div>
-        <Button
-          className="bg-primary text-primary-foreground hover:opacity-90 rounded-xl gap-2"
-          onClick={handleNew}
-        >
-          <Plus className="h-4 w-4" />
+        <Button onClick={openCreate} className="flex items-center gap-2">
+          <Plus className="w-4 h-4" />
           Add Product
         </Button>
       </div>
 
-      {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-foreground/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-card rounded-3xl shadow-card-hover border border-border w-full max-w-lg my-4">
-            <div className="flex items-center justify-between p-6 border-b border-border">
-              <h3 className="font-bold text-foreground text-lg">
-                {editProduct.id && products?.find((p) => p.id === editProduct.id)
-                  ? 'Edit Product'
-                  : 'New Product'}
-              </h3>
-              <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <form onSubmit={handleSave} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-              <div>
-                <Label>Name *</Label>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      ) : products.length === 0 ? (
+        <div className="text-center py-16 text-muted-foreground">
+          <Image className="w-12 h-12 mx-auto mb-4 opacity-40" />
+          <p className="text-lg font-medium">No products yet</p>
+          <p className="text-sm mt-1">Click "Add Product" to create your first product.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {products.map((product) => (
+            <Card key={product.id} className="overflow-hidden">
+              <div className="aspect-square bg-muted relative">
+                {product.imageData ? (
+                  <img
+                    src={product.imageData}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Image className="w-10 h-10 text-muted-foreground opacity-40" />
+                  </div>
+                )}
+              </div>
+              <CardContent className="p-3">
+                <h3 className="font-semibold text-sm truncate">{product.name}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{product.category}</p>
+                <p className="text-sm font-bold text-primary mt-1">₹{product.price.toFixed(2)}</p>
+                <div className="flex gap-2 mt-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => openEdit(product)}
+                  >
+                    <Edit className="w-3 h-3 mr-1" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(product.id)}
+                    disabled={deleteProduct.isPending}
+                  >
+                    {deleteProduct.isPending ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-3 h-3" />
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <Dialog open={isModalOpen} onOpenChange={(open) => { if (!open) closeModal(); }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <Label htmlFor="productName">Product Name *</Label>
                 <Input
-                  value={editProduct.name}
-                  onChange={(e) => setEditProduct({ ...editProduct, name: e.target.value })}
-                  placeholder="Product name"
-                  className="mt-1 rounded-xl"
-                  required
+                  id="productName"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g. Classic Photo Frame"
+                  className="mt-1"
                 />
               </div>
+
               <div>
-                <Label>Description</Label>
-                <textarea
-                  value={editProduct.description}
-                  onChange={(e) => setEditProduct({ ...editProduct, description: e.target.value })}
-                  placeholder="Product description"
-                  className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+                <Label htmlFor="productPrice">Price (₹) *</Label>
+                <Input
+                  id="productPrice"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={formData.price}
+                  onChange={(e) => setFormData(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="productCategory">Category</Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(val) => setFormData(prev => ({ ...prev, category: val }))}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="col-span-2">
+                <Label htmlFor="productDescription">Description</Label>
+                <Textarea
+                  id="productDescription"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Product description..."
+                  className="mt-1"
                   rows={3}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Price (₹) *</Label>
-                  <Input
-                    type="number"
-                    value={editProduct.price}
-                    onChange={(e) =>
-                      setEditProduct({ ...editProduct, price: parseFloat(e.target.value) || 0 })
-                    }
-                    className="mt-1 rounded-xl"
-                    min={0}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label>Category</Label>
-                  <select
-                    value={editProduct.category}
-                    onChange={(e) => setEditProduct({ ...editProduct, category: e.target.value })}
-                    className="mt-1 w-full px-3 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  >
-                    {CATEGORIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+
               <div>
-                <Label>Size Options (comma-separated)</Label>
+                <Label htmlFor="deliveryTime">Delivery Time</Label>
+                <Input
+                  id="deliveryTime"
+                  value={formData.deliveryTime}
+                  onChange={(e) => setFormData(prev => ({ ...prev, deliveryTime: e.target.value }))}
+                  placeholder="e.g. 5-7 business days"
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="dpiSettings">DPI Settings</Label>
+                <Input
+                  id="dpiSettings"
+                  type="number"
+                  min={72}
+                  max={1200}
+                  value={Number(formData.dpiSettings)}
+                  onChange={(e) => setFormData(prev => ({ ...prev, dpiSettings: BigInt(parseInt(e.target.value) || 300) }))}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+
+            {/* Size Options */}
+            <div>
+              <Label>Size Options</Label>
+              <div className="flex gap-2 mt-1">
                 <Input
                   value={sizeInput}
                   onChange={(e) => setSizeInput(e.target.value)}
-                  placeholder='5×7", 8×10", 11×14"'
-                  className="mt-1 rounded-xl"
+                  placeholder="e.g. 4x6, 5x7, 8x10"
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addSize(); } }}
                 />
+                <Button type="button" variant="outline" onClick={addSize}>Add</Button>
               </div>
-              <div>
-                <Label>Delivery Time</Label>
-                <Input
-                  value={editProduct.deliveryTime}
-                  onChange={(e) => setEditProduct({ ...editProduct, deliveryTime: e.target.value })}
-                  placeholder="3-5 days"
-                  className="mt-1 rounded-xl"
-                />
-              </div>
-              <div>
-                <Label>DPI Settings</Label>
-                <Input
-                  type="number"
-                  value={Number(editProduct.dpiSettings)}
-                  onChange={(e) =>
-                    setEditProduct({
-                      ...editProduct,
-                      dpiSettings: BigInt(parseInt(e.target.value) || 300),
-                    })
-                  }
-                  className="mt-1 rounded-xl"
-                  min={72}
-                  max={600}
-                />
-              </div>
+              {formData.sizeOptions.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.sizeOptions.map(size => (
+                    <span
+                      key={size}
+                      className="inline-flex items-center gap-1 bg-secondary text-secondary-foreground text-xs px-2 py-1 rounded-full"
+                    >
+                      {size}
+                      <button type="button" onClick={() => removeSize(size)}>
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
 
-              <ImageUploadField
-                label="Product Image"
-                value={editProduct.imageData}
-                onChange={(base64) => setEditProduct({ ...editProduct, imageData: base64 })}
+            {/* Product Image */}
+            <div>
+              <Label>Product Image *</Label>
+              <div
+                className="mt-1 border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors"
+                onClick={() => imageInputRef.current?.click()}
+              >
+                {imagePreview ? (
+                  <div className="relative">
+                    <img src={imagePreview} alt="Product" className="max-h-40 mx-auto rounded object-contain" />
+                    <button
+                      type="button"
+                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImagePreview('');
+                        setFormData(prev => ({ ...prev, imageData: '' }));
+                        if (imageInputRef.current) imageInputRef.current.value = '';
+                      }}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="py-4">
+                    <Image className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">Click to upload product image</p>
+                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WebP (max 800px)</p>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageFile(file, 'imageData');
+                }}
               />
+            </div>
 
-              <ImageUploadField
-                label="Template Image"
-                value={editProduct.templateImageData}
-                onChange={(base64) => setEditProduct({ ...editProduct, templateImageData: base64 })}
-              />
-
-              <div className="flex gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1 rounded-xl"
-                  onClick={() => setShowForm(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="flex-1 bg-primary text-primary-foreground hover:opacity-90 rounded-xl"
-                  disabled={addOrUpdate.isPending}
-                >
-                  {addOrUpdate.isPending ? 'Saving...' : 'Save Product'}
-                </Button>
+            {/* Template Image */}
+            <div>
+              <Label>Template Image</Label>
+              <div
+                className="mt-1 border-2 border-dashed border-border rounded-lg p-4 text-center cursor-pointer hover:border-primary transition-colors"
+                onClick={() => templateImageInputRef.current?.click()}
+              >
+                {templateImagePreview ? (
+                  <div className="relative">
+                    <img src={templateImagePreview} alt="Template" className="max-h-40 mx-auto rounded object-contain" />
+                    <button
+                      type="button"
+                      className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTemplateImagePreview('');
+                        setFormData(prev => ({ ...prev, templateImageData: '' }));
+                        if (templateImageInputRef.current) templateImageInputRef.current.value = '';
+                      }}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="py-4">
+                    <Image className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">Click to upload template overlay image</p>
+                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WebP (max 800px)</p>
+                  </div>
+                )}
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+              <input
+                ref={templateImageInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageFile(file, 'templateImageData');
+                }}
+              />
+            </div>
 
-      {/* Products Table */}
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-16 w-full rounded-xl" />
-          ))}
-        </div>
-      ) : !products || products.length === 0 ? (
-        <div className="bg-card rounded-2xl shadow-card border border-border p-12 text-center">
-          <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No products yet. Add your first product!</p>
-        </div>
-      ) : (
-        <div className="bg-card rounded-2xl shadow-card border border-border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-secondary/50">
-                <tr>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Product</th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Category</th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Price</th>
-                  <th className="text-left py-3 px-4 text-muted-foreground font-medium">Delivery</th>
-                  <th className="text-right py-3 px-4 text-muted-foreground font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((product) => (
-                  <tr key={product.id} className="border-t border-border hover:bg-secondary/20">
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-secondary shrink-0">
-                          {product.imageData ? (
-                            <img
-                              src={product.imageData}
-                              alt={product.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Package className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-medium text-foreground">{product.name}</p>
-                          <p className="text-xs text-muted-foreground truncate max-w-xs">
-                            {product.description}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-muted-foreground">{product.category}</td>
-                    <td className="py-3 px-4 font-medium text-foreground">₹{product.price}</td>
-                    <td className="py-3 px-4 text-muted-foreground">{product.deliveryTime}</td>
-                    <td className="py-3 px-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
-                          onClick={() => handleEdit(product)}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 rounded-lg hover:bg-destructive/10 hover:text-destructive"
-                          onClick={() => handleDelete(product.id)}
-                          disabled={deleteProduct.isPending}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+            <DialogFooter className="pt-2">
+              <Button type="button" variant="outline" onClick={closeModal} disabled={isSaving}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSaving || isCompressing}>
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : isCompressing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : editingProduct ? (
+                  'Update Product'
+                ) : (
+                  'Create Product'
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

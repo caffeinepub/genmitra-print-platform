@@ -92,7 +92,7 @@ export default function CreateAccountPage() {
             <p className="text-sm text-muted-foreground">
               Already have an account?{' '}
               <button
-                onClick={() => navigate({ to: '/login' })}
+                onClick={() => navigate({ to: '/login', search: { mode: undefined, redirect: undefined } })}
                 className="text-primary font-semibold hover:underline"
               >
                 Sign In

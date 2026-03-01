@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
               </p>
               <Button
                 className="w-full bg-primary text-primary-foreground hover:opacity-90 rounded-xl"
-                onClick={() => navigate({ to: '/login' })}
+                onClick={() => navigate({ to: '/login', search: { mode: undefined, redirect: undefined } })}
               >
                 Back to Login
               </Button>
@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
 
               <div className="mt-6 text-center">
                 <button
-                  onClick={() => navigate({ to: '/login' })}
+                  onClick={() => navigate({ to: '/login', search: { mode: undefined, redirect: undefined } })}
                   className="text-sm text-primary hover:underline flex items-center justify-center gap-1 w-full"
                 >
                   <ArrowLeft className="h-4 w-4" />

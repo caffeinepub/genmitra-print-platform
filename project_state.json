@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 13,
+  "projectStateVersion": 29,
   "summary": "Production-ready full-stack online printing and personalized gift platform (similar to Printo.in) with original branding. Frontend: Next.js 14, Tailwind CSS, Redux Toolkit, Fabric.js, PWA. Backend: Node.js + Express, PostgreSQL (Supabase), Sharp, Razorpay, WhatsApp API. Deployment: Vercel (frontend), Railway/Render (backend), Supabase (DB/storage).",
   "architectural_notes": [
     "Frontend: Next.js 14 + Tailwind CSS + Redux Toolkit + Fabric.js, deployed on Vercel",
@@ -10,14 +10,19 @@
     "Payments: Razorpay (UPI, cards, netbanking, COD) — India-focused",
     "Image processing: Sharp server-side for 300 DPI print file generation",
     "Admin credentials: username=genmitra password=12345678; User credentials: username=genmitra password=1234",
-    "CORS: Backend must whitelist all preview/deployment origins (e.g., *.caffeine.xyz) to prevent 'disallowed origin' errors in the editor"
+    "CORS: Backend must whitelist all preview/deployment origins (e.g., *.caffeine.xyz) to prevent 'disallowed origin' errors in the editor",
+    "Admin login must use custom username/password form (genmitra/12345678) only — Internet Identity (id.ai/identity.ic0.app) must NOT be triggered for /admin authentication flow"
   ],
   "known_issues": [
     "Navigation header links (Photo Prints, Photo Frames, Photo Magnets, Mugs, Corporate Gifts) and promo bar (orders above ₹999 / PRINT20 code) are not working",
     "Frame/product detail page not opening when clicked",
-    "'Disallowed origin' errors from draft-editor blocking functionality on https://sole-aqua-rc6-draft.caffeine.xyz — CORS not configured to allow this origin"
+    "'Disallowed origin' errors from draft-editor blocking functionality on https://sole-aqua-rc6-draft.caffeine.xyz — CORS not configured to allow this origin",
+    "Save functionality broken for both products and templates in admin panel — backend createProduct/updateProduct and createTemplate/updateTemplate calls not properly handling base64 image data from file upload controls",
+    "Admin gets 'Unauthorized: Only admins can manage products' error when saving products/templates even when logged in as admin — JWT role validation failing in backend middleware or token not attached correctly in frontend requests",
+    "Admin route /admin has no route guard — unauthenticated users can access the admin panel directly without logging in",
+    "Visiting /admin while logged out triggers Internet Identity (id.ai) instead of showing custom username/password login form — admin auth must bypass Internet Identity entirely"
   ],
-  "isFixRequest": true,
+  "isFixRequest": false,
   "existing_features": [
     {
       "id": "feature-implement-a-jwt-based-authentication-system-with-two-roles-user-and-admin-store-all-users-in-the-backend-motoko-actor-stable-storage-support-create-account-login-forgot-password-and-password-update-hardcoded-seed-credentials-user-username-genmitra-password-1234-and-admin-username-genmitra-password-12345678-after-login-route-users-to-the-main-website-and-admins-to-the-admin-panel",
@@ -178,6 +183,86 @@
         "REQ-25"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-fix-the-save-handler-in-frontend-src-pages-admin-productmanagementpage-tsx-so-that-when-the-admin-submits-the-product-form-the-base64-image-string-from-the-file-upload-control-is-correctly-included-in-the-createproduct-or-updateproduct-backend-call-payload-ensure-the-form-data-is-serialized-and-dispatched-without-dropping-the-image-field-and-display-a-success-or-error-toast-based-on-the-backend-response",
+      "title": "Fix the save handler in `frontend/src/pages/admin/ProductManagementPage.tsx` so that when the admin submits the product form, the base64 image string from the file upload control is correctly included in the `createProduct` or `updateProduct` backend call payload. Ensure the form data is serialized and dispatched without dropping the image field, and display a success or error toast based on the backend response.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-save-handler-in-frontend-src-pages-admin-templatemanagementpage-tsx-so-that-when-the-admin-submits-the-template-form-the-base64-image-strings-for-both-the-template-image-and-preview-image-file-upload-controls-are-correctly-included-in-the-createtemplate-or-updatetemplate-backend-call-payload-ensure-the-form-data-is-serialized-and-dispatched-without-dropping-any-image-field-and-display-a-success-or-error-toast-based-on-the-backend-response",
+      "title": "Fix the save handler in `frontend/src/pages/admin/TemplateManagementPage.tsx` so that when the admin submits the template form, the base64 image strings for both the template image and preview image file upload controls are correctly included in the `createTemplate` or `updateTemplate` backend call payload. Ensure the form data is serialized and dispatched without dropping any image field, and display a success or error toast based on the backend response.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-frontend-admin-panel-to-ensure-the-jwt-token-or-session-credential-representing-the-logged-in-admin-is-correctly-attached-to-every-backend-actor-call-made-from-frontend-src-pages-admin-productmanagementpage-tsx-and-frontend-src-pages-admin-templatemanagementpage-tsx-audit-useactor-ts-usage-in-these-pages-and-usequeries-ts-mutation-hooks-to-confirm-the-authenticated-actor-not-the-anonymous-actor-is-always-used-when-the-admin-is-logged-in-if-any-mutation-hook-is-accidentally-using-an-unauthenticated-actor-instance-fix-it-to-use-the-authenticated-one",
+      "title": "Fix the frontend admin panel to ensure the JWT token (or session credential) representing the logged-in admin is correctly attached to every backend actor call made from `frontend/src/pages/admin/ProductManagementPage.tsx` and `frontend/src/pages/admin/TemplateManagementPage.tsx`. Audit `useActor.ts` usage in these pages and `useQueries.ts` mutation hooks to confirm the authenticated actor (not the anonymous actor) is always used when the admin is logged in. If any mutation hook is accidentally using an unauthenticated actor instance, fix it to use the authenticated one.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-verify-and-fix-frontend-src-hooks-usequeries-ts-mutation-hooks-for-createtemplate-updatetemplate-deletetemplate-createproduct-updateproduct-and-deleteproduct-to-confirm-they-all-use-the-authenticated-actor-instance-if-any-mutation-hook-captures-or-defaults-to-an-unauthenticated-actor-update-it-to-derive-the-actor-from-the-authenticated-identity-context-so-the-caller-principal-is-always-the-logged-in-admin-principal",
+      "title": "Verify and fix `frontend/src/hooks/useQueries.ts` mutation hooks for `createTemplate`, `updateTemplate`, `deleteTemplate`, `createProduct`, `updateProduct`, and `deleteProduct` to confirm they all use the authenticated actor instance. If any mutation hook captures or defaults to an unauthenticated actor, update it to derive the actor from the authenticated identity context so the caller principal is always the logged-in admin principal.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-route-guard-for-all-admin-routes-e-g-admin-and-all-admin-sub-routes-in-frontend-src-app-tsx-so-that-any-unauthenticated-user-who-navigates-to-an-admin-url-is-immediately-redirected-to-the-login-page-instead-of-being-granted-direct-access",
+      "title": "Implement a route guard for all admin routes (e.g., /admin and all /admin/* sub-routes) in `frontend/src/App.tsx` so that any unauthenticated user who navigates to an admin URL is immediately redirected to the login page instead of being granted direct access.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-src-pages-loginpage-tsx-to-support-a-dedicated-admin-login-mode-when-a-user-arrives-at-the-login-page-redirected-from-an-admin-route-display-a-login-form-prompting-for-username-and-password-credentials-genmitra-12345678-on-successful-admin-authentication-redirect-the-user-back-to-the-originally-requested-admin-url-or-admin-by-default",
+      "title": "Update `frontend/src/pages/LoginPage.tsx` to support a dedicated admin login mode: when a user arrives at the login page redirected from an admin route, display a login form prompting for username and password credentials (genmitra / 12345678). On successful admin authentication, redirect the user back to the originally requested admin URL (or /admin by default).",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-src-pages-loginpage-tsx-so-that-when-a-user-is-redirected-to-the-login-page-from-any-admin-route-the-page-renders-only-the-custom-username-password-credentials-form-for-genmitra-12345678-it-must-not-trigger-display-or-link-to-internet-identity-id-ai-identity-ic0-app-in-this-admin-login-mode-the-admin-login-flow-must-be-entirely-credential-based-validate-the-entered-username-and-password-against-the-hardcoded-admin-credentials-set-the-admin-session-auth-state-on-success-and-redirect-the-user-to-admin-or-the-originally-requested-admin-url-internet-identity-should-remain-available-only-for-the-regular-user-login-flow-non-admin-redirect",
+      "title": "Update `frontend/src/pages/LoginPage.tsx` so that when a user is redirected to the login page from any `/admin` route, the page renders ONLY the custom username/password credentials form (for genmitra / 12345678). It must NOT trigger, display, or link to Internet Identity (id.ai / identity.ic0.app) in this admin login mode. The admin login flow must be entirely credential-based: validate the entered username and password against the hardcoded admin credentials, set the admin session/auth state on success, and redirect the user to `/admin` (or the originally requested admin URL). Internet Identity should remain available only for the regular user login flow (non-admin redirect).",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-frontend-src-components-admin-adminguard-tsx-to-ensure-it-does-not-invoke-or-initiate-any-internet-identity-authentication-flow-the-guard-must-only-check-the-local-auth-session-state-custom-credential-based-admin-session-and-redirect-to-the-login-page-if-the-user-is-not-authenticated-it-must-never-call-login-from-useinternetidentity-or-any-internet-identity-hook-as-part-of-the-guard-logic",
+      "title": "Audit `frontend/src/components/admin/AdminGuard.tsx` to ensure it does not invoke or initiate any Internet Identity authentication flow. The guard must only check the local auth/session state (custom credential-based admin session) and redirect to the login page if the user is not authenticated — it must never call `login()` from `useInternetIdentity` or any Internet Identity hook as part of the guard logic.",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-all-mutation-hooks-in-frontend-src-hooks-usequeries-ts-createtemplate-updatetemplate-deletetemplate-createproduct-updateproduct-deleteproduct-use-the-authenticated-actor-instance-derived-from-the-logged-in-admin-identity-context-not-an-anonymous-actor-the-caller-principal-passed-to-the-backend-must-match-the-stored-admin-principal",
+      "title": "Ensure all mutation hooks in frontend/src/hooks/useQueries.ts (createTemplate, updateTemplate, deleteTemplate, createProduct, updateProduct, deleteProduct) use the authenticated actor instance derived from the logged-in admin identity context, not an anonymous actor. The caller principal passed to the backend must match the stored admin principal.",
+      "reqIds": [
+        "REQ-41"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-confirm-that-frontend-src-pages-admin-templatemanagementpage-tsx-and-frontend-src-pages-admin-productmanagementpage-tsx-save-handlers-correctly-serialize-and-pass-the-base64-image-string-s-from-the-file-upload-control-s-into-the-createproduct-updateproduct-createtemplate-or-updatetemplate-backend-call-payload-and-display-a-success-or-error-toast-based-on-the-backend-response",
+      "title": "Confirm that frontend/src/pages/admin/TemplateManagementPage.tsx and frontend/src/pages/admin/ProductManagementPage.tsx save handlers correctly serialize and pass the base64 image string(s) from the file upload control(s) into the createProduct, updateProduct, createTemplate, or updateTemplate backend call payload, and display a success or error toast based on the backend response.",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -290,6 +375,112 @@
       "summary": "In the canvas-based customization editor (EditorPage.tsx) and any component that embeds or communicates with an iframe or postMessage-based draft editor, add the application origin 'https://sole-aqua-rc6-draft.caffeine.xyz' to the list of allowed origins. Ensure all postMessage calls and any origin-checking logic explicitly allow this origin so that 'disallowed origin' errors are eliminated.",
       "reqIds": [
         "REQ-24"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Audit and fix the backend Motoko actor (backend/main.mo) to ensure the `createProduct`, `updateProduct`, `createTemplate`, and `updateTemplate` functions correctly accept, store, and retrieve base64-encoded image strings. Verify that all product and template record types include appropriate `Text` fields for image data (not URL references), and that stable storage maps persist these values correctly across upgrades.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Fix 'Unauthorized: Only admins can manage products' error — admin JWT token not being correctly validated or passed when saving products/templates in the admin panel. Fix backend role-check middleware and ensure frontend attaches admin token correctly.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-29",
+      "summary": "Fix the backend role-check logic in `backend/main.mo` for the `createProduct`, `updateProduct`, `deleteProduct`, `createTemplate`, `updateTemplate`, and `deleteTemplate` functions. The current JWT/principal-based admin validation is incorrectly rejecting authenticated admin users. Audit how the caller's role is determined (e.g., lookup in the users stable map by principal), ensure the admin seed credential (username: genmitra, password: 12345678) is correctly stored with role 'admin' in stable storage on canister init/upgrade, and that the role check in each guarded function correctly reads from that stable map. The fix must allow a logged-in admin to save, update, and delete products and templates without receiving 'Unauthorized: Only admins can manage products'.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Audit and fix the backend `backend/main.mo` canister init and upgrade logic to guarantee the admin seed user (username: genmitra, password: 12345678) is stored with `role = \"admin\"` in stable storage every time the canister is initialized or upgraded. The seed must be upserted on `system func init()` and `system func postupgrade()` so it is never absent or overwritten with a non-admin role.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-31",
+      "summary": "Fix the role-check guard in every write-protected function in `backend/main.mo` — specifically `createProduct`, `updateProduct`, `deleteProduct`, `createTemplate`, `updateTemplate`, and `deleteTemplate` — so that the caller's role is determined by looking up the authenticated session/principal in the stable users map and comparing it to `\"admin\"`. Remove any broken JWT string parsing, principal mismatch, or stale in-memory lookup that causes valid admin sessions to be rejected with 'Unauthorized'.",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-32",
+      "summary": "Verify and fix `frontend/src/pages/admin/TemplateManagementPage.tsx` to ensure the authenticated actor instance (obtained via `useActor` with the logged-in identity) is used for every `createTemplate` and `updateTemplate` call. If the mutation currently uses an anonymous actor or calls the backend without the session credential attached, replace it with the authenticated actor so the backend receives the correct caller identity.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Fix admin route guard: visiting /admin without authentication must redirect to login page; only allow access after successful admin login (genmitra/12345678); block non-admin sessions from /admin",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-34",
+      "summary": "Ensure the backend canister (backend/main.mo) is fully initialized on deployment: the system func init() and system func postupgrade() must upsert the admin seed user (username: genmitra, password: 12345678, role: admin) and the regular user seed (username: genmitra, password: 1234, role: user) into stable storage so the canister starts in a running, seeded state after every deploy.",
+      "reqIds": [
+        "REQ-39"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-35",
+      "summary": "Verify that all write-protected backend functions (createProduct, updateProduct, deleteProduct, createTemplate, updateTemplate, deleteTemplate) correctly resolve the caller's role by looking up the caller's session principal in the stable users map and comparing it to 'admin'. Remove any stale in-memory lookups or broken JWT string parsing that would cause a valid admin session to be rejected.",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-36",
+      "summary": "Audit and fix the role-check logic in `backend/main.mo` for all write-protected functions (`createTemplate`, `updateTemplate`, `deleteTemplate`, `createProduct`, `updateProduct`, `deleteProduct`) so that the caller's role is resolved by looking up the caller's principal in the stable users map. Remove any broken JWT string parsing, stale in-memory lookups, or principal mismatch that causes valid admin sessions to be rejected with 'Unauthorized: Only admins can create templates' or similar messages.",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-37",
+      "summary": "Ensure that `system func init()` and `system func postupgrade()` in `backend/main.mo` upsert the admin seed user (username: genmitra, password: 12345678, role: 'admin') and the regular user seed (username: genmitra, password: 1234, role: 'user') into stable storage every time the canister is initialized or upgraded, so the seed credentials and their roles are never absent after a deploy.",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-38",
+      "summary": "Audit `frontend/src/hooks/useQueries.ts` mutation hooks for `createTemplate`, `updateTemplate`, `deleteTemplate`, `createProduct`, `updateProduct`, and `deleteProduct` to confirm each one uses the authenticated actor instance (derived from the logged-in admin identity context). If any hook captures an anonymous actor at definition time or defaults to an unauthenticated actor, update it to read the actor from the current authenticated identity so the backend receives the correct caller principal on every mutation call.",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-39",
+      "summary": "Add a second hardcoded admin seed account (username: admin, password: Admin@1234) in backend init/postupgrade alongside the existing genmitra admin",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-40",
+      "summary": "In `backend/main.mo`, add a second hardcoded admin seed account with username `admin` and password `Admin@1234` (role: `admin`) to both `system func init()` and `system func postupgrade()`. This account must be upserted into stable storage alongside the existing `genmitra` admin seed every time the canister is initialized or upgraded, so that logging in with username `admin` and password `Admin@1234` grants admin access.",
+      "reqIds": [
+        "REQ-46"
       ],
       "status": "pending"
     }
