@@ -1,0 +1,66 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Fix disallowed origin CORS errors in the canvas editor",
+  "requirements": [
+    {
+      "id": "REQ-24",
+      "summary": "Add 'https://sole-aqua-rc6-draft.caffeine.xyz' to allowed origins in the canvas editor (EditorPage.tsx) and any iframe/postMessage communication logic to eliminate 'disallowed origin' errors.",
+      "acceptanceCriteria": [
+        "No 'draft-editor:error disallowed origin' messages appear in the browser console when the editor page is loaded at https://sole-aqua-rc6-draft.caffeine.xyz.",
+        "The canvas customization editor loads and functions correctly (image upload, drag, zoom, rotation) without being blocked by origin checks.",
+        "postMessage communication between the editor and any parent frame (or vice versa) succeeds without origin errors.",
+        "The fix applies to all pages/components that trigger the disallowed origin error, not just a single file."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/EditorPage.tsx",
+          "operation": "modify",
+          "description": "Update any hardcoded origin whitelist arrays, window.addEventListener('message', ...) handlers with origin checks, or postMessage calls to explicitly include 'https://sole-aqua-rc6-draft.caffeine.xyz' as a permitted origin. Remove any origin filters that would block the Caffeine preview domain. Ensure all postMessage communication allows this origin."
+        }
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "summary": "Audit and update all frontend files for hardcoded origin whitelists, message event listeners with origin checks, and Content-Security-Policy meta tags to include 'https://sole-aqua-rc6-draft.caffeine.xyz' as a permitted origin.",
+      "acceptanceCriteria": [
+        "All origin whitelist arrays in the frontend include 'https://sole-aqua-rc6-draft.caffeine.xyz'.",
+        "No Content-Security-Policy meta tag in index.html blocks scripts, frames, or connect-src from the Caffeine preview domain.",
+        "Any message event listeners that reject unknown origins are updated to permit the Caffeine preview domain.",
+        "The application runs without CORS or origin-related console errors on the preview deployment."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/index.html",
+          "operation": "modify",
+          "description": "Review and update any Content-Security-Policy meta tags or other security headers that might restrict frame-src, script-src, or connect-src directives. Ensure 'https://sole-aqua-rc6-draft.caffeine.xyz' is not blocked by CSP rules."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Search for any window.addEventListener('message', ...) handlers, origin whitelist arrays, or postMessage calls in the router configuration or global event listeners. Update all such locations to include 'https://sole-aqua-rc6-draft.caffeine.xyz' as a permitted origin."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Check for any message event listeners or origin-checking logic in the main layout component. Update to permit 'https://sole-aqua-rc6-draft.caffeine.xyz' if any origin restrictions are present."
+        },
+        {
+          "path": "frontend/src/pages/ProductDetailPage.tsx",
+          "operation": "modify",
+          "description": "Audit for any postMessage or iframe communication that might navigate to or embed the editor. Update origin checks to allow 'https://sole-aqua-rc6-draft.caffeine.xyz'."
+        },
+        {
+          "path": "frontend/src/pages/CartPage.tsx",
+          "operation": "modify",
+          "description": "Review for any message event handlers or origin validation logic. Ensure 'https://sole-aqua-rc6-draft.caffeine.xyz' is permitted if any origin checks exist."
+        },
+        {
+          "path": "frontend/src/pages/admin/OrderManagementPage.tsx",
+          "operation": "modify",
+          "description": "Check for canvas-based production file generation or any iframe/postMessage logic that might interact with editor previews. Update origin whitelists to include 'https://sole-aqua-rc6-draft.caffeine.xyz'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-audit-the-entire-frontend-codebase-for-any-hardcoded-origin-whitelist-arrays-window-addeventlistener-message-handlers-with-origin-checks-or-content-security-policy-meta-tags-that-restrict-frame-script-sources-update-all-such-locations-to-include-https-sole-aqua-rc6-draft-caffeine-xyz-as-a-permitted-origin-and-remove-any-wildcard-or-overly-restrictive-origin-filters-that-would-block-the-deployed-caffeine-preview-domain",
+      "featureTitle": "Audit the entire frontend codebase for any hardcoded origin whitelist arrays, window.addEventListener('message', ...) handlers with origin checks, or Content-Security-Policy meta tags that restrict frame/script sources. Update all such locations to include 'https://sole-aqua-rc6-draft.caffeine.xyz' as a permitted origin, and remove any wildcard or overly restrictive origin filters that would block the deployed Caffeine preview domain.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/Layout.tsx",
+        "frontend/src/pages/ProductDetailPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "blob-storage@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-25"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

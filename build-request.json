@@ -1,0 +1,58 @@
+{
+  "kind": "build_request",
+  "title": "Fix disallowed origin CORS errors in the canvas editor",
+  "priority": "high",
+  "requirements": [
+    {
+      "id": "REQ-24",
+      "text": "In the canvas-based customization editor (EditorPage.tsx) and any component that embeds or communicates with an iframe or postMessage-based draft editor, add the application origin 'https://sole-aqua-rc6-draft.caffeine.xyz' to the list of allowed origins. Ensure all postMessage calls and any origin-checking logic explicitly allow this origin so that 'disallowed origin' errors are eliminated.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "draft-editor:error disallowed origin: https://sole-aqua-rc6-draft.caffeine.xyz"
+        ]
+      },
+      "acceptanceCriteria": [
+        "No 'draft-editor:error disallowed origin' messages appear in the browser console when the editor page is loaded at https://sole-aqua-rc6-draft.caffeine.xyz.",
+        "The canvas customization editor loads and functions correctly (image upload, drag, zoom, rotation) without being blocked by origin checks.",
+        "postMessage communication between the editor and any parent frame (or vice versa) succeeds without origin errors.",
+        "The fix applies to all pages/components that trigger the disallowed origin error, not just a single file."
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "text": "Audit the entire frontend codebase for any hardcoded origin whitelist arrays, window.addEventListener('message', ...) handlers with origin checks, or Content-Security-Policy meta tags that restrict frame/script sources. Update all such locations to include 'https://sole-aqua-rc6-draft.caffeine.xyz' as a permitted origin, and remove any wildcard or overly restrictive origin filters that would block the deployed Caffeine preview domain.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "fix all and allwo orgin"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All origin whitelist arrays in the frontend include 'https://sole-aqua-rc6-draft.caffeine.xyz'.",
+        "No Content-Security-Policy meta tag in index.html blocks scripts, frames, or connect-src from the Caffeine preview domain.",
+        "Any message event listeners that reject unknown origins are updated to permit the Caffeine preview domain.",
+        "The application runs without CORS or origin-related console errors on the preview deployment."
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not modify files listed in frontend.immutablePaths (useInternetIdentity.ts, useActor.ts, main.tsx, frontend/src/components/ui).",
+    "Do not alter backend CORS settings in main.mo — this is a frontend-only origin configuration fix."
+  ],
+  "nonGoals": [
+    "Changing backend canister security policies.",
+    "Adding new editor features or modifying editor functionality beyond fixing the origin error.",
+    "Changing the visual design or layout of any page."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

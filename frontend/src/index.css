@@ -1,0 +1,149 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.75rem;
+
+    /* Purple-based design system */
+    --background: 0.99 0 0;
+    --foreground: 0.15 0.02 285;
+
+    --card: 1 0 0;
+    --card-foreground: 0.15 0.02 285;
+
+    --popover: 1 0 0;
+    --popover-foreground: 0.15 0.02 285;
+
+    /* Primary: Deep purple */
+    --primary: 0.45 0.18 285;
+    --primary-foreground: 0.99 0 0;
+
+    /* Secondary: Light lavender */
+    --secondary: 0.95 0.03 285;
+    --secondary-foreground: 0.45 0.18 285;
+
+    --muted: 0.96 0.01 285;
+    --muted-foreground: 0.55 0.04 285;
+
+    /* Accent: Vibrant purple */
+    --accent: 0.92 0.06 285;
+    --accent-foreground: 0.35 0.18 285;
+
+    --destructive: 0.577 0.245 27.325;
+    --destructive-foreground: 0.985 0 0;
+
+    --border: 0.91 0.02 285;
+    --input: 0.91 0.02 285;
+    --ring: 0.55 0.18 285;
+
+    --chart-1: 0.55 0.22 285;
+    --chart-2: 0.65 0.18 310;
+    --chart-3: 0.70 0.15 260;
+    --chart-4: 0.75 0.12 320;
+    --chart-5: 0.60 0.20 270;
+
+    --sidebar: 0.97 0.02 285;
+    --sidebar-foreground: 0.15 0.02 285;
+    --sidebar-primary: 0.45 0.18 285;
+    --sidebar-primary-foreground: 0.99 0 0;
+    --sidebar-accent: 0.92 0.06 285;
+    --sidebar-accent-foreground: 0.35 0.18 285;
+    --sidebar-border: 0.91 0.02 285;
+    --sidebar-ring: 0.55 0.18 285;
+
+    /* Brand colors */
+    --brand-purple: oklch(0.45 0.18 285);
+    --brand-purple-light: oklch(0.65 0.14 285);
+    --brand-purple-dark: oklch(0.30 0.20 285);
+    --brand-purple-soft: oklch(0.95 0.04 285);
+    --brand-gold: oklch(0.78 0.15 75);
+  }
+
+  .dark {
+    --background: 0.12 0.02 285;
+    --foreground: 0.97 0.01 285;
+
+    --card: 0.17 0.03 285;
+    --card-foreground: 0.97 0.01 285;
+
+    --popover: 0.20 0.03 285;
+    --popover-foreground: 0.97 0.01 285;
+
+    --primary: 0.65 0.18 285;
+    --primary-foreground: 0.12 0.02 285;
+
+    --secondary: 0.22 0.04 285;
+    --secondary-foreground: 0.97 0.01 285;
+
+    --muted: 0.22 0.04 285;
+    --muted-foreground: 0.65 0.04 285;
+
+    --accent: 0.25 0.06 285;
+    --accent-foreground: 0.97 0.01 285;
+
+    --destructive: 0.704 0.191 22.216;
+    --destructive-foreground: 0.205 0 0;
+
+    --border: 1 0 0 / 10%;
+    --input: 1 0 0 / 15%;
+    --ring: 0.65 0.18 285;
+
+    --sidebar: 0.17 0.03 285;
+    --sidebar-foreground: 0.97 0.01 285;
+    --sidebar-primary: 0.65 0.18 285;
+    --sidebar-primary-foreground: 0.12 0.02 285;
+    --sidebar-accent: 0.22 0.04 285;
+    --sidebar-accent-foreground: 0.97 0.01 285;
+    --sidebar-border: 1 0 0 / 10%;
+    --sidebar-ring: 0.65 0.18 285;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:opacity-90 transition-all duration-200 rounded-xl px-6 py-3 font-semibold shadow-md hover:shadow-lg;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl;
+  }
+
+  .section-title {
+    @apply text-3xl font-bold text-foreground font-display;
+  }
+
+  .gradient-purple {
+    background: linear-gradient(135deg, oklch(0.45 0.18 285), oklch(0.55 0.20 310));
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

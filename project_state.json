@@ -1,0 +1,301 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 13,
+  "summary": "Production-ready full-stack online printing and personalized gift platform (similar to Printo.in) with original branding. Frontend: Next.js 14, Tailwind CSS, Redux Toolkit, Fabric.js, PWA. Backend: Node.js + Express, PostgreSQL (Supabase), Sharp, Razorpay, WhatsApp API. Deployment: Vercel (frontend), Railway/Render (backend), Supabase (DB/storage).",
+  "architectural_notes": [
+    "Frontend: Next.js 14 + Tailwind CSS + Redux Toolkit + Fabric.js, deployed on Vercel",
+    "Backend: Node.js + Express, deployed on Railway/Render",
+    "Database/Storage: Supabase PostgreSQL + Supabase Storage (or AWS S3)",
+    "Auth: JWT-based, dual-role (user vs admin) determined by credentials",
+    "Payments: Razorpay (UPI, cards, netbanking, COD) — India-focused",
+    "Image processing: Sharp server-side for 300 DPI print file generation",
+    "Admin credentials: username=genmitra password=12345678; User credentials: username=genmitra password=1234",
+    "CORS: Backend must whitelist all preview/deployment origins (e.g., *.caffeine.xyz) to prevent 'disallowed origin' errors in the editor"
+  ],
+  "known_issues": [
+    "Navigation header links (Photo Prints, Photo Frames, Photo Magnets, Mugs, Corporate Gifts) and promo bar (orders above ₹999 / PRINT20 code) are not working",
+    "Frame/product detail page not opening when clicked",
+    "'Disallowed origin' errors from draft-editor blocking functionality on https://sole-aqua-rc6-draft.caffeine.xyz — CORS not configured to allow this origin"
+  ],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-implement-a-jwt-based-authentication-system-with-two-roles-user-and-admin-store-all-users-in-the-backend-motoko-actor-stable-storage-support-create-account-login-forgot-password-and-password-update-hardcoded-seed-credentials-user-username-genmitra-password-1234-and-admin-username-genmitra-password-12345678-after-login-route-users-to-the-main-website-and-admins-to-the-admin-panel",
+      "title": "Implement a JWT-based authentication system with two roles: 'user' and 'admin'. Store all users in the backend (Motoko actor stable storage). Support: create account, login, forgot password, and password update. Hardcoded seed credentials: user (username: genmitra, password: 1234) and admin (username: genmitra, password: 12345678). After login, route users to the main website and admins to the admin panel.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-the-homepage-with-a-premium-clean-white-layout-shadows-rounded-corners-include-1-hero-banner-with-tagline-and-cta-2-product-category-grid-with-icons-for-photo-prints-photo-frames-photo-magnets-mugs-and-corporate-gifts-3-shop-frames-by-size-section-4-featured-products-carousel-grid-5-offers-promotions-banner",
+      "title": "Build the homepage with a premium, clean white layout (shadows, rounded corners). Include: (1) Hero banner with tagline and CTA, (2) Product category grid with icons for Photo Prints, Photo Frames, Photo Magnets, Mugs, and Corporate Gifts, (3) 'Shop Frames by Size' section, (4) Featured products carousel/grid, (5) Offers/promotions banner.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-product-detail-page-that-shows-product-image-preview-product-name-and-price-a-customize-now-button-linking-to-the-editor-a-delivery-pincode-checker-field-and-a-save-select-size-button-fetch-product-data-from-the-backend-by-product-id",
+      "title": "Build a product detail page that shows: product image preview, product name and price, a 'Customize Now' button linking to the editor, a delivery pincode checker field, and a 'Save & Select Size' button. Fetch product data from the backend by product ID.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-canva-like-live-customization-editor-for-products-use-a-canvas-based-approach-html5-canvas-with-react-state-supporting-image-upload-drag-to-reposition-inside-the-frame-boundary-zoom-in-out-rotation-crop-add-text-overlay-with-font-and-color-picker-portrait-landscape-orientation-toggle-real-time-preview-with-a-realistic-photo-frame-border-mockup-mobile-touch-gesture-support-pinch-zoom-drag-low-resolution-warning-when-uploaded-image-dpi-is-too-low-and-a-save-design-action-ui-layout-portrait-landscape-toggles-at-top-left-save-select-size-blue-button-at-top-right-large-centered-frame-preview-with-select-photo-upload-button-inside-until-photo-is-uploaded-after-upload-the-photo-fills-the-frame-and-is-fully-manipulable-within-the-frame-boundary",
+      "title": "Build a Canva-like live customization editor for products. Use a canvas-based approach (HTML5 Canvas with React state) supporting: image upload, drag-to-reposition inside the frame boundary, zoom in/out, rotation, crop, add text overlay with font and color picker, portrait/landscape orientation toggle, real-time preview with a realistic photo frame border mockup, mobile touch gesture support (pinch-zoom, drag), low-resolution warning when uploaded image DPI is too low, and a 'Save Design' action. UI layout: portrait/landscape toggles at top-left, 'Save & Select Size →' blue button at top-right, large centered frame preview with 'Select Photo' upload button inside until photo is uploaded. After upload, the photo fills the frame and is fully manipulable within the frame boundary.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-full-ecommerce-cart-and-checkout-flow-add-to-cart-with-quantity-selector-cart-page-showing-items-totals-checkout-page-with-shipping-address-form-razorpay-payment-integration-upi-cards-netbanking-and-cod-option-after-successful-payment-or-cod-order-create-an-order-record-in-the-backend",
+      "title": "Implement a full ecommerce cart and checkout flow: add-to-cart with quantity selector, cart page showing items/totals, checkout page with shipping address form, Razorpay payment integration (UPI, cards, netbanking), and COD option. After successful payment or COD order, create an order record in the backend.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-order-tracking-for-logged-in-users-users-can-view-their-order-history-with-statuses-new-processing-printed-shipped-delivered-each-order-shows-order-id-items-total-status-and-estimated-delivery",
+      "title": "Implement order tracking for logged-in users. Users can view their order history with statuses: New, Processing, Printed, Shipped, Delivered. Each order shows order ID, items, total, status, and estimated delivery.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-full-admin-panel-accessible-only-to-admin-role-users-include-1-dashboard-with-earnings-summary-2-product-management-create-edit-delete-products-with-fields-for-price-description-size-options-images-delivery-time-supporting-categories-photo-frames-magnets-posters-photobooks-corporate-kits-3-template-management-upload-frame-templates-set-photo-slots-dpi-settings-preview-template-4-order-management-list-all-orders-update-order-status-download-customer-uploaded-images-generate-300-dpi-final-print-file-download-production-zip-5-customer-management-list-users-view-order-history-per-user-6-settings-page-with-admin-access-control",
+      "title": "Build a full admin panel accessible only to admin-role users. Include: (1) Dashboard with earnings summary, (2) Product management: create/edit/delete products with fields for price, description, size options, images, delivery time — supporting categories: Photo Frames, Magnets, Posters, Photobooks, Corporate Kits, (3) Template management: upload frame templates, set photo slots, DPI settings, preview template, (4) Order management: list all orders, update order status, download customer-uploaded images, generate 300 DPI final print file, download production ZIP, (5) Customer management: list users, view order history per user, (6) Settings page with admin access control.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-faq-section-to-the-homepage-with-accordion-style-expand-collapse-use-a-two-column-layout-left-column-what-is-a-photo-frame-what-are-coloured-photo-frames-is-there-any-specific-quantity-is-there-any-picture-limit-for-a-collage-right-column-what-is-spotify-photo-frames-what-is-a-matte-finish-what-are-the-various-sizes-you-provide-what-is-a-canvas-print-each-item-has-a-toggle-icon-and-smooth-open-close-animation-provide-sensible-placeholder-answers-for-each-question",
+      "title": "Add a FAQ section to the homepage with accordion-style expand/collapse. Use a two-column layout. Left column: 'What is a photo frame?', 'What are coloured photo frames?', 'Is there any specific quantity?', 'Is there any picture limit for a collage?'. Right column: 'What is Spotify photo frames?', 'What is a matte finish?', 'What are the various sizes you provide?', 'What is a canvas print?'. Each item has a + toggle icon and smooth open/close animation. Provide sensible placeholder answers for each question.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-trust-features-section-to-the-homepage-showing-4-equally-spaced-blocks-with-icon-title-subtitle-1-google-review-4-5-star-customer-rating-with-google-icon-and-star-rating-display-2-nationwide-delivery-delivery-within-india-and-internationally-3-satisfaction-guaranteed-free-replacement-or-hassle-free-refund-without-questions-4-support-have-a-question-talk-to-us-today-use-a-purple-themed-minimal-icon-style",
+      "title": "Add a Trust Features section to the homepage showing 4 equally-spaced blocks with icon + title + subtitle: (1) 'Google Review' — '4.5 star customer rating' with Google icon and star rating display, (2) 'Nationwide Delivery' — 'Delivery within India and internationally', (3) 'Satisfaction Guaranteed' — 'Free replacement or hassle-free refund without questions', (4) 'Support' — 'Have a question? Talk to us today!'. Use a purple-themed minimal icon style.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-customer-reviews-section-to-the-homepage-show-overall-rating-summary-5-5-from-1-review-display-a-review-card-with-5-star-rating-date-thu-24-apr-2025-reviewer-arjun-saini-and-the-review-text-wanted-to-try-a-sample-so-i-ordered-a-smaller-frame-and-photo-but-the-quality-of-the-frame-and-the-photo-is-so-good-that-i-will-try-a-bigger-framed-photo-next-include-a-highest-to-lowest-sort-dropdown-and-prev-next-pagination-buttons",
+      "title": "Add a Customer Reviews section to the homepage. Show overall rating summary (5/5 from 1 review). Display a review card with: 5-star rating, date 'Thu, 24 Apr, 2025', reviewer 'Arjun Saini', and the review text: 'Wanted to try a sample, so I ordered a smaller frame and photo. But the quality of the frame and the photo is so good that I will try a bigger framed photo next.' Include a 'Highest to Lowest' sort dropdown and Prev/Next pagination buttons.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-professional-4-column-ecommerce-footer-column-1-find-stores-bangalore-gurgaon-new-delhi-chennai-hyderabad-pune-column-2-our-company-about-us-careers-blog-column-3-support-help-business-solutions-find-stores-my-account-track-order-column-4-important-links-privacy-policy-delivery-return-policy-terms-conditions-right-side-contact-info-phone-91-951-373-4374-email-care-printo-in-social-icons-instagram-facebook-x-linkedin-pinterest-payment-icons-visa-mastercard-upi-bottom-bar-2026-printo-document-services-pvt-ltd-all-rights-reserved",
+      "title": "Add a professional 4-column ecommerce footer. Column 1 — 'Find Stores': Bangalore, Gurgaon, New Delhi, Chennai, Hyderabad, Pune. Column 2 — 'Our Company': About us, Careers, Blog. Column 3 — 'Support': Help, Business Solutions, Find Stores, My Account, Track Order. Column 4 — 'Important Links': Privacy Policy, Delivery & Return Policy, Terms & Conditions. Right side contact info: Phone +91 951 373 4374, Email care@printo.in. Social icons: Instagram, Facebook, X, LinkedIn, Pinterest. Payment icons: Visa, Mastercard, UPI. Bottom bar: '© 2026 Printo Document Services Pvt Ltd. All Rights Reserved.'",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-consistent-premium-visual-theme-across-the-entire-application-clean-white-backgrounds-soft-card-shadows-rounded-corners-a-purple-accent-color-palette-used-for-buttons-icons-highlights-and-trust-features-modern-sans-serif-typography-and-smooth-hover-transition-animations-the-design-should-feel-like-a-polished-d2c-e-commerce-brand-distinct-from-printo-in-but-equally-professional",
+      "title": "Apply a consistent, premium visual theme across the entire application: clean white backgrounds, soft card shadows, rounded corners, a purple accent color palette (used for buttons, icons, highlights, and trust features), modern sans-serif typography, and smooth hover/transition animations. The design should feel like a polished D2C e-commerce brand — distinct from Printo.in but equally professional.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-top-promotional-announcement-bar-so-it-correctly-displays-free-delivery-on-orders-above-999-and-use-code-print20-for-20-off-as-visible-styled-text-ensure-the-bar-renders-properly-on-all-pages-within-the-main-layout",
+      "title": "Fix the top promotional announcement bar so it correctly displays 'Free delivery on orders above ₹999' and 'Use code PRINT20 for 20% off' as visible, styled text. Ensure the bar renders properly on all pages within the main layout.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-navigation-header-category-links-photo-prints-photo-frames-photo-magnets-mugs-and-corporate-gifts-so-that-clicking-each-one-navigates-to-the-correct-filtered-product-listing-or-category-page-each-link-must-be-functional-and-route-the-user-to-the-appropriate-destination",
+      "title": "Fix the navigation header category links — 'Photo Prints', 'Photo Frames', 'Photo Magnets', 'Mugs', and 'Corporate Gifts' — so that clicking each one navigates to the correct filtered product listing or category page. Each link must be functional and route the user to the appropriate destination.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-featuredproducts-component-and-any-category-filtered-product-listing-views-to-display-the-seeded-demo-products-when-a-category-is-selected-photo-prints-photo-frames-photo-magnets-mugs-corporate-gifts-the-grid-must-render-real-product-cards-fetched-from-the-backend-showing-image-name-price-and-an-add-to-cart-customize-now-button-remove-or-replace-any-empty-state-placeholders-that-show-when-no-products-exist",
+      "title": "Update the FeaturedProducts component and any category-filtered product listing views to display the seeded demo products. When a category is selected (Photo Prints, Photo Frames, Photo Magnets, Mugs, Corporate Gifts), the grid must render real product cards fetched from the backend, showing image, name, price, and an 'Add to Cart' / 'Customize Now' button. Remove or replace any empty-state placeholders that show when no products exist.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-in-the-template-management-admin-page-templatemanagementpage-tsx-replace-all-image-url-text-input-fields-template-image-url-preview-url-with-file-upload-controls-the-admin-should-be-able-to-click-a-button-to-select-a-local-image-file-see-a-thumbnail-preview-of-the-selected-file-and-have-the-image-stored-as-a-base64-data-url-or-uploaded-blob-in-the-template-record-remove-all-url-input-fields-for-template-images-entirely",
+      "title": "In the Template Management admin page (TemplateManagementPage.tsx), replace all image URL text input fields (template image URL, preview URL) with file upload controls. The admin should be able to click a button to select a local image file, see a thumbnail preview of the selected file, and have the image stored as a base64 data URL or uploaded blob in the template record. Remove all URL input fields for template images entirely.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-in-the-product-management-admin-page-productmanagementpage-tsx-replace-the-product-image-url-text-input-field-with-a-file-upload-control-the-admin-should-be-able-to-click-a-button-to-select-a-local-image-file-see-a-thumbnail-preview-of-the-selected-file-and-have-the-image-stored-as-a-base64-data-url-or-uploaded-blob-in-the-product-record-remove-the-url-input-field-for-product-images-entirely",
+      "title": "In the Product Management admin page (ProductManagementPage.tsx), replace the product image URL text input field with a file upload control. The admin should be able to click a button to select a local image file, see a thumbnail preview of the selected file, and have the image stored as a base64 data URL or uploaded blob in the product record. Remove the URL input field for product images entirely.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-product-card-click-handler-so-that-clicking-any-product-card-in-featuredproducts-category-listing-or-shopframesbysize-correctly-navigates-to-the-productdetailpage-for-that-product-ensure-the-route-parameter-product-id-is-correctly-passed-and-the-productdetailpage-loads-and-renders-the-product-data-without-errors",
+      "title": "Fix the product card click handler so that clicking any product card (in FeaturedProducts, category listing, or ShopFramesBySize) correctly navigates to the ProductDetailPage for that product. Ensure the route parameter (product ID) is correctly passed and the ProductDetailPage loads and renders the product data without errors.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-the-routing-configuration-in-app-tsx-to-ensure-the-productdetailpage-route-e-g-product-id-is-correctly-registered-and-that-all-product-card-link-elements-use-the-correct-route-path-and-parameter-format-matching-the-router-configuration",
+      "title": "Audit and fix the routing configuration in App.tsx to ensure the ProductDetailPage route (e.g., /product/:id) is correctly registered and that all product card link elements use the correct route path and parameter format matching the router configuration.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-the-entire-frontend-codebase-for-any-hardcoded-origin-whitelist-arrays-window-addeventlistener-message-handlers-with-origin-checks-or-content-security-policy-meta-tags-that-restrict-frame-script-sources-update-all-such-locations-to-include-https-sole-aqua-rc6-draft-caffeine-xyz-as-a-permitted-origin-and-remove-any-wildcard-or-overly-restrictive-origin-filters-that-would-block-the-deployed-caffeine-preview-domain",
+      "title": "Audit the entire frontend codebase for any hardcoded origin whitelist arrays, window.addEventListener('message', ...) handlers with origin checks, or Content-Security-Policy meta tags that restrict frame/script sources. Update all such locations to include 'https://sole-aqua-rc6-draft.caffeine.xyz' as a permitted origin, and remove any wildcard or overly restrictive origin filters that would block the deployed Caffeine preview domain.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "JWT authentication system with user/admin roles, create account, forgot/update password",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Homepage with hero banner, category sections, featured products, offers banner, FAQ accordion, trust features, customer reviews, and professional footer",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Product page with image preview, price, Customize Now button, delivery check, Save & Select Size",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Fabric.js live customization editor with upload, drag, zoom, rotate, crop, text, font/color, portrait/landscape toggle, real-time preview, mobile gestures, resolution warning",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Ecommerce system: cart, checkout, Razorpay (UPI/card/netbanking/COD), order tracking, email and WhatsApp notifications",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Full admin panel: product/template management, order management with status workflow, customer management, earnings dashboard, download print-ready files",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Production print system: place user photo into template, generate 300 DPI final PNG, admin download production ZIP",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Database schema with tables: users, admin, products, templates, orders, payments",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "PWA support, SEO optimization, image compression with Sharp, CDN optimization, mobile-first responsive design",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Deployment configuration: .env files, Vercel (frontend), Railway/Render (backend), Supabase (DB/storage), installation and deployment steps",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Implement a server-side print production system in the backend: when triggered by admin, composite the user's uploaded photo into the selected product template at 300 DPI, save the final PNG to storage, and make it available for admin download as a production-ready ZIP.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Define and initialize the backend data schema with the following stable data structures: users, products, templates, orders, and payments. Each entity must have appropriate fields (e.g., orders link to user ID, product ID, template ID, payment status, order status, timestamps).",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Add demo frame/product samples for all product categories (Photo Prints, Photo Frames, Photo Magnets, Mugs, Corporate Gifts) so each category page shows populated demo content",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Seed the backend with demo product records for all five product categories: Photo Prints, Photo Frames, Photo Magnets, Mugs, and Corporate Gifts. Each category should have at least 3–4 demo products with realistic names, prices (in INR), size options, descriptions, and image URLs (use publicly accessible placeholder/stock image URLs). These records must be pre-populated so that all category pages show populated demo content immediately on load.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Admin dashboard: template frames and product images should use manual file upload (not image URL input fields). Replace all image URL inputs with file upload controls in both template management and product management sections.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Update the backend (main.mo) to accept product image and template image data as base64-encoded strings (or binary-compatible text fields) instead of URL strings, so that admin-uploaded images can be stored directly in stable storage and served back to the frontend without requiring an external image host.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "In the canvas-based customization editor (EditorPage.tsx) and any component that embeds or communicates with an iframe or postMessage-based draft editor, add the application origin 'https://sole-aqua-rc6-draft.caffeine.xyz' to the list of allowed origins. Ensure all postMessage calls and any origin-checking logic explicitly allow this origin so that 'disallowed origin' errors are eliminated.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "GenMitra Print Platform",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
