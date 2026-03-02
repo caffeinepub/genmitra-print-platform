@@ -1,96 +1,41 @@
-import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { getImageSrc } from '../utils/imageHelpers';
 
 const frameSizes = [
-  {
-    size: '4 × 6 in',
-    subtitle: 'Desktop stand only',
-    image: '/assets/generated/frame-4x6-demo.dim_400x500.png',
-  },
-  {
-    size: '6 × 8 in',
-    subtitle: 'Desk & wall mount',
-    image: '/assets/generated/frame-6x8-demo.dim_400x530.png',
-  },
-  {
-    size: '9 × 12 in',
-    subtitle: 'Wall Mount',
-    image: '/assets/generated/frame-9x12-demo.dim_400x500.png',
-  },
-  {
-    size: '12 × 12 in',
-    subtitle: 'Wall mount',
-    image: '/assets/generated/frame-12x12-demo.dim_500x500.png',
-  },
-  {
-    size: '12 × 18 in',
-    subtitle: 'Wall Mount',
-    image: '/assets/generated/frame-12x18-demo.dim_400x560.png',
-  },
-  {
-    size: '14 × 18 in',
-    subtitle: 'Wall mount',
-    image: '/assets/generated/frame-14x18-demo.dim_400x520.png',
-  },
-  {
-    size: '18 × 24 in',
-    subtitle: 'Wall mount',
-    image: '/assets/generated/frame-18x24-demo.dim_400x550.png',
-  },
-  {
-    size: '27 × 36 in',
-    subtitle: 'Wall mount',
-    image: '/assets/generated/frame-27x36-demo.dim_400x560.png',
-  },
+  { size: '4×6', img: '/assets/generated/frame-size-4x6.dim_400x500.png', label: '4×6 inch' },
+  { size: '6×8', img: '/assets/generated/frame-size-6x8.dim_400x500.png', label: '6×8 inch' },
+  { size: '9×12', img: '/assets/generated/frame-size-9x12.dim_400x500.png', label: '9×12 inch' },
+  { size: '12×12', img: '/assets/generated/frame-size-12x12.dim_400x500.png', label: '12×12 inch' },
+  { size: '12×18', img: '/assets/generated/frame-size-12x18.dim_400x500.png', label: '12×18 inch' },
+  { size: '14×18', img: '/assets/generated/frame-size-14x18.dim_400x500.png', label: '14×18 inch' },
+  { size: '18×24', img: '/assets/generated/frame-size-18x24.dim_400x500.png', label: '18×24 inch' },
+  { size: '20×24', img: '/assets/generated/frame-size-20x24.dim_400x500.png', label: '20×24 inch' },
 ];
 
 export default function ShopFramesBySize() {
   const navigate = useNavigate();
 
-  const handleSizeClick = () => {
-    navigate({ to: '/', search: { category: 'Photo Frames' } });
-  };
-
   return (
-    <section className="py-14 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Shop Photo Frames by Sizes</h2>
-        </div>
-
-        {/* Frame Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-6">
-          {frameSizes.map((frame) => {
-            const imageSrc = getImageSrc(frame.image);
-            return (
-              <div
-                key={frame.size}
-                className="group cursor-pointer flex flex-col items-center"
-                onClick={handleSizeClick}
-              >
-                {/* Frame image with thick black border - no rounded corners */}
-                <div
-                  className="w-full overflow-hidden mb-3 group-hover:opacity-90 transition-opacity duration-200"
-                  style={{
-                    border: '6px solid #111',
-                    borderRadius: '0',
-                    aspectRatio: '4/5',
-                  }}
-                >
-                  <img
-                    src={imageSrc}
-                    alt={`${frame.size} photo frame`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <span className="font-bold text-sm text-gray-900 text-center">{frame.size}</span>
-                <span className="text-xs text-blue-500 text-center mt-0.5">{frame.subtitle}</span>
-              </div>
-            );
-          })}
-        </div>
+    <section className="mb-8">
+      <h2 className="text-2xl font-bold text-gray-800 mb-1">Shop Frames by Size</h2>
+      <p className="text-gray-500 text-sm mb-4">Find the perfect frame for your space</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-3">
+        {frameSizes.map((frame) => (
+          <button
+            key={frame.size}
+            onClick={() => navigate({ to: '/', search: { category: 'Photo Frames', search: undefined } })}
+            className="flex flex-col items-center bg-white rounded-lg border border-gray-200 p-3 hover:border-[#2874f0] hover:shadow-card-hover transition-all group"
+          >
+            <div className="w-full aspect-square overflow-hidden rounded mb-2 bg-gray-50">
+              <img
+                src={frame.img}
+                alt={frame.label}
+                className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+              />
+            </div>
+            <span className="text-xs font-bold text-gray-800">{frame.size}</span>
+            <span className="text-xs text-[#2874f0] font-medium">inch</span>
+          </button>
+        ))}
       </div>
     </section>
   );

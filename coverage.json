@@ -1,255 +1,34 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-03-02T15:07:21.010Z",
+  "generatedAt": "2026-03-02T16:15:18.962Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 12,
-    "implemented": 10,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
-        "id": "REQ-107",
-        "summary": "Audit and fix all TypeScript compilation errors across the entire frontend codebase — including `frontend/src/App.tsx`, all page components, all hooks, and all utility files — so that the frontend bundle builds successfully without type errors, missing imports, undefined variables, or broken module references.",
+        "id": "REQ-129",
+        "summary": "Remove the product listing grid section currently visible on the homepage that displays product cards in a multi-row grid format (showing items such as 'Digital Printed Notebook', 'Digital Wall Art', 'Poster Collage with Photo', 'Custom Canvas Prints', 'Framed Photo Collage', 'Custom Poster Printing', 'Custom Water Bottles', 'Branded Notebooks', 'Wooden Photo Frame', 'Metallic Frame', 'Collage Frame', 'Square Photo Magnets', 'Family Magnet Set', 'Classic White Photo Mug', 'Color Changing Mug', 'Classic 4×6 Prints', 'Premium Matte Prints', 'Square Prints' with category labels, prices, and delivery times). This section must be completely removed from `frontend/src/pages/HomePage.tsx` and any component it delegates to. All other homepage sections (hero banner, category grid, featured products, shop frames by size, offers banner, trust features, customer reviews, FAQ, footer) must remain intact and unaffected.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/pages/HomePage.tsx",
-          "frontend/src/pages/ProductDetailPage.tsx",
-          "frontend/src/pages/EditorPage.tsx",
-          "frontend/src/pages/CartPage.tsx",
-          "frontend/src/pages/CheckoutPage.tsx",
-          "frontend/src/pages/MyOrdersPage.tsx",
-          "frontend/src/pages/OrderDetailPage.tsx",
-          "frontend/src/pages/OrderConfirmationPage.tsx",
-          "frontend/src/pages/LoginPage.tsx",
-          "frontend/src/pages/CreateAccountPage.tsx",
-          "frontend/src/pages/ForgotPasswordPage.tsx",
-          "frontend/src/pages/admin/AdminDashboardPage.tsx",
-          "frontend/src/pages/admin/ProductManagementPage.tsx",
-          "frontend/src/pages/admin/TemplateManagementPage.tsx",
-          "frontend/src/pages/admin/OrderManagementPage.tsx",
-          "frontend/src/pages/admin/CustomerManagementPage.tsx",
-          "frontend/src/pages/admin/AdminSettingsPage.tsx",
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/components/admin/AdminLayout.tsx",
-          "frontend/src/components/admin/AdminGuard.tsx",
-          "frontend/src/components/FeaturedProducts.tsx",
-          "frontend/src/components/ProductCategoryGrid.tsx",
-          "frontend/src/components/ShopFramesBySize.tsx",
-          "frontend/src/components/HeroBanner.tsx",
-          "frontend/src/components/OffersBanner.tsx",
-          "frontend/src/components/FAQSection.tsx",
-          "frontend/src/components/CustomerReviews.tsx",
-          "frontend/src/components/TrustFeatures.tsx",
-          "frontend/src/components/FrameStyleDropdown.tsx",
-          "frontend/src/components/Footer.tsx",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/hooks/useAuth.ts",
-          "frontend/src/hooks/useAdminSession.ts",
-          "frontend/src/utils/imageHelpers.ts",
-          "frontend/src/utils/urlParams.ts",
-          "frontend/src/lib/demoProducts.ts"
+          "frontend/src/pages/HomePage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/pages/HomePage.tsx",
-          "frontend/src/pages/ProductDetailPage.tsx",
-          "frontend/src/pages/CartPage.tsx",
-          "frontend/src/pages/CheckoutPage.tsx",
-          "frontend/src/pages/MyOrdersPage.tsx",
-          "frontend/src/pages/OrderDetailPage.tsx",
-          "frontend/src/pages/OrderConfirmationPage.tsx",
-          "frontend/src/pages/LoginPage.tsx",
-          "frontend/src/pages/CreateAccountPage.tsx",
-          "frontend/src/pages/ForgotPasswordPage.tsx",
-          "frontend/src/components/admin/AdminLayout.tsx",
-          "frontend/src/components/admin/AdminGuard.tsx",
-          "frontend/src/components/FeaturedProducts.tsx",
-          "frontend/src/components/Footer.tsx",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/hooks/useAuth.ts",
-          "frontend/src/hooks/useAdminSession.ts",
-          "frontend/src/utils/imageHelpers.ts",
-          "frontend/src/lib/demoProducts.ts"
-        ]
-      },
-      {
-        "id": "REQ-108",
-        "summary": "Audit and fix `frontend/src/App.tsx` to remove any route definitions that simultaneously set both an `id` and a `path` option on the same route object. Remove or rename the conflicting `id` property so the router initializes without throwing 'Route cannot have both an id and a path option'. Verify all existing route paths and navigation links remain functional after the fix.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/App.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/App.tsx"
-        ]
-      },
-      {
-        "id": "REQ-109",
-        "summary": "Audit and fix all compilation and runtime errors in `backend/main.mo` and `backend/migration.mo` that prevent the canister from deploying successfully. Ensure all Motoko syntax is valid, all imported modules resolve correctly, all stable variable declarations are compatible with the current Motoko compiler version, and the actor compiles and deploys without errors.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-110",
-        "summary": "Fix the image source rendering utility in `frontend/src/utils/imageHelpers.ts` and audit every component and page that renders product or template images (`FeaturedProducts.tsx`, `ProductDetailPage.tsx`, `ShopFramesBySize.tsx`, `ProductCategoryGrid.tsx`, `AdminDashboardPage.tsx`, `ProductManagementPage.tsx`, `TemplateManagementPage.tsx`, `CartPage.tsx`, `OrderDetailPage.tsx`). Wherever an image `src` is constructed by prepending a `data:image/...;base64,` prefix to a plain HTTP/HTTPS URL, remove the erroneous prefix so the `src` attribute receives the raw URL. Images stored as genuine base64 data URIs must continue to render correctly.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/utils/imageHelpers.ts",
-          "frontend/src/components/FeaturedProducts.tsx",
-          "frontend/src/pages/ProductDetailPage.tsx",
-          "frontend/src/components/ShopFramesBySize.tsx",
-          "frontend/src/components/ProductCategoryGrid.tsx",
-          "frontend/src/pages/admin/AdminDashboardPage.tsx",
-          "frontend/src/pages/admin/ProductManagementPage.tsx",
-          "frontend/src/pages/admin/TemplateManagementPage.tsx",
-          "frontend/src/pages/CartPage.tsx",
-          "frontend/src/pages/OrderDetailPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/utils/imageHelpers.ts",
-          "frontend/src/components/FeaturedProducts.tsx",
-          "frontend/src/pages/ProductDetailPage.tsx",
-          "frontend/src/pages/CartPage.tsx",
-          "frontend/src/pages/OrderDetailPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-111",
-        "summary": "Fix the admin session credential validation in `frontend/src/hooks/useAdminSession.ts` so that the `login` function correctly accepts both hardcoded admin accounts — (1) username `genmitra`, password `12345678` and (2) username `admin`, password `Admin@1234` — and sets session state with role `admin` on a successful match. Eliminate any typos, strict equality issues, or stale cached state that cause valid credentials to be rejected.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useAdminSession.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useAdminSession.ts"
-        ]
-      },
-      {
-        "id": "REQ-112",
-        "summary": "Audit and fix `frontend/src/pages/LoginPage.tsx` to ensure: (a) in admin login mode (triggered when arriving from an `/admin` route), only the credential-based username/password form is rendered and Internet Identity is never triggered or displayed; (b) the form correctly calls `login` from `useAdminSession` with no early returns or silent swallows; (c) on successful validation the user is redirected to `/admin` or the originally requested admin URL; (d) in regular user login mode, `login` from `useInternetIdentity` is called correctly and the user is redirected to the main website after successful authentication.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/LoginPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/LoginPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-113",
-        "summary": "Audit and fix `frontend/src/components/admin/AdminGuard.tsx` to ensure it never calls `login()` from `useInternetIdentity` or any Internet Identity hook. The guard must only check the local credential-based admin session via `useAdminSession` and redirect unauthenticated visitors to the login page. If the session is valid, allow the protected route to render.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/admin/AdminGuard.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/admin/AdminGuard.tsx"
-        ]
-      },
-      {
-        "id": "REQ-114",
-        "summary": "Fix the backend role-check guard in `backend/main.mo` for all write-protected functions (`createProduct`, `updateProduct`, `deleteProduct`, `createTemplate`, `updateTemplate`, `deleteTemplate`) so that the caller's role is resolved by looking up the caller's principal in the stable users map. Remove any broken JWT string parsing, stale in-memory lookups, or principal mismatches that cause valid admin sessions to be rejected with 'Unauthorized' errors. Ensure `system func init()` and `system func postupgrade()` upsert both admin seed accounts — (1) username `genmitra`, password `12345678`, role `admin` and (2) username `admin`, password `Admin@1234`, role `admin` — and the regular user seed (username `genmitra`, password `1234`, role `user`) into stable storage on every canister initialization and upgrade.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-115",
-        "summary": "Verify and fix all mutation hooks in `frontend/src/hooks/useQueries.ts` — specifically `createTemplate`, `updateTemplate`, `deleteTemplate`, `createProduct`, `updateProduct`, and `deleteProduct` — to ensure they use the authenticated actor instance derived from the logged-in admin identity context, not an anonymous actor. If any hook captures an anonymous actor at definition time, update it to derive the actor from the current authenticated identity on each call.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts"
-        ]
-      },
-      {
-        "id": "REQ-116",
-        "summary": "Fix the `useGetProduct` query hook in `frontend/src/hooks/useQueries.ts` and `frontend/src/pages/ProductDetailPage.tsx` to correctly extract the product ID from route parameters and pass it to the backend `getProduct` call with the correct type (Nat vs. Text). Verify the backend `getProduct` function in `backend/main.mo` correctly looks up the product by ID from the stable products map. Ensure `system func init()` and `system func postupgrade()` upsert all demo product seeds so they are always present after every deploy.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/ProductDetailPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/ProductDetailPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-117",
-        "summary": "Audit `frontend/index.html` Content-Security-Policy `<meta>` tag and all `window.addEventListener('message', handler)` callbacks across the frontend codebase. Ensure `https://sole-aqua-rc6-draft.caffeine.xyz` is present in every origin whitelist and CSP `frame-src`/`script-src` directive. Remove the `frame-ancestors` directive from the CSP `<meta>` tag (it is ineffective there). All other CSP directives must be preserved exactly as-is.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/index.html",
-          "frontend/src/pages/LoginPage.tsx",
-          "frontend/src/pages/CheckoutPage.tsx",
-          "frontend/src/App.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/LoginPage.tsx",
-          "frontend/src/pages/CheckoutPage.tsx",
-          "frontend/src/App.tsx"
-        ]
-      },
-      {
-        "id": "REQ-118",
-        "summary": "Audit all `DialogContent` usages across the entire frontend codebase — including `ProductManagementPage.tsx`, `TemplateManagementPage.tsx`, `OrderManagementPage.tsx`, `CustomerManagementPage.tsx`, `AdminSettingsPage.tsx`, `AdminDashboardPage.tsx`, `CartPage.tsx`, `CheckoutPage.tsx`, and any other component rendering a Radix UI / shadcn `DialogContent` — and add a `<DialogDescription>` child element to every `DialogContent` that is missing one. Where a visible description is not appropriate, use a visually hidden `<DialogDescription>` with a `sr-only` class.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/admin/ProductManagementPage.tsx",
-          "frontend/src/pages/admin/TemplateManagementPage.tsx",
-          "frontend/src/pages/admin/OrderManagementPage.tsx",
-          "frontend/src/pages/admin/CustomerManagementPage.tsx",
-          "frontend/src/pages/admin/AdminSettingsPage.tsx",
-          "frontend/src/pages/admin/AdminDashboardPage.tsx",
-          "frontend/src/pages/CartPage.tsx",
-          "frontend/src/pages/CheckoutPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/CartPage.tsx",
-          "frontend/src/pages/CheckoutPage.tsx"
+          "frontend/src/pages/HomePage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/FeaturedProducts.tsx",
-    "frontend/src/components/Footer.tsx",
-    "frontend/src/components/admin/AdminGuard.tsx",
-    "frontend/src/components/admin/AdminLayout.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useAdminSession.ts",
-    "frontend/src/hooks/useAuth.ts",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/lib/demoProducts.ts",
-    "frontend/src/pages/CartPage.tsx",
-    "frontend/src/pages/CheckoutPage.tsx",
-    "frontend/src/pages/CreateAccountPage.tsx",
-    "frontend/src/pages/ForgotPasswordPage.tsx",
     "frontend/src/pages/HomePage.tsx",
-    "frontend/src/pages/LoginPage.tsx",
-    "frontend/src/pages/MyOrdersPage.tsx",
-    "frontend/src/pages/OrderConfirmationPage.tsx",
-    "frontend/src/pages/OrderDetailPage.tsx",
-    "frontend/src/pages/ProductDetailPage.tsx",
-    "frontend/src/utils/imageHelpers.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

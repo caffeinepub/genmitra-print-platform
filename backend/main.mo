@@ -7,12 +7,12 @@ import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
 import Array "mo:core/Array";
 import Float "mo:core/Float";
-import Migration "migration";
+
 import MixinStorage "blob-storage/Mixin";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
-(with migration = Migration.run)
+
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);

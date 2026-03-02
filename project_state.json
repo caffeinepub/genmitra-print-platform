@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 69,
+  "projectStateVersion": 73,
   "summary": "Production-ready full-stack online printing and personalized gift platform (similar to Printo.in) with original branding. Frontend: Next.js 14, Tailwind CSS, Redux Toolkit, Fabric.js, PWA. Backend: Node.js + Express, PostgreSQL (Supabase), Sharp, Razorpay, WhatsApp API. Deployment: Vercel (frontend), Railway/Render (backend), Supabase (DB/storage).",
   "architectural_notes": [
     "Frontend: Next.js 14 + Tailwind CSS + Redux Toolkit + Fabric.js, deployed on Vercel",
@@ -25,7 +25,7 @@
     "Product images fail to load — backend image fields contain plain HTTP URLs but frontend is prepending 'data:image/jpeg;base64,' prefix to them, resulting in malformed URLs like 'data:image/jpeg;base64,https://...' that cannot be fetched",
     "React Router route conflict: a route in App.tsx has both an 'id' and a 'path' option simultaneously, causing 'Route cannot have both an id and a path option' crash on app load"
   ],
-  "isFixRequest": true,
+  "isFixRequest": false,
   "existing_features": [
     {
       "id": "feature-implement-a-jwt-based-authentication-system-with-two-roles-user-and-admin-store-all-users-in-the-backend-motoko-actor-stable-storage-support-create-account-login-forgot-password-and-password-update-hardcoded-seed-credentials-user-username-genmitra-password-1234-and-admin-username-genmitra-password-12345678-after-login-route-users-to-the-main-website-and-admins-to-the-admin-panel",
@@ -762,6 +762,94 @@
         "REQ-118"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-fix-the-image-display-in-frontend-src-pages-editorpage-tsx-so-that-when-a-user-uploads-a-photo-the-full-image-is-displayed-inside-the-frame-without-any-cropping-or-cutting-the-uploaded-image-must-fit-within-the-frame-boundary-using-object-fit-contain-or-equivalent-logic-so-the-entire-image-is-always-visible-do-not-crop-clip-or-mask-the-image-edges",
+      "title": "Fix the image display in `frontend/src/pages/EditorPage.tsx` so that when a user uploads a photo, the full image is displayed inside the frame without any cropping or cutting. The uploaded image must fit within the frame boundary using object-fit contain or equivalent logic so the entire image is always visible. Do not crop, clip, or mask the image edges.",
+      "reqIds": [
+        "REQ-119"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-in-frontend-src-pages-editorpage-tsx-after-the-user-clicks-the-save-select-size-button-automatically-add-the-customized-product-with-selected-size-quantity-and-uploaded-image-data-to-the-cart-and-navigate-the-user-to-the-cart-page-cart-the-cart-item-must-include-the-product-id-customization-snapshot-image-frame-style-orientation-quantity-and-price",
+      "title": "In `frontend/src/pages/EditorPage.tsx`, after the user clicks the 'Save & Select Size' button, automatically add the customized product (with selected size, quantity, and uploaded image data) to the cart and navigate the user to the cart page (`/cart`). The cart item must include the product ID, customization snapshot (image, frame style, orientation, quantity), and price.",
+      "reqIds": [
+        "REQ-120"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-pages-cartpage-tsx-with-an-amazon-style-theme-layout-two-column-cart-items-list-on-the-left-order-summary-panel-on-the-right-cart-item-rows-must-show-product-image-name-unit-price-quantity-selector-buttons-subtotal-and-a-remove-button-the-order-summary-panel-must-show-subtotal-shipping-free-if-applicable-taxes-and-total-with-a-blue-proceed-to-checkout-button-use-white-card-backgrounds-light-gray-page-background-f5f6f7-blue-2874f0-accent-color-for-buttons-soft-box-shadows-and-inter-poppins-font-preserve-all-existing-cart-mutation-logic-remove-item-clear-cart",
+      "title": "Redesign `frontend/src/pages/CartPage.tsx` with an Amazon-style theme. Layout: two-column (cart items list on the left, order summary panel on the right). Cart item rows must show product image, name, unit price, quantity selector (+/- buttons), subtotal, and a remove button. The order summary panel must show subtotal, shipping (free if applicable), taxes, and total with a blue 'Proceed to Checkout' button. Use white card backgrounds, light gray page background (#f5f6f7), blue (#2874f0) accent color for buttons, soft box shadows, and Inter/Poppins font. Preserve all existing cart mutation logic (remove item, clear cart).",
+      "reqIds": [
+        "REQ-121"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-search-functionality-in-frontend-src-components-layout-tsx-when-a-user-types-a-query-in-the-search-bar-and-submits-navigate-to-with-a-search-query-url-parameter-in-frontend-src-pages-homepage-tsx-and-frontend-src-components-featuredproducts-tsx-read-the-search-query-parameter-and-filter-displayed-products-by-name-case-insensitive-substring-match-against-the-search-term-if-matching-products-are-found-display-them-in-the-product-grid-if-no-products-match-the-search-query-display-a-clear-not-available-or-no-products-found-for-your-search-empty-state-message-instead-of-the-normal-homepage-sections",
+      "title": "Fix the search functionality in `frontend/src/components/Layout.tsx`. When a user types a query in the search bar and submits, navigate to `/` with a `?search=<query>` URL parameter. In `frontend/src/pages/HomePage.tsx` and `frontend/src/components/FeaturedProducts.tsx`, read the `search` query parameter and filter displayed products by name (case-insensitive substring match) against the search term. If matching products are found, display them in the product grid. If no products match the search query, display a clear 'Not Available' or 'No products found for your search' empty state message instead of the normal homepage sections.",
+      "reqIds": [
+        "REQ-122"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-src-index-css-and-frontend-tailwind-config-js-to-establish-a-professional-amazon-flipkart-style-ecommerce-design-system-primary-accent-color-2874f0-bright-blue-page-background-f5f6f7-light-gray-card-background-white-header-background-white-dark-text-for-headings-212121-medium-gray-body-text-666-border-radius-4px-for-inputs-buttons-8px-for-cards-box-shadow-0-1px-4px-rgba-0-0-0-0-12-font-family-inter-poppins-sans-serif-replace-all-existing-purple-teal-color-tokens-with-this-blue-based-palette-across-css-custom-properties-ensure-all-tailwind-utility-classes-across-the-app-map-to-these-new-tokens",
+      "title": "Update `frontend/src/index.css` and `frontend/tailwind.config.js` to establish a professional Amazon/Flipkart-style ecommerce design system. Primary accent color: `#2874f0` (bright blue). Page background: `#f5f6f7` (light gray). Card background: white. Header background: white. Dark text for headings: `#212121`. Medium gray body text: `#666`. Border radius: 4px for inputs/buttons, 8px for cards. Box shadow: `0 1px 4px rgba(0,0,0,0.12)`. Font family: Inter, Poppins, sans-serif. Replace all existing purple/teal color tokens with this blue-based palette across CSS custom properties. Ensure all Tailwind utility classes across the app map to these new tokens.",
+      "reqIds": [
+        "REQ-123"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-the-new-amazon-style-design-tokens-from-req-123-consistently-across-all-non-admin-page-components-layout-tsx-header-herobanner-tsx-productcategorygrid-tsx-featuredproducts-tsx-shopframesbysize-tsx-offersbanner-tsx-trustfeatures-tsx-customerreviews-tsx-faqsection-tsx-footer-tsx-productdetailpage-tsx-loginpage-tsx-createaccountpage-tsx-cartpage-tsx-checkoutpage-tsx-myorderspage-tsx-update-all-hardcoded-purple-teal-color-values-to-use-the-new-blue-palette-2874f0-keep-all-existing-functional-behavior-intact",
+      "title": "Apply the new Amazon-style design tokens from REQ-123 consistently across all non-admin page components: `Layout.tsx` (header), `HeroBanner.tsx`, `ProductCategoryGrid.tsx`, `FeaturedProducts.tsx`, `ShopFramesBySize.tsx`, `OffersBanner.tsx`, `TrustFeatures.tsx`, `CustomerReviews.tsx`, `FAQSection.tsx`, `Footer.tsx`, `ProductDetailPage.tsx`, `LoginPage.tsx`, `CreateAccountPage.tsx`, `CartPage.tsx`, `CheckoutPage.tsx`, `MyOrdersPage.tsx`. Update all hardcoded purple/teal color values to use the new blue palette (`#2874f0`). Keep all existing functional behavior intact.",
+      "reqIds": [
+        "REQ-124"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-frontend-src-pages-myorderspage-tsx-so-that-a-when-the-user-has-orders-they-are-displayed-in-a-clean-amazon-style-order-history-list-showing-order-id-items-total-status-badge-with-color-and-estimated-delivery-date-b-when-the-user-has-no-orders-show-an-empty-state-with-an-order-now-button-that-navigates-to-the-homepage-the-empty-state-must-replace-any-previous-no-orders-found-plain-text-with-this-actionable-cta",
+      "title": "Fix `frontend/src/pages/MyOrdersPage.tsx` so that: (a) when the user has orders, they are displayed in a clean Amazon-style order history list showing order ID, items, total, status badge (with color), and estimated delivery date; (b) when the user has no orders, show an empty state with an 'Order Now' button that navigates to the homepage (`/`). The empty state must replace any previous 'No orders found' plain text with this actionable CTA.",
+      "reqIds": [
+        "REQ-125"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-profile-icon-button-to-the-navigation-header-in-frontend-src-components-layout-tsx-the-button-must-use-a-user-account-icon-e-g-usercircle-and-must-only-be-visible-to-logged-in-users-clicking-it-navigates-to-a-new-profile-route-register-this-route-in-frontend-src-app-tsx-pointing-to-a-new-profilepage-component-at-frontend-src-pages-profilepage-tsx",
+      "title": "Add a 'Profile' icon button to the navigation header in `frontend/src/components/Layout.tsx`. The button must use a user/account icon (e.g., UserCircle) and must only be visible to logged-in users. Clicking it navigates to a new `/profile` route. Register this route in `frontend/src/App.tsx` pointing to a new `ProfilePage` component at `frontend/src/pages/ProfilePage.tsx`.",
+      "reqIds": [
+        "REQ-126"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-frontend-src-pages-profilepage-tsx-implementing-a-full-amazon-flipkart-style-user-account-dashboard-with-a-two-column-layout-left-sidebar-top-user-card-with-avatar-circle-and-hello-username-greeting-menu-items-with-icons-orders-wishlist-with-count-badge-coupons-gift-cards-notifications-account-settings-section-header-with-sub-items-profile-information-clickable-manage-addresses-pan-card-information-logout-button-with-power-icon-at-bottom-sidebar-features-hover-effect-with-light-blue-e8f0fe-background-active-item-highlight-in-blue-blue-icons-thin-divider-lines-between-sections-clean-spacing-right-content-area-by-default-show-a-welcome-dashboard-with-a-greeting-card-and-quick-action-buttons-only-when-the-user-clicks-profile-information-in-the-sidebar-dynamically-replace-the-right-content-with-the-profile-details-page-req-128-other-sidebar-items-show-appropriate-placeholder-empty-state-panels-use-light-gray-background-f5f6f7-white-card-layouts-with-soft-shadows-rounded-corners-inter-poppins-font-and-primary-color-2874f0-fully-responsive-mobile-sidebar-collapses-smooth-transition-animation-when-switching-panels",
+      "title": "Create `frontend/src/pages/ProfilePage.tsx` implementing a full Amazon/Flipkart-style user account dashboard with a two-column layout. Left sidebar: top user card with avatar circle and 'Hello, [username]' greeting; menu items with icons: Orders, Wishlist (with count badge), Coupons, Gift Cards, Notifications; 'Account Settings' section header with sub-items: Profile Information (clickable), Manage Addresses, PAN Card Information; Logout button with power icon at bottom. Sidebar features: hover effect with light blue (#e8f0fe) background, active item highlight in blue, blue icons, thin divider lines between sections, clean spacing. Right content area: by default show a welcome dashboard with a greeting card and quick action buttons. ONLY when the user clicks 'Profile Information' in the sidebar, dynamically replace the right content with the Profile Details page (REQ-128). Other sidebar items show appropriate placeholder empty-state panels. Use light gray background (#f5f6f7), white card layouts with soft shadows, rounded corners, Inter/Poppins font, and primary color #2874f0. Fully responsive (mobile sidebar collapses). Smooth transition animation when switching panels.",
+      "reqIds": [
+        "REQ-127"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-the-profile-details-panel-rendered-inside-the-right-content-area-of-profilepage-when-profile-information-is-selected-with-the-following-card-based-sections-section-1-personal-information-first-name-input-last-name-input-gender-radio-buttons-male-female-edit-button-that-toggles-fields-to-editable-state-with-save-cancel-buttons-section-2-email-address-email-input-field-with-edit-save-cancel-controls-section-3-mobile-number-phone-input-with-country-code-prefix-91-with-edit-save-cancel-controls-section-4-faqs-display-4-faq-accordions-with-questions-how-do-i-change-my-password-how-do-i-track-my-order-how-do-i-update-my-address-how-do-i-cancel-an-order-and-sensible-placeholder-answers-pre-fill-all-fields-with-dummy-user-data-first-name-challa-last-name-manohar-email-challa-manohar-example-com-phone-9876543210-all-editable-sections-use-inline-edit-mode-with-smooth-transition",
+      "title": "Implement the Profile Details panel (rendered inside the right content area of ProfilePage when 'Profile Information' is selected) with the following card-based sections: Section 1 — Personal Information: First Name input, Last Name input, Gender radio buttons (Male/Female), Edit button that toggles fields to editable state with Save/Cancel buttons; Section 2 — Email Address: email input field with Edit/Save/Cancel controls; Section 3 — Mobile Number: phone input with country code prefix (+91) with Edit/Save/Cancel controls; Section 4 — FAQs: display 4 FAQ accordions with questions ('How do I change my password?', 'How do I track my order?', 'How do I update my address?', 'How do I cancel an order?') and sensible placeholder answers. Pre-fill all fields with dummy user data (First Name: Challa, Last Name: Manohar, Email: challa.manohar@example.com, Phone: 9876543210). All editable sections use inline edit mode with smooth transition.",
+      "reqIds": [
+        "REQ-128"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-product-listing-grid-section-currently-visible-on-the-homepage-that-displays-product-cards-in-a-multi-row-grid-format-showing-items-such-as-digital-printed-notebook-digital-wall-art-poster-collage-with-photo-custom-canvas-prints-framed-photo-collage-custom-poster-printing-custom-water-bottles-branded-notebooks-wooden-photo-frame-metallic-frame-collage-frame-square-photo-magnets-family-magnet-set-classic-white-photo-mug-color-changing-mug-classic-4-6-prints-premium-matte-prints-square-prints-with-category-labels-prices-and-delivery-times-this-section-must-be-completely-removed-from-frontend-src-pages-homepage-tsx-and-any-component-it-delegates-to-all-other-homepage-sections-hero-banner-category-grid-featured-products-shop-frames-by-size-offers-banner-trust-features-customer-reviews-faq-footer-must-remain-intact-and-unaffected",
+      "title": "Remove the product listing grid section currently visible on the homepage that displays product cards in a multi-row grid format (showing items such as 'Digital Printed Notebook', 'Digital Wall Art', 'Poster Collage with Photo', 'Custom Canvas Prints', 'Framed Photo Collage', 'Custom Poster Printing', 'Custom Water Bottles', 'Branded Notebooks', 'Wooden Photo Frame', 'Metallic Frame', 'Collage Frame', 'Square Photo Magnets', 'Family Magnet Set', 'Classic White Photo Mug', 'Color Changing Mug', 'Classic 4×6 Prints', 'Premium Matte Prints', 'Square Prints' with category labels, prices, and delivery times). This section must be completely removed from `frontend/src/pages/HomePage.tsx` and any component it delegates to. All other homepage sections (hero banner, category grid, featured products, shop frames by size, offers banner, trust features, customer reviews, FAQ, footer) must remain intact and unaffected.",
+      "reqIds": [
+        "REQ-129"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -1109,6 +1197,60 @@
       "reqIds": [
         "REQ-114"
       ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-82",
+      "summary": "Fix image upload in editor: uploaded image should display normally without being cropped or cut — preserve full image within frame",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-83",
+      "summary": "After user clicks 'Save & Select Size' in the editor, automatically add the customized product to the cart",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-84",
+      "summary": "Redesign cart page with Amazon-style theme: clean list layout, price summary panel, professional styling",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-85",
+      "summary": "Fix search functionality: searching products should show matching results from database; if no match, show 'Not Available' message",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-86",
+      "summary": "Change overall application theme to professional Amazon/Flipkart-style ecommerce theme with primary color #2874f0",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-87",
+      "summary": "Fix 'My Orders' page: if orders exist show them, if no orders show an 'Order Now' button",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-88",
+      "summary": "Add Profile button in navigation; clicking it opens a Flipkart/Amazon-style user account dashboard with left sidebar (Orders, Wishlist, Coupons, Gift Cards, Notifications, Profile Information, Manage Addresses, PAN Card, Logout) and right content area that shows profile details only when 'Profile Information' is clicked. Profile page includes editable Personal Info, Email, Mobile Number sections and FAQ section.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-89",
+      "summary": "Product customization page: support multiple image uploads, size selection (A4/A3/etc), quantity selector with auto price update, add to cart, and place order form (Name, Phone, Address, Notes) — save all customer images and positions to database",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-90",
+      "summary": "Remove all recently added content/sections (likely price details, order confirmation, and payment flow additions from the latest build)",
+      "reqIds": [],
       "status": "pending"
     }
   ],

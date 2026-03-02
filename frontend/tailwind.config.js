@@ -7,113 +7,87 @@ export default {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        serif: ['Playfair Display', 'Georgia', 'serif'],
-        display: ['Inter', 'system-ui', 'sans-serif'],
-      },
       colors: {
-        background: 'oklch(var(--background) / <alpha-value>)',
-        foreground: 'oklch(var(--foreground) / <alpha-value>)',
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         card: {
-          DEFAULT: 'var(--card)',
-          foreground: 'var(--card-foreground)',
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))"
         },
         popover: {
-          DEFAULT: 'var(--popover)',
-          foreground: 'var(--popover-foreground)',
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))"
         },
         primary: {
-          DEFAULT: 'var(--primary)',
-          foreground: 'var(--primary-foreground)',
+          DEFAULT: "#2874f0",
+          foreground: "#ffffff",
+          dark: "#1f5bb8",
         },
         secondary: {
-          DEFAULT: 'var(--secondary)',
-          foreground: 'var(--secondary-foreground)',
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))"
         },
         muted: {
-          DEFAULT: 'var(--muted)',
-          foreground: 'var(--muted-foreground)',
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))"
         },
         accent: {
-          DEFAULT: 'var(--accent)',
-          foreground: 'var(--accent-foreground)',
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))"
         },
         destructive: {
-          DEFAULT: 'var(--destructive)',
-          foreground: 'var(--destructive-foreground)',
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))"
         },
-        border: 'var(--border)',
-        input: 'var(--input)',
-        ring: 'var(--ring)',
-        success: {
-          DEFAULT: 'var(--success)',
-          foreground: 'var(--success-foreground)',
-        },
-        warning: {
-          DEFAULT: 'var(--warning)',
-          foreground: 'var(--warning-foreground)',
-        },
-        sidebar: {
-          bg: 'var(--sidebar-bg)',
-          fg: 'var(--sidebar-fg)',
-          muted: 'var(--sidebar-muted)',
-          accent: 'var(--sidebar-accent)',
-          border: 'var(--sidebar-border)',
-        },
-        // Category colors - updated for blue theme
-        category: {
-          bg: 'oklch(0.97 0.005 240)',
-          heading: 'oklch(0.13 0.025 240)',
-          subtitle: 'oklch(0.52 0.015 240)',
-          icon: 'oklch(0.51 0.22 264)',
-          'icon-bg': 'oklch(0.93 0.04 264)',
-          'icon-bg-hover': 'oklch(0.88 0.07 264)',
-        },
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        success: "hsl(var(--success))",
+        warning: "hsl(var(--warning))",
+        'page-bg': '#f5f6f7',
+        'amazon-blue': '#2874f0',
+        'amazon-blue-dark': '#1f5bb8',
+        'category-blue': '#1a73e8',
+        'category-purple': '#7c3aed',
+        'category-green': '#059669',
+        'category-orange': '#d97706',
+        'category-red': '#dc2626',
+      },
+      fontFamily: {
+        sans: ['Inter', 'Poppins', 'system-ui', 'sans-serif'],
+        inter: ['Inter', 'sans-serif'],
+        poppins: ['Poppins', 'sans-serif'],
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
-        xl: '0.75rem',
-        '2xl': '1rem',
-        '3xl': '1.5rem',
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)"
       },
       boxShadow: {
-        card: '0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
-        'card-hover': '0 4px 12px 0 rgb(0 0 0 / 0.1), 0 2px 4px -1px rgb(0 0 0 / 0.06)',
-        'card-lg': '0 8px 24px 0 rgb(0 0 0 / 0.1), 0 4px 8px -2px rgb(0 0 0 / 0.06)',
-        modal: '0 20px 60px 0 rgb(0 0 0 / 0.15)',
-        sidebar: '2px 0 8px 0 rgb(0 0 0 / 0.12)',
-        category: '0 2px 8px 0 rgb(0 0 0 / 0.06)',
-        'category-hover': '0 4px 16px 0 rgb(0 0 0 / 0.1)',
-      },
-      fontSize: {
-        'display-xl': ['3.5rem', { lineHeight: '1.1', fontWeight: '800' }],
-        'display-lg': ['2.75rem', { lineHeight: '1.15', fontWeight: '700' }],
-        'display-md': ['2.25rem', { lineHeight: '1.2', fontWeight: '700' }],
-        'display-sm': ['1.75rem', { lineHeight: '1.25', fontWeight: '600' }],
-      },
-      animation: {
-        'fade-in': 'fadeIn 0.3s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-out',
-        'slide-in-right': 'slideInRight 0.3s ease-out',
+        'card': '0 1px 4px rgba(0,0,0,0.12)',
+        'card-hover': '0 4px 12px rgba(0,0,0,0.15)',
+        'amazon': '0 2px 8px rgba(0,0,0,0.1)',
       },
       keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" }
         },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(10px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" }
         },
-        slideInRight: {
-          '0%': { opacity: '0', transform: 'translateX(10px)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
-        },
+        "fade-in": {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" }
+        }
       },
-    },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fade-in 0.3s ease-out"
+      }
+    }
   },
   plugins: [
     require("tailwindcss-animate"),

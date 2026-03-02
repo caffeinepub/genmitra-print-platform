@@ -1,45 +1,24 @@
-import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useGetMyOrders } from '../hooks/useQueries';
-import { Package, ChevronRight, Clock, CheckCircle, Truck, AlertCircle } from 'lucide-react';
-import type { Order } from '../backend';
+import { getImageSrc } from '../utils/imageHelpers';
+import { Package, ShoppingBag, ChevronRight, Clock, CheckCircle, Truck, Printer, AlertCircle } from 'lucide-react';
 import { OrderStatus } from '../backend';
 
-function getStatusIcon(status: OrderStatus) {
+function getStatusConfig(status: OrderStatus) {
   switch (status) {
     case OrderStatus.New:
-      return <Clock className="w-4 h-4 text-blue-500" />;
+      return { label: 'Order Placed', color: 'bg-orange-100 text-orange-700', icon: AlertCircle };
     case OrderStatus.Processing:
-      return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+      return { label: 'Processing', color: 'bg-blue-100 text-blue-700', icon: Clock };
     case OrderStatus.Printed:
-      return <Package className="w-4 h-4 text-purple-500" />;
+      return { label: 'Printed', color: 'bg-purple-100 text-purple-700', icon: Printer };
     case OrderStatus.Shipped:
-      return <Truck className="w-4 h-4 text-orange-500" />;
+      return { label: 'Shipped', color: 'bg-blue-100 text-blue-700', icon: Truck };
     case OrderStatus.Delivered:
-      return <CheckCircle className="w-4 h-4 text-green-500" />;
+      return { label: 'Delivered', color: 'bg-green-100 text-green-700', icon: CheckCircle };
     default:
-      return <Clock className="w-4 h-4 text-gray-500" />;
+      return { label: 'Unknown', color: 'bg-gray-100 text-gray-700', icon: Package };
   }
-}
-
-function getStatusColor(status: OrderStatus) {
-  switch (status) {
-    case OrderStatus.New: return 'bg-blue-100 text-blue-700';
-    case OrderStatus.Processing: return 'bg-yellow-100 text-yellow-700';
-    case OrderStatus.Printed: return 'bg-purple-100 text-purple-700';
-    case OrderStatus.Shipped: return 'bg-orange-100 text-orange-700';
-    case OrderStatus.Delivered: return 'bg-green-100 text-green-700';
-    default: return 'bg-gray-100 text-gray-700';
-  }
-}
-
-function formatDate(timestamp: bigint): string {
-  const date = new Date(Number(timestamp) / 1_000_000);
-  return date.toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
 }
 
 export default function MyOrdersPage() {
@@ -48,16 +27,14 @@ export default function MyOrdersPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-1/4 mb-3" />
-              <div className="h-3 bg-gray-200 rounded w-1/2 mb-2" />
-              <div className="h-3 bg-gray-200 rounded w-1/3" />
-            </div>
-          ))}
+      <div style={{ backgroundColor: '#f5f6f7' }} className="min-h-screen">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-48" />
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-32 bg-gray-200 rounded" />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -65,77 +42,124 @@ export default function MyOrdersPage() {
 
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-          <p className="text-red-700">Failed to load orders. Please try again.</p>
+      <div style={{ backgroundColor: '#f5f6f7' }} className="min-h-screen">
+        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+          <div className="bg-white rounded-lg shadow-card p-12">
+            <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-gray-700 mb-2">Unable to load orders</h2>
+            <p className="text-gray-500 mb-6">Please login to view your orders.</p>
+            <button
+              onClick={() => navigate({ to: '/login', search: { mode: undefined, redirect: '/my-orders' } })}
+              className="px-6 py-2 bg-[#2874f0] text-white rounded font-medium hover:bg-[#1f5bb8] transition-colors"
+            >
+              Login
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  if (!orders || orders.length === 0) {
+  const orderList = orders ?? [];
+
+  if (orderList.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">No orders yet</h2>
-          <p className="text-gray-500 mb-6">Start shopping to see your orders here.</p>
-          <button
-            onClick={() => navigate({ to: '/', search: { category: undefined } })}
-            className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-          >
-            Start Shopping
-          </button>
+      <div style={{ backgroundColor: '#f5f6f7' }} className="min-h-screen">
+        <div className="max-w-4xl mx-auto px-4 py-16">
+          <div className="bg-white rounded-lg shadow-card p-12 text-center">
+            <Package className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-700 mb-2">No orders yet</h2>
+            <p className="text-gray-500 mb-8">You haven't placed any orders. Start shopping now!</p>
+            <button
+              onClick={() => navigate({ to: '/', search: { category: undefined, search: undefined } })}
+              className="px-8 py-3 bg-[#2874f0] text-white font-semibold rounded hover:bg-[#1f5bb8] transition-colors"
+            >
+              Order Now
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">My Orders</h1>
-      <div className="space-y-4">
-        {orders.map((order: Order) => (
-          <div
-            key={order.orderId}
-            className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
-            onClick={() =>
-              navigate({
-                to: '/order/$orderId',
-                params: { orderId: order.orderId },
-                search: { category: undefined },
-              })
-            }
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-gray-900">Order #{order.orderId.slice(-8)}</span>
-                  <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                    {getStatusIcon(order.status)}
-                    {order.status}
-                  </span>
+    <div style={{ backgroundColor: '#f5f6f7' }} className="min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">My Orders</h1>
+
+        <div className="space-y-4">
+          {orderList.map((order) => {
+            const statusConfig = getStatusConfig(order.status);
+            const StatusIcon = statusConfig.icon;
+            const firstItem = order.items[0];
+            const imgSrc = firstItem ? getImageSrc(firstItem.customImageData || firstItem.product.imageData) : null;
+            const createdDate = new Date(Number(order.createdAt) / 1_000_000).toLocaleDateString('en-IN', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            });
+
+            return (
+              <div
+                key={order.orderId}
+                className="bg-white rounded-lg shadow-card border border-gray-100 overflow-hidden hover:shadow-card-hover transition-shadow cursor-pointer"
+                onClick={() => navigate({ to: '/order/$orderId', params: { orderId: order.orderId } })}
+              >
+                {/* Order Header */}
+                <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
+                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div>
+                      <span className="uppercase font-semibold">Order ID</span>
+                      <p className="text-gray-700 font-mono text-xs mt-0.5 truncate max-w-[120px]">
+                        #{order.orderId.slice(-8).toUpperCase()}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="uppercase font-semibold">Order Placed</span>
+                      <p className="text-gray-700 mt-0.5">{createdDate}</p>
+                    </div>
+                    <div>
+                      <span className="uppercase font-semibold">Total</span>
+                      <p className="text-gray-700 font-bold mt-0.5">₹{order.total.toFixed(0)}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-gray-400" />
                 </div>
-                <p className="text-sm text-gray-500">
-                  {order.items.length} item{order.items.length !== 1 ? 's' : ''} · Placed on {formatDate(order.createdAt)}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Payment: <span className="font-medium">{order.paymentMethod}</span> ·{' '}
-                  <span className={order.paymentStatus === 'Paid' ? 'text-green-600' : 'text-yellow-600'}>
-                    {order.paymentStatus}
-                  </span>
-                </p>
+
+                {/* Order Items */}
+                <div className="p-4 flex items-center gap-4">
+                  {imgSrc && (
+                    <div className="w-16 h-16 flex-shrink-0 bg-gray-50 rounded border border-gray-200 overflow-hidden">
+                      <img
+                        src={imgSrc}
+                        alt={firstItem?.product.name}
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-800 text-sm truncate">
+                      {firstItem?.product.name}
+                      {order.items.length > 1 && (
+                        <span className="text-gray-500 font-normal"> +{order.items.length - 1} more</span>
+                      )}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {firstItem?.selectedSize} · Qty: {Number(firstItem?.quantity)}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Est. Delivery: {order.estimatedDelivery}
+                    </p>
+                  </div>
+                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${statusConfig.color}`}>
+                    <StatusIcon className="w-3.5 h-3.5" />
+                    {statusConfig.label}
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-bold text-primary">₹{order.total.toFixed(2)}</span>
-                <ChevronRight className="w-5 h-5 text-gray-400" />
-              </div>
-            </div>
-          </div>
-        ))}
+            );
+          })}
+        </div>
       </div>
     </div>
   );

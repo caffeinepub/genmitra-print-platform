@@ -64,7 +64,6 @@ export default function CheckoutPage() {
       navigate({
         to: '/order-confirmation/$orderId',
         params: { orderId },
-        search: { category: undefined },
       });
     } catch (err) {
       console.error('Order creation failed:', err);
@@ -78,8 +77,8 @@ export default function CheckoutPage() {
         <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
         <h2 className="text-xl font-semibold text-gray-700 mb-2">Your cart is empty</h2>
         <button
-          onClick={() => navigate({ to: '/', search: { category: undefined } })}
-          className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+          onClick={() => navigate({ to: '/', search: { category: undefined, search: undefined } })}
+          className="bg-[#2874f0] text-white px-6 py-3 rounded font-semibold hover:bg-[#1f5bb8] transition-colors"
         >
           Start Shopping
         </button>
@@ -93,10 +92,10 @@ export default function CheckoutPage() {
       <div className="flex items-center gap-4 mb-8">
         {['address', 'payment'].map((s, i) => (
           <React.Fragment key={s}>
-            <div className={`flex items-center gap-2 ${step === s ? 'text-primary font-semibold' : 'text-gray-400'}`}>
+            <div className={`flex items-center gap-2 ${step === s ? 'text-[#2874f0] font-semibold' : 'text-gray-400'}`}>
               <div
                 className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${
-                  step === s ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
+                  step === s ? 'bg-[#2874f0] text-white' : 'bg-gray-200 text-gray-500'
                 }`}
               >
                 {i + 1}
@@ -114,7 +113,7 @@ export default function CheckoutPage() {
           {step === 'address' && (
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <div className="flex items-center gap-2 mb-6">
-                <Truck className="w-5 h-5 text-primary" />
+                <Truck className="w-5 h-5 text-[#2874f0]" />
                 <h2 className="text-lg font-semibold text-gray-900">Shipping Address</h2>
               </div>
 
@@ -126,7 +125,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={address.fullName}
                       onChange={(e) => setAddress({ ...address, fullName: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2874f0]"
                       required
                     />
                   </div>
@@ -136,7 +135,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={address.addressLine1}
                       onChange={(e) => setAddress({ ...address, addressLine1: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2874f0]"
                       required
                     />
                   </div>
@@ -146,7 +145,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={address.addressLine2}
                       onChange={(e) => setAddress({ ...address, addressLine2: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2874f0]"
                     />
                   </div>
                   <div>
@@ -155,7 +154,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={address.city}
                       onChange={(e) => setAddress({ ...address, city: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2874f0]"
                       required
                     />
                   </div>
@@ -165,7 +164,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={address.state}
                       onChange={(e) => setAddress({ ...address, state: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2874f0]"
                       required
                     />
                   </div>
@@ -175,7 +174,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={address.pincode}
                       onChange={(e) => setAddress({ ...address, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2874f0]"
                       required
                     />
                   </div>
@@ -185,7 +184,7 @@ export default function CheckoutPage() {
                       type="tel"
                       value={address.phone}
                       onChange={(e) => setAddress({ ...address, phone: e.target.value })}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2874f0]"
                       required
                     />
                   </div>
@@ -194,7 +193,7 @@ export default function CheckoutPage() {
                 <button
                   type="submit"
                   disabled={saveAddress.isPending}
-                  className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  className="w-full bg-[#2874f0] text-white py-3 rounded-lg font-semibold hover:bg-[#1f5bb8] transition-colors disabled:opacity-50"
                 >
                   {saveAddress.isPending ? 'Saving...' : 'Continue to Payment'}
                 </button>
@@ -205,7 +204,7 @@ export default function CheckoutPage() {
           {step === 'payment' && (
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <div className="flex items-center gap-2 mb-6">
-                <CreditCard className="w-5 h-5 text-primary" />
+                <CreditCard className="w-5 h-5 text-[#2874f0]" />
                 <h2 className="text-lg font-semibold text-gray-900">Payment Method</h2>
               </div>
 
@@ -215,7 +214,7 @@ export default function CheckoutPage() {
                     key={method.id}
                     className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-colors ${
                       paymentMethod === method.id
-                        ? 'border-primary bg-primary/5'
+                        ? 'border-[#2874f0] bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
@@ -230,7 +229,7 @@ export default function CheckoutPage() {
                     <span className="text-2xl">{method.icon}</span>
                     <span className="font-medium text-gray-900">{method.label}</span>
                     {paymentMethod === method.id && (
-                      <CheckCircle className="w-5 h-5 text-primary ml-auto" />
+                      <CheckCircle className="w-5 h-5 text-[#2874f0] ml-auto" />
                     )}
                   </label>
                 ))}
@@ -245,7 +244,7 @@ export default function CheckoutPage() {
                 </button>
                 <button
                   onClick={handlePlaceOrder}
-                  className="flex-1 bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+                  className="flex-1 bg-[#2874f0] text-white py-3 rounded-lg font-semibold hover:bg-[#1f5bb8] transition-colors"
                 >
                   Place Order
                 </button>
@@ -266,7 +265,7 @@ export default function CheckoutPage() {
                       <img
                         src={getImageSrc(item.product.imageData)}
                         alt={item.product.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -296,7 +295,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-100">
                 <span>Total</span>
-                <span className="text-primary">₹{total.toFixed(2)}</span>
+                <span className="text-[#2874f0]">₹{total.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -309,44 +308,35 @@ export default function CheckoutPage() {
           <DialogHeader>
             <DialogTitle>Confirm Payment</DialogTitle>
             <DialogDescription>
-              Review your order details before confirming payment.
+              Please confirm your order with {paymentMethod} payment.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Payment Method</span>
-              <span className="font-medium">{PAYMENT_METHODS.find((m) => m.id === paymentMethod)?.label}</span>
+          <div className="space-y-4">
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-600">Payment Method</span>
+                <span className="font-medium">{paymentMethod}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Total Amount</span>
+                <span className="font-bold text-[#2874f0]">₹{total.toFixed(2)}</span>
+              </div>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Total Amount</span>
-              <span className="font-bold text-primary text-lg">₹{total.toFixed(2)}</span>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setPaymentDialogOpen(false)}
+                className="flex-1 border border-gray-300 text-gray-700 py-2.5 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmPayment}
+                disabled={createOrder.isPending}
+                className="flex-1 bg-[#2874f0] text-white py-2.5 rounded-lg font-medium hover:bg-[#1f5bb8] transition-colors disabled:opacity-50"
+              >
+                {createOrder.isPending ? 'Processing...' : 'Confirm Order'}
+              </button>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Delivery to</span>
-              <span className="font-medium">{address.city}{address.state ? `, ${address.state}` : ''}</span>
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setPaymentDialogOpen(false)}
-              className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleConfirmPayment}
-              disabled={createOrder.isPending}
-              className="flex-1 bg-primary text-white py-2 rounded-lg font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {createOrder.isPending ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                'Confirm & Pay'
-              )}
-            </button>
           </div>
         </DialogContent>
       </Dialog>

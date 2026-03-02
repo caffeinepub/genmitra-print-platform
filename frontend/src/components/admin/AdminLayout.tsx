@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
+import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router';
 import {
   LayoutDashboard,
   Package,
@@ -17,12 +17,11 @@ import { Button } from '@/components/ui/button';
 import { useAdminSession } from '../../hooks/useAdminSession';
 
 const navItems = [
-  { label: 'Dashboard', path: '/admin' as const, icon: LayoutDashboard },
-  { label: 'Products', path: '/admin/products' as const, icon: Package },
-  { label: 'Templates', path: '/admin/templates' as const, icon: FileImage },
-  { label: 'Orders', path: '/admin/orders' as const, icon: ShoppingBag },
-  { label: 'Customers', path: '/admin/customers' as const, icon: Users },
-  { label: 'Settings', path: '/admin/settings' as const, icon: Settings },
+  { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
+  { label: 'Products', path: '/admin/products', icon: Package },
+  { label: 'Templates', path: '/admin/templates', icon: FileImage },
+  { label: 'Orders', path: '/admin/orders', icon: ShoppingBag },
+  { label: 'Settings', path: '/admin/settings', icon: Settings },
 ];
 
 export default function AdminLayout() {
@@ -34,7 +33,11 @@ export default function AdminLayout() {
 
   const handleLogout = () => {
     logoutAdmin();
-    navigate({ to: '/' });
+    navigate({ to: '/', search: { category: undefined, search: undefined } });
+  };
+
+  const handleBackToStore = () => {
+    navigate({ to: '/', search: { category: undefined, search: undefined } });
   };
 
   return (
@@ -55,7 +58,7 @@ export default function AdminLayout() {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 py-5 border-b border-gray-200">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-[#2874f0] flex items-center justify-center">
             <Printer className="h-5 w-5 text-white" />
           </div>
           <div>
@@ -75,22 +78,26 @@ export default function AdminLayout() {
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = currentPath === item.path;
+            const isActive = currentPath === item.path || (item.path !== '/admin' && currentPath.startsWith(item.path));
             return (
-              <Link
+              <a
                 key={item.path}
-                to={item.path}
+                href={item.path}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   isActive
-                    ? 'bg-primary text-white shadow-sm'
+                    ? 'bg-[#2874f0] text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
-                onClick={() => setSidebarOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = item.path;
+                  setSidebarOpen(false);
+                }}
               >
                 <item.icon className="h-4 w-4 shrink-0" />
                 {item.label}
                 {isActive && <ChevronRight className="h-3 w-3 ml-auto" />}
-              </Link>
+              </a>
             );
           })}
         </nav>
@@ -114,7 +121,7 @@ export default function AdminLayout() {
             variant="ghost"
             size="sm"
             className="w-full justify-start gap-2 text-gray-500 hover:text-gray-700 rounded-xl"
-            onClick={() => navigate({ to: '/' })}
+            onClick={handleBackToStore}
           >
             ← Back to Store
           </Button>
@@ -135,7 +142,7 @@ export default function AdminLayout() {
           </Button>
           <div className="flex-1">
             <h1 className="text-lg font-semibold text-gray-900">
-              {navItems.find((n) => n.path === currentPath)?.label || 'Admin'}
+              {navItems.find((n) => currentPath === n.path || (n.path !== '/admin' && currentPath.startsWith(n.path)))?.label || 'Admin'}
             </h1>
           </div>
         </header>

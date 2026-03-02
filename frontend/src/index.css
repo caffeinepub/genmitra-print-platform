@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,184 +6,78 @@
 
 @layer base {
   :root {
-    /* Bright blue primary palette */
-    --background: oklch(0.97 0.005 240);
-    --foreground: oklch(0.13 0.025 240);
-
+    --background: oklch(0.97 0.003 240);
+    --foreground: oklch(0.15 0.01 240);
     --card: oklch(1 0 0);
-    --card-foreground: oklch(0.13 0.025 240);
-
+    --card-foreground: oklch(0.15 0.01 240);
     --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.13 0.025 240);
-
-    /* Primary: Bright blue #2563EB */
-    --primary: oklch(0.51 0.22 264);
+    --popover-foreground: oklch(0.15 0.01 240);
+    --primary: oklch(0.52 0.18 250);
     --primary-foreground: oklch(1 0 0);
-
-    /* Secondary: Light gray */
+    --primary-dark: oklch(0.42 0.18 250);
     --secondary: oklch(0.95 0.005 240);
-    --secondary-foreground: oklch(0.25 0.03 240);
-
-    /* Muted */
+    --secondary-foreground: oklch(0.25 0.01 240);
     --muted: oklch(0.95 0.005 240);
-    --muted-foreground: oklch(0.52 0.015 240);
-
-    /* Accent: Same bright blue */
-    --accent: oklch(0.51 0.22 264);
-    --accent-foreground: oklch(1 0 0);
-
-    /* Destructive */
+    --muted-foreground: oklch(0.5 0.01 240);
+    --accent: oklch(0.93 0.02 250);
+    --accent-foreground: oklch(0.52 0.18 250);
     --destructive: oklch(0.55 0.22 25);
     --destructive-foreground: oklch(1 0 0);
-
-    /* Border & Input */
-    --border: oklch(0.88 0.008 240);
-    --input: oklch(0.88 0.008 240);
-    --ring: oklch(0.51 0.22 264);
-
-    /* Radius */
+    --border: oklch(0.88 0.005 240);
+    --input: oklch(0.88 0.005 240);
+    --ring: oklch(0.52 0.18 250);
     --radius: 0.5rem;
-
-    /* Sidebar - dark navy #0f1729 */
-    --sidebar-bg: oklch(0.16 0.04 255);
-    --sidebar-fg: oklch(0.88 0.02 240);
-    --sidebar-muted: oklch(0.60 0.03 240);
-    --sidebar-accent: oklch(0.65 0.18 264);
-    --sidebar-border: oklch(0.22 0.04 255);
-
-    /* Success */
     --success: oklch(0.55 0.15 145);
-    --success-foreground: oklch(1 0 0);
-
-    /* Warning */
-    --warning: oklch(0.72 0.15 65);
-    --warning-foreground: oklch(0.13 0.025 240);
+    --warning: oklch(0.7 0.15 60);
+    --amazon-blue: #2874f0;
+    --amazon-blue-dark: #1f5bb8;
+    --page-bg: #f5f6f7;
+    --card-shadow: 0 1px 4px rgba(0,0,0,0.12);
   }
 
   .dark {
-    --background: oklch(0.12 0.02 255);
-    --foreground: oklch(0.92 0.01 240);
-
-    --card: oklch(0.17 0.03 255);
-    --card-foreground: oklch(0.92 0.01 240);
-
-    --popover: oklch(0.17 0.03 255);
-    --popover-foreground: oklch(0.92 0.01 240);
-
-    --primary: oklch(0.60 0.22 264);
+    --background: oklch(0.12 0.01 240);
+    --foreground: oklch(0.95 0.005 240);
+    --card: oklch(0.18 0.01 240);
+    --card-foreground: oklch(0.95 0.005 240);
+    --popover: oklch(0.18 0.01 240);
+    --popover-foreground: oklch(0.95 0.005 240);
+    --primary: oklch(0.6 0.18 250);
     --primary-foreground: oklch(1 0 0);
-
-    --secondary: oklch(0.22 0.04 255);
-    --secondary-foreground: oklch(0.88 0.02 240);
-
-    --muted: oklch(0.22 0.04 255);
-    --muted-foreground: oklch(0.58 0.03 240);
-
-    --accent: oklch(0.60 0.22 264);
-    --accent-foreground: oklch(1 0 0);
-
+    --primary-dark: oklch(0.5 0.18 250);
+    --secondary: oklch(0.22 0.01 240);
+    --secondary-foreground: oklch(0.9 0.005 240);
+    --muted: oklch(0.22 0.01 240);
+    --muted-foreground: oklch(0.6 0.01 240);
+    --accent: oklch(0.25 0.02 250);
+    --accent-foreground: oklch(0.6 0.18 250);
     --destructive: oklch(0.55 0.22 25);
     --destructive-foreground: oklch(1 0 0);
-
-    --border: oklch(0.28 0.04 255);
-    --input: oklch(0.28 0.04 255);
-    --ring: oklch(0.60 0.22 264);
+    --border: oklch(0.28 0.01 240);
+    --input: oklch(0.28 0.01 240);
+    --ring: oklch(0.6 0.18 250);
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-sans font-bold tracking-tight;
+    @apply bg-background text-foreground;
+    font-family: 'Inter', 'Poppins', sans-serif;
   }
 }
 
 @layer components {
-  /* Card styles */
-  .card-elevated {
-    @apply bg-card rounded-xl shadow-card border border-border/50;
-  }
-
-  .card-flat {
-    @apply bg-card rounded-lg border border-border;
-  }
-
-  /* Button styles */
   .btn-primary {
-    @apply bg-primary text-primary-foreground hover:bg-primary/90 font-semibold px-6 py-2.5 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md;
+    @apply bg-[#2874f0] hover:bg-[#1f5bb8] text-white font-medium px-4 py-2 rounded transition-colors;
   }
 
-  .btn-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium px-6 py-2.5 rounded-lg transition-all duration-200 border border-border;
+  .card-amazon {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200;
   }
 
-  .btn-accent {
-    @apply bg-accent text-accent-foreground hover:bg-accent/90 font-semibold px-6 py-2.5 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md;
+  .page-bg {
+    background-color: #f5f6f7;
   }
-
-  /* Form inputs */
-  .input-field {
-    @apply w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200;
-  }
-
-  /* Section spacing */
-  .section-padding {
-    @apply py-16 px-4;
-  }
-
-  .container-max {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
-
-  /* Status badges */
-  .badge-new {
-    @apply bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded-full text-xs font-semibold;
-  }
-
-  .badge-processing {
-    @apply bg-yellow-100 text-yellow-700 px-2.5 py-0.5 rounded-full text-xs font-semibold;
-  }
-
-  .badge-shipped {
-    @apply bg-purple-100 text-purple-700 px-2.5 py-0.5 rounded-full text-xs font-semibold;
-  }
-
-  .badge-delivered {
-    @apply bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full text-xs font-semibold;
-  }
-
-  .badge-printed {
-    @apply bg-orange-100 text-orange-700 px-2.5 py-0.5 rounded-full text-xs font-semibold;
-  }
-}
-
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: oklch(0.75 0.02 240);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.6 0.04 240);
 }
