@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, Search, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search } from 'lucide-react';
 import { useGetAllTemplates, useCreateTemplate, useUpdateTemplate, useDeleteTemplate } from '../../hooks/useQueries';
 import { getImageSrc } from '../../utils/imageHelpers';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from '@/components/ui/dialog';
 import type { Template } from '../../backend';
 import { toast } from 'sonner';
@@ -137,7 +137,7 @@ export default function TemplateManagementPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold font-serif text-foreground">Templates</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage photo templates</p>
+          <p className="text-muted-foreground text-sm mt-1">Manage photo templates for the editor</p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="w-4 h-4 mr-2" /> Add Template
@@ -156,7 +156,7 @@ export default function TemplateManagementPage() {
 
       {isLoading ? (
         <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, i) => (
+          {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="animate-pulse bg-muted rounded-xl h-16" />
           ))}
         </div>
@@ -171,17 +171,22 @@ export default function TemplateManagementPage() {
               return (
                 <div key={template.id} className="flex items-center gap-4 p-4">
                   <div className="w-14 h-14 rounded-lg overflow-hidden bg-muted shrink-0">
-                    {(imageSrc || previewSrc) ? (
-                      <img src={imageSrc || previewSrc} alt={template.name} className="w-full h-full object-cover" />
+                    {previewSrc || imageSrc ? (
+                      <img
+                        src={previewSrc || imageSrc}
+                        alt={template.name}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No img</div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-foreground truncate">{template.name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {Number(template.photoSlots)} photo slot{Number(template.photoSlots) !== 1 ? 's' : ''} · {Number(template.dpiSettings)} DPI
-                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-muted-foreground">{Number(template.photoSlots)} photo slot{Number(template.photoSlots) !== 1 ? 's' : ''}</span>
+                      <span className="text-xs text-muted-foreground">· {Number(template.dpiSettings)} DPI</span>
+                    </div>
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <Button variant="outline" size="icon" onClick={() => openEdit(template)}>
@@ -205,21 +210,24 @@ export default function TemplateManagementPage() {
       )}
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingTemplate ? 'Edit Template' : 'Add New Template'}</DialogTitle>
+            <DialogDescription className="sr-only">
+              {editingTemplate ? 'Edit the details of an existing template.' : 'Fill in the details to create a new template.'}
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label>Template Name</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                required
-                className="mt-1"
-              />
-            </div>
             <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <Label>Template Name</Label>
+                <Input
+                  value={form.name}
+                  onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                  required
+                  className="mt-1"
+                />
+              </div>
               <div>
                 <Label>Photo Slots</Label>
                 <Input
@@ -239,34 +247,42 @@ export default function TemplateManagementPage() {
                   className="mt-1"
                 />
               </div>
-            </div>
-            <div>
-              <Label>Template Image</Label>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleImageUpload(e, 'imageData')}
-                className="mt-1"
-                disabled={imageUploading}
-              />
-              {imageUploading && <p className="text-xs text-muted-foreground mt-1">Processing...</p>}
-              {form.imageData && (
-                <img src={getImageSrc(form.imageData)} alt="Preview" className="mt-2 w-24 h-24 object-cover rounded-lg border border-border" />
-              )}
-            </div>
-            <div>
-              <Label>Preview Image</Label>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleImageUpload(e, 'previewData')}
-                className="mt-1"
-                disabled={previewUploading}
-              />
-              {previewUploading && <p className="text-xs text-muted-foreground mt-1">Processing...</p>}
-              {form.previewData && (
-                <img src={getImageSrc(form.previewData)} alt="Preview" className="mt-2 w-24 h-24 object-cover rounded-lg border border-border" />
-              )}
+              <div>
+                <Label>Template Image</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, 'imageData')}
+                  className="mt-1"
+                  disabled={imageUploading}
+                />
+                {imageUploading && <p className="text-xs text-muted-foreground mt-1">Processing...</p>}
+                {form.imageData && (
+                  <img
+                    src={getImageSrc(form.imageData)}
+                    alt="Template Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-lg border border-border"
+                  />
+                )}
+              </div>
+              <div>
+                <Label>Preview Image</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, 'previewData')}
+                  className="mt-1"
+                  disabled={previewUploading}
+                />
+                {previewUploading && <p className="text-xs text-muted-foreground mt-1">Processing...</p>}
+                {form.previewData && (
+                  <img
+                    src={getImageSrc(form.previewData)}
+                    alt="Preview"
+                    className="mt-2 w-24 h-24 object-cover rounded-lg border border-border"
+                  />
+                )}
+              </div>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>

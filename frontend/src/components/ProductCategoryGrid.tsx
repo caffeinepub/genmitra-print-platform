@@ -1,36 +1,52 @@
+import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Camera, Frame, Magnet, Coffee, Gift } from 'lucide-react';
+import { Frame, Printer, Magnet, Coffee, Gift, ChevronRight } from 'lucide-react';
 
 const categories = [
   {
-    name: 'Photo Prints',
-    icon: Camera,
-    description: 'High-quality prints in various sizes',
-    category: 'Photo Prints',
-  },
-  {
     name: 'Photo Frames',
     icon: Frame,
-    description: 'Beautiful frames for your memories',
+    subtitle: 'Beautiful frames for every memory',
     category: 'Photo Frames',
+    iconColor: 'text-blue-600',
+    iconBg: 'bg-blue-100',
+    cardBg: 'bg-blue-50/60',
+  },
+  {
+    name: 'Photo Prints',
+    icon: Printer,
+    subtitle: 'High-quality prints in any size',
+    category: 'Photo Prints',
+    iconColor: 'text-purple-600',
+    iconBg: 'bg-purple-100',
+    cardBg: 'bg-purple-50/60',
   },
   {
     name: 'Photo Magnets',
     icon: Magnet,
-    description: 'Fun magnets for your fridge',
+    subtitle: 'Fridge magnets with your photos',
     category: 'Photo Magnets',
+    iconColor: 'text-green-600',
+    iconBg: 'bg-green-100',
+    cardBg: 'bg-green-50/60',
   },
   {
     name: 'Mugs',
     icon: Coffee,
-    description: 'Custom mugs with your photos',
+    subtitle: 'Custom mugs for every occasion',
     category: 'Mugs',
+    iconColor: 'text-orange-500',
+    iconBg: 'bg-orange-100',
+    cardBg: 'bg-orange-50/60',
   },
   {
     name: 'Corporate Gifts',
     icon: Gift,
-    description: 'Branded gifts for your team',
+    subtitle: 'Branded gifts for your team',
     category: 'Corporate Gifts',
+    iconColor: 'text-red-500',
+    iconBg: 'bg-red-100',
+    cardBg: 'bg-red-50/60',
   },
 ];
 
@@ -38,39 +54,44 @@ export default function ProductCategoryGrid() {
   const navigate = useNavigate();
 
   const handleCategoryClick = (category: string) => {
-    navigate({
-      to: '/',
-      search: { category },
-    });
+    navigate({ to: '/', search: { category } });
   };
 
   return (
-    <section className="py-12 bg-category-bg">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold font-serif text-category-heading mb-2">Shop by Category</h2>
-          <p className="text-category-subtitle text-sm font-medium">Explore our wide range of personalized photo products</p>
+    <section className="py-14 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="text-center mb-10">
+          <p className="text-sm font-bold text-primary uppercase tracking-widest mb-2">COLLECTIONS</p>
+          <h2 className="text-4xl font-extrabold text-gray-900 mb-3">Shop by Category</h2>
+          <p className="text-gray-500 text-base">Explore our wide range of personalized products crafted just for you</p>
         </div>
 
-        <div className="flex flex-col gap-3">
+        {/* Category Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
           {categories.map((cat) => {
             const Icon = cat.icon;
             return (
               <div
                 key={cat.name}
-                className="group cursor-pointer bg-card rounded-xl border border-border shadow-sm hover:shadow-category transition-all duration-200 flex items-center gap-4 px-5 py-4"
+                className={`group cursor-pointer ${cat.cardBg} rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-lg transition-all duration-200 relative`}
                 onClick={() => handleCategoryClick(cat.category)}
               >
-                <div className="w-12 h-12 rounded-lg bg-category-icon-bg group-hover:bg-category-icon-bg-hover transition-colors duration-200 flex items-center justify-center shrink-0">
-                  <Icon className="w-6 h-6 text-category-icon stroke-[1.5]" />
+                {/* Icon Container */}
+                <div className={`w-20 h-20 rounded-2xl ${cat.iconBg} flex items-center justify-center mb-4`}>
+                  <Icon className={`w-10 h-10 ${cat.iconColor} stroke-[1.5]`} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-category-heading text-base">{cat.name}</h3>
-                  <p className="text-category-subtitle text-sm truncate">{cat.description}</p>
+
+                {/* Name */}
+                <h3 className="font-bold text-gray-900 text-base mb-1">{cat.name}</h3>
+
+                {/* Subtitle */}
+                <p className="text-gray-500 text-sm leading-snug">{cat.subtitle}</p>
+
+                {/* Hover Arrow */}
+                <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <ChevronRight className={`w-5 h-5 ${cat.iconColor}`} />
                 </div>
-                <svg className="w-5 h-5 text-muted-foreground group-hover:text-category-icon transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
               </div>
             );
           })}

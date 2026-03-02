@@ -1,350 +1,355 @@
 import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { CreditCard, Truck, CheckCircle, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { useGetCart, useCreateOrder, useGetMyAddress, useSaveAddress } from '../hooks/useQueries';
-import { toast } from 'sonner';
+import { useGetCart, useCreateOrder, useSaveAddress } from '../hooks/useQueries';
+import { getImageSrc } from '../utils/imageHelpers';
+import { Package, CreditCard, Truck, CheckCircle } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '../components/ui/dialog';
 import type { ShippingAddress } from '../backend';
 
-type PaymentMethod = 'COD' | 'UPI' | 'CARD' | 'NETBANKING';
+const PAYMENT_METHODS = [
+  { id: 'COD', label: 'Cash on Delivery', icon: '💵' },
+  { id: 'UPI', label: 'UPI Payment', icon: '📱' },
+  { id: 'Card', label: 'Credit/Debit Card', icon: '💳' },
+  { id: 'NetBanking', label: 'Net Banking', icon: '🏦' },
+];
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { data: cartItems } = useGetCart();
-  const { data: savedAddress } = useGetMyAddress();
   const createOrder = useCreateOrder();
   const saveAddress = useSaveAddress();
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
-  const [showMockPayment, setShowMockPayment] = useState(false);
-  const [processingPayment, setProcessingPayment] = useState(false);
-
+  const [step, setStep] = useState<'address' | 'payment'>('address');
+  const [paymentMethod, setPaymentMethod] = useState('COD');
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [address, setAddress] = useState<ShippingAddress>({
-    fullName: savedAddress?.fullName || '',
-    addressLine1: savedAddress?.addressLine1 || '',
-    addressLine2: savedAddress?.addressLine2 || '',
-    city: savedAddress?.city || '',
-    state: savedAddress?.state || '',
-    pincode: savedAddress?.pincode || '',
-    phone: savedAddress?.phone || '',
+    fullName: '',
+    addressLine1: '',
+    addressLine2: '',
+    city: '',
+    state: '',
+    pincode: '',
+    phone: '',
   });
 
-  const subtotal = cartItems?.reduce(
+  const total = cartItems?.reduce(
     (sum, item) => sum + item.product.price * Number(item.quantity),
     0
   ) ?? 0;
-  const shipping = subtotal > 999 ? 0 : 99;
-  const total = subtotal + shipping;
 
-  const handleAddressChange = (field: keyof ShippingAddress, value: string) => {
-    setAddress((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const validateAddress = () => {
-    const required: (keyof ShippingAddress)[] = ['fullName', 'addressLine1', 'city', 'state', 'pincode', 'phone'];
-    for (const field of required) {
-      if (!address[field].trim()) {
-        toast.error(`Please fill in ${field.replace(/([A-Z])/g, ' $1').toLowerCase()}`);
-        return false;
-      }
-    }
-    if (address.pincode.length !== 6) {
-      toast.error('Please enter a valid 6-digit pincode');
-      return false;
-    }
-    return true;
-  };
-
-  const handlePlaceOrder = async () => {
-    if (!validateAddress()) return;
-    if (!cartItems || cartItems.length === 0) {
-      toast.error('Your cart is empty');
-      return;
-    }
-
-    if (paymentMethod !== 'COD') {
-      setShowMockPayment(true);
-      return;
-    }
-
-    await submitOrder('COD');
-  };
-
-  const submitOrder = async (method: string) => {
-    setProcessingPayment(true);
+  const handleAddressSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
       await saveAddress.mutateAsync(address);
-      const orderId = await createOrder.mutateAsync({
-        paymentMethod: method,
-        shippingAddress: address,
-      });
-      toast.success('Order placed successfully!');
-      window.location.href = `/order-confirmation/${encodeURIComponent(orderId)}`;
     } catch {
-      toast.error('Failed to place order. Please login and try again.');
-    } finally {
-      setProcessingPayment(false);
-      setShowMockPayment(false);
+      // continue even if save fails
+    }
+    setStep('payment');
+  };
+
+  const handlePlaceOrder = () => {
+    setPaymentDialogOpen(true);
+  };
+
+  const handleConfirmPayment = async () => {
+    try {
+      const orderId = await createOrder.mutateAsync({ paymentMethod, shippingAddress: address });
+      setPaymentDialogOpen(false);
+      navigate({
+        to: '/order-confirmation/$orderId',
+        params: { orderId },
+        search: { category: undefined },
+      });
+    } catch (err) {
+      console.error('Order creation failed:', err);
+      setPaymentDialogOpen(false);
     }
   };
 
+  if (!cartItems || cartItems.length === 0) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8 text-center">
+        <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">Your cart is empty</h2>
+        <button
+          onClick={() => navigate({ to: '/', search: { category: undefined } })}
+          className="bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+        >
+          Start Shopping
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Mock Payment Modal */}
-      {showMockPayment && (
-        <div className="fixed inset-0 bg-foreground/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-card rounded-3xl shadow-card-hover p-8 w-full max-w-sm border border-border">
-            <h2 className="text-xl font-bold text-foreground mb-2">Complete Payment</h2>
-            <p className="text-muted-foreground text-sm mb-6">
-              Total: <strong className="text-foreground">₹{total.toFixed(0)}</strong>
-            </p>
-            <div className="space-y-3 mb-6">
-              {(['UPI', 'CARD', 'NETBANKING'] as PaymentMethod[]).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setPaymentMethod(m)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-sm font-medium ${
-                    paymentMethod === m
-                      ? 'border-primary bg-primary/5 text-primary'
-                      : 'border-border text-foreground hover:border-primary/50'
-                  }`}
-                >
-                  <CreditCard className="h-4 w-4" />
-                  {m === 'UPI' ? 'UPI (GPay, PhonePe, Paytm)' : m === 'CARD' ? 'Credit / Debit Card' : 'Net Banking'}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1 rounded-xl"
-                onClick={() => setShowMockPayment(false)}
+    <div className="max-w-5xl mx-auto px-4 py-8">
+      {/* Steps */}
+      <div className="flex items-center gap-4 mb-8">
+        {['address', 'payment'].map((s, i) => (
+          <React.Fragment key={s}>
+            <div className={`flex items-center gap-2 ${step === s ? 'text-primary font-semibold' : 'text-gray-400'}`}>
+              <div
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${
+                  step === s ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'
+                }`}
               >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 bg-primary text-primary-foreground hover:opacity-90 rounded-xl"
-                onClick={() => submitOrder(paymentMethod)}
-                disabled={processingPayment}
-              >
-                {processingPayment ? 'Processing...' : 'Pay Now'}
-              </Button>
+                {i + 1}
+              </div>
+              <span className="capitalize">{s}</span>
             </div>
-          </div>
-        </div>
-      )}
+            {i < 1 && <div className="flex-1 h-0.5 bg-gray-200" />}
+          </React.Fragment>
+        ))}
+      </div>
 
-      <Button
-        variant="ghost"
-        className="gap-2 mb-6 text-muted-foreground hover:text-foreground"
-        onClick={() => navigate({ to: '/cart', search: { category: undefined } })}
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Cart
-      </Button>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-2">
+          {step === 'address' && (
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <Truck className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold text-gray-900">Shipping Address</h2>
+              </div>
 
-      <h1 className="text-3xl font-bold text-foreground font-display mb-8">Checkout</h1>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left: Address + Payment */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Shipping Address */}
-          <div className="bg-card rounded-2xl shadow-card border border-border p-6">
-            <h2 className="font-bold text-foreground text-lg mb-4 flex items-center gap-2">
-              <Truck className="h-5 w-5 text-primary" />
-              Shipping Address
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="sm:col-span-2">
-                <Label htmlFor="fullName">Full Name *</Label>
-                <Input
-                  id="fullName"
-                  value={address.fullName}
-                  onChange={(e) => handleAddressChange('fullName', e.target.value)}
-                  placeholder="John Doe"
-                  className="mt-1 rounded-xl"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label htmlFor="addressLine1">Address Line 1 *</Label>
-                <Input
-                  id="addressLine1"
-                  value={address.addressLine1}
-                  onChange={(e) => handleAddressChange('addressLine1', e.target.value)}
-                  placeholder="House/Flat No., Street"
-                  className="mt-1 rounded-xl"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label htmlFor="addressLine2">Address Line 2</Label>
-                <Input
-                  id="addressLine2"
-                  value={address.addressLine2}
-                  onChange={(e) => handleAddressChange('addressLine2', e.target.value)}
-                  placeholder="Area, Landmark (optional)"
-                  className="mt-1 rounded-xl"
-                />
-              </div>
-              <div>
-                <Label htmlFor="city">City *</Label>
-                <Input
-                  id="city"
-                  value={address.city}
-                  onChange={(e) => handleAddressChange('city', e.target.value)}
-                  placeholder="Mumbai"
-                  className="mt-1 rounded-xl"
-                />
-              </div>
-              <div>
-                <Label htmlFor="state">State *</Label>
-                <Input
-                  id="state"
-                  value={address.state}
-                  onChange={(e) => handleAddressChange('state', e.target.value)}
-                  placeholder="Maharashtra"
-                  className="mt-1 rounded-xl"
-                />
-              </div>
-              <div>
-                <Label htmlFor="pincode">Pincode *</Label>
-                <Input
-                  id="pincode"
-                  value={address.pincode}
-                  onChange={(e) => handleAddressChange('pincode', e.target.value)}
-                  placeholder="400001"
-                  maxLength={6}
-                  className="mt-1 rounded-xl"
-                />
-              </div>
-              <div>
-                <Label htmlFor="phone">Phone *</Label>
-                <Input
-                  id="phone"
-                  value={address.phone}
-                  onChange={(e) => handleAddressChange('phone', e.target.value)}
-                  placeholder="9876543210"
-                  maxLength={10}
-                  className="mt-1 rounded-xl"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Payment Method */}
-          <div className="bg-card rounded-2xl shadow-card border border-border p-6">
-            <h2 className="font-bold text-foreground text-lg mb-4 flex items-center gap-2">
-              <CreditCard className="h-5 w-5 text-primary" />
-              Payment Method
-            </h2>
-            <div className="space-y-3">
-              {[
-                { value: 'COD', label: 'Cash on Delivery', desc: 'Pay when your order arrives' },
-                { value: 'UPI', label: 'UPI', desc: 'GPay, PhonePe, Paytm' },
-                { value: 'CARD', label: 'Credit / Debit Card', desc: 'Visa, Mastercard, RuPay' },
-                { value: 'NETBANKING', label: 'Net Banking', desc: 'All major banks supported' },
-              ].map((option) => (
-                <button
-                  key={option.value}
-                  onClick={() => setPaymentMethod(option.value as PaymentMethod)}
-                  className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all text-left ${
-                    paymentMethod === option.value
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/40'
-                  }`}
-                >
-                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                    paymentMethod === option.value ? 'border-primary' : 'border-muted-foreground'
-                  }`}>
-                    {paymentMethod === option.value && (
-                      <div className="w-2 h-2 rounded-full bg-primary" />
-                    )}
+              <form onSubmit={handleAddressSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                    <input
+                      type="text"
+                      value={address.fullName}
+                      onChange={(e) => setAddress({ ...address, fullName: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 1 *</label>
+                    <input
+                      type="text"
+                      value={address.addressLine1}
+                      onChange={(e) => setAddress({ ...address, addressLine1: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 2</label>
+                    <input
+                      type="text"
+                      value={address.addressLine2}
+                      onChange={(e) => setAddress({ ...address, addressLine2: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                    />
                   </div>
                   <div>
-                    <p className="font-medium text-foreground text-sm">{option.label}</p>
-                    <p className="text-xs text-muted-foreground">{option.desc}</p>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                    <input
+                      type="text"
+                      value={address.city}
+                      onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      required
+                    />
                   </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">State *</label>
+                    <input
+                      type="text"
+                      value={address.state}
+                      onChange={(e) => setAddress({ ...address, state: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Pincode *</label>
+                    <input
+                      type="text"
+                      value={address.pincode}
+                      onChange={(e) => setAddress({ ...address, pincode: e.target.value.replace(/\D/g, '').slice(0, 6) })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Phone *</label>
+                    <input
+                      type="tel"
+                      value={address.phone}
+                      onChange={(e) => setAddress({ ...address, phone: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={saveAddress.isPending}
+                  className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  {saveAddress.isPending ? 'Saving...' : 'Continue to Payment'}
                 </button>
-              ))}
+              </form>
             </div>
-          </div>
+          )}
+
+          {step === 'payment' && (
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <CreditCard className="w-5 h-5 text-primary" />
+                <h2 className="text-lg font-semibold text-gray-900">Payment Method</h2>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                {PAYMENT_METHODS.map((method) => (
+                  <label
+                    key={method.id}
+                    className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-colors ${
+                      paymentMethod === method.id
+                        ? 'border-primary bg-primary/5'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment"
+                      value={method.id}
+                      checked={paymentMethod === method.id}
+                      onChange={() => setPaymentMethod(method.id)}
+                      className="sr-only"
+                    />
+                    <span className="text-2xl">{method.icon}</span>
+                    <span className="font-medium text-gray-900">{method.label}</span>
+                    {paymentMethod === method.id && (
+                      <CheckCircle className="w-5 h-5 text-primary ml-auto" />
+                    )}
+                  </label>
+                ))}
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setStep('address')}
+                  className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handlePlaceOrder}
+                  className="flex-1 bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  Place Order
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Right: Order Summary */}
-        <div className="space-y-4">
-          <div className="bg-card rounded-2xl shadow-card border border-border p-6 sticky top-24">
-            <h2 className="font-bold text-foreground text-lg mb-4">Order Summary</h2>
+        {/* Order Summary */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-4">
+            <h2 className="font-semibold text-gray-900 mb-4">Order Summary</h2>
             <div className="space-y-3 mb-4">
-              {cartItems?.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-muted rounded-lg overflow-hidden shrink-0">
+              {cartItems.map((item, index) => (
+                <div key={index} className="flex gap-3">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                     {item.product.imageData ? (
                       <img
-                        src={
-                          item.product.imageData.startsWith('data:') || item.product.imageData.startsWith('/')
-                            ? item.product.imageData
-                            : `data:image/jpeg;base64,${item.product.imageData}`
-                        }
+                        src={getImageSrc(item.product.imageData)}
                         alt={item.product.name}
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-muted" />
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Package className="w-4 h-4 text-gray-400" />
+                      </div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{item.product.name}</p>
-                    <p className="text-xs text-muted-foreground">Qty: {Number(item.quantity)}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">{item.product.name}</p>
+                    <p className="text-xs text-gray-500">Qty: {Number(item.quantity)}</p>
                   </div>
-                  <p className="text-sm font-semibold text-foreground shrink-0">
-                    ₹{(item.product.price * Number(item.quantity)).toFixed(0)}
-                  </p>
+                  <span className="text-sm font-semibold text-gray-900">
+                    ₹{(item.product.price * Number(item.quantity)).toFixed(2)}
+                  </span>
                 </div>
               ))}
             </div>
-            <Separator className="my-4" />
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between text-muted-foreground">
+
+            <div className="border-t border-gray-100 pt-4 space-y-2">
+              <div className="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
-                <span>₹{subtotal.toFixed(0)}</span>
+                <span>₹{total.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-muted-foreground">
+              <div className="flex justify-between text-sm text-gray-600">
                 <span>Shipping</span>
-                <span>{shipping === 0 ? 'FREE' : `₹${shipping}`}</span>
+                <span className="text-green-600">Free</span>
               </div>
-              <Separator className="my-2" />
-              <div className="flex justify-between font-bold text-foreground text-base">
+              <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-100">
                 <span>Total</span>
-                <span>₹{total.toFixed(0)}</span>
+                <span className="text-primary">₹{total.toFixed(2)}</span>
               </div>
             </div>
-            <Button
-              className="w-full mt-6 bg-primary text-primary-foreground hover:opacity-90 rounded-xl py-6 text-base font-bold"
-              onClick={handlePlaceOrder}
-              disabled={createOrder.isPending || processingPayment}
-            >
-              {createOrder.isPending || processingPayment ? (
-                <span className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                  Placing Order...
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5" />
-                  Place Order
-                </span>
-              )}
-            </Button>
-            {shipping > 0 && (
-              <p className="text-xs text-muted-foreground text-center mt-3">
-                Add ₹{(999 - subtotal).toFixed(0)} more for free shipping
-              </p>
-            )}
           </div>
         </div>
       </div>
+
+      {/* Payment Confirmation Dialog */}
+      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Payment</DialogTitle>
+            <DialogDescription>
+              Review your order details before confirming payment.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Payment Method</span>
+              <span className="font-medium">{PAYMENT_METHODS.find((m) => m.id === paymentMethod)?.label}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Total Amount</span>
+              <span className="font-bold text-primary text-lg">₹{total.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-600">Delivery to</span>
+              <span className="font-medium">{address.city}{address.state ? `, ${address.state}` : ''}</span>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setPaymentDialogOpen(false)}
+              className="flex-1 border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmPayment}
+              disabled={createOrder.isPending}
+              className="flex-1 bg-primary text-white py-2 rounded-lg font-semibold hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {createOrder.isPending ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                'Confirm & Pay'
+              )}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

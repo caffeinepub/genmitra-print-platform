@@ -1,34 +1,33 @@
 /**
- * Returns a safe image src string.
- * - If the value is already a valid data URI (starts with "data:image/"), return it as-is.
- * - If the value is a plain HTTP/HTTPS URL, return it as-is.
- * - Otherwise, return an empty string (or a fallback placeholder).
- *
- * This prevents the erroneous "data:image/jpeg;base64,https://..." pattern
- * that occurs when a base64 prefix is prepended to a plain URL string.
+ * Safely returns an image src string.
+ * - data URIs (starting with 'data:image/') are returned unchanged
+ * - HTTP/HTTPS URLs are returned unchanged
+ * - Relative paths are returned unchanged
+ * - Raw base64 strings (no prefix) get 'data:image/jpeg;base64,' prepended
+ * - Empty strings return empty string
  */
-export function getImageSrc(value: string | undefined | null): string {
-  if (!value) return '';
+export function getImageSrc(imageData: string | undefined | null): string {
+  if (!imageData) return '';
 
-  // Already a valid data URI
-  if (value.startsWith('data:image/')) {
-    return value;
+  // Already a data URI
+  if (imageData.startsWith('data:image/')) {
+    return imageData;
   }
 
-  // Plain HTTP/HTTPS URL
-  if (value.startsWith('http://') || value.startsWith('https://')) {
-    return value;
+  // HTTP or HTTPS URL
+  if (imageData.startsWith('http://') || imageData.startsWith('https://')) {
+    return imageData;
   }
 
-  // Relative path or asset path
-  if (value.startsWith('/') || value.startsWith('./') || value.startsWith('../')) {
-    return value;
+  // Relative path (starts with / or ./)
+  if (imageData.startsWith('/') || imageData.startsWith('./') || imageData.startsWith('../')) {
+    return imageData;
   }
 
-  // Assume it's raw base64 without the prefix — treat as JPEG data URI
-  if (value.length > 100) {
-    return `data:image/jpeg;base64,${value}`;
+  // Raw base64 string — prepend data URI prefix
+  if (imageData.length > 0) {
+    return `data:image/jpeg;base64,${imageData}`;
   }
 
-  return value;
+  return '';
 }

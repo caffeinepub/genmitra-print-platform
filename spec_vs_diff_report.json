@@ -1,25 +1,113 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-03-01T20:34:56.596Z",
-  "summary": "The diff addresses both REQ-87 and REQ-88. REQ-88 (route id/path conflict) is fully fixed in App.tsx by removing the conflicting `id` from `adminLayoutRoute`. REQ-87 (origin whitelist) is partially addressed via CSP meta tags in index.html, but there is no evidence of auditing or fixing `window.addEventListener('message', handler)` callbacks that check `event.origin` or hardcoded origin whitelist arrays in the broader frontend codebase.",
+  "generatedAt": "2026-03-02T15:07:20.996Z",
+  "summary": "The diff addresses most of the 12 requirements. Key areas covered include: App.tsx routing fix (REQ-108), AdminGuard fix (REQ-113), useAdminSession credential fix (REQ-111), LoginPage admin/user mode separation (REQ-112), imageHelpers/getImageSrc usage in components (REQ-110), backend main.mo and migration.mo (REQ-109/REQ-114/REQ-116), useQueries hooks (REQ-115/REQ-116), DialogContent/DialogDescription additions in CartPage and CheckoutPage (REQ-118), and CSP/index.html (REQ-117). However, several requirements show gaps or are not evidenced in the truncated diff.",
   "missing_requirements": [
     {
-      "id": "REQ-87",
-      "requirement": "Audit the entire frontend codebase for all locations that perform origin validation on incoming postMessage events or construct/check allowed-origin lists — including window.addEventListener('message', handler) callbacks that check event.origin and any hardcoded origin whitelist arrays — and ensure https://sole-aqua-rc6-draft.caffeine.xyz is present in every such whitelist.",
-      "reason": "The diff only adds CSP meta tags to frontend/index.html. There is no evidence of any audit or changes to JavaScript files containing postMessage event listeners or hardcoded origin whitelist arrays. The frontend-file-summaries.txt does not mention any such changes to hooks, components, or utility files. The acceptance criterion requires the new origin to be present in every postMessage origin whitelist, not just the CSP.",
+      "id": "REQ-109",
+      "requirement": "Audit and fix all compilation and runtime errors in backend/main.mo and backend/migration.mo. Ensure system func init() and system func postupgrade() execute without runtime errors.",
+      "reason": "The diff shows backend/main.mo uses system func preupgrade() and system func postupgrade() but does NOT show a system func init(). The requirement explicitly requires init() to execute without errors. Additionally, imports of MixinStorage, MixinAuthorization, and AccessControl modules are not shown to exist in the repo and may still cause compilation failures.",
       "evidence": [
-        "frontend/index.html",
-        "frontend-file-summaries.txt"
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-114",
+      "requirement": "Fix the backend role-check guard for write-protected functions. Ensure both admin seed accounts and regular user seed are upserted in init() and postupgrade().",
+      "reason": "The diff shows upsertAdminSeeds() called from preupgrade() and postupgrade() but not from init(). No init() function is visible in the diff. The role-check guard implementation for write-protected functions is not visible in the truncated diff.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-115",
+      "requirement": "Verify and fix all mutation hooks in frontend/src/hooks/useQueries.ts to ensure they use the authenticated actor instance, not an anonymous actor.",
+      "reason": "The file is truncated and the specific implementations of createTemplate, updateTemplate, deleteTemplate, createProduct, updateProduct, deleteProduct mutation hooks are not visible. Cannot confirm the authenticated actor is properly used in these specific mutations.",
+      "evidence": [
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "id": "REQ-116",
+      "requirement": "Ensure system func init() and system func postupgrade() upsert all demo product seeds so they are always present after every deploy.",
+      "reason": "The diff shows upsertDemoProducts() called from preupgrade() and postupgrade() in main.mo, but not from init(). The requirement explicitly states demo products must be present after every deploy including fresh initialization.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-117",
+      "requirement": "Audit frontend/index.html CSP meta tag: remove frame-ancestors directive, add https://sole-aqua-rc6-draft.caffeine.xyz to frame-src/script-src and all origin whitelists, audit all window.addEventListener message callbacks.",
+      "reason": "frontend/index.html is listed as a modified file but was omitted from the diff output due to truncation limits. Cannot confirm the CSP changes were implemented.",
+      "evidence": []
+    },
+    {
+      "id": "REQ-118",
+      "requirement": "Add DialogDescription to every DialogContent across the entire codebase including ProductManagementPage.tsx, TemplateManagementPage.tsx, OrderManagementPage.tsx, CustomerManagementPage.tsx, AdminSettingsPage.tsx, AdminDashboardPage.tsx.",
+      "reason": "The diff shows DialogDescription added in CartPage.tsx and CheckoutPage.tsx. However, ProductManagementPage.tsx, TemplateManagementPage.tsx, OrderManagementPage.tsx, CustomerManagementPage.tsx, AdminSettingsPage.tsx, and AdminDashboardPage.tsx content was omitted due to diff truncation. Cannot confirm DialogDescription was added to all required files.",
+      "evidence": [
+        "frontend/src/pages/CartPage.tsx",
+        "frontend/src/pages/CheckoutPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-110",
+      "requirement": "Fix imageHelpers.ts and audit all listed components including ShopFramesBySize.tsx, ProductCategoryGrid.tsx, AdminDashboardPage.tsx, ProductManagementPage.tsx, TemplateManagementPage.tsx.",
+      "reason": "The actual imageHelpers.ts implementation is not shown in the diff. ShopFramesBySize.tsx, ProductCategoryGrid.tsx, AdminDashboardPage.tsx, ProductManagementPage.tsx, and TemplateManagementPage.tsx are either not shown or truncated, so correct image src handling cannot be confirmed in those files.",
+      "evidence": [
+        "frontend/src/utils/imageHelpers.ts"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.8,
+  "hallucinated_features": [
+    {
+      "description": "Regular user seed uses username genmitra_user instead of genmitra as specified in the requirement.",
+      "reason": "REQ-114 specifies the regular user seed should be username genmitra, password 1234, role user. The diff seeds genmitra_user with password 1234 and role user, which does not match the specified username.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "system func preupgrade() added to backend/main.mo calling upsertAdminSeeds() and upsertDemoProducts().",
+      "reason": "The requirements only specify init() and postupgrade() should upsert seeds. Adding preupgrade() with seed upserts is extra behavior not requested.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "backend/main.mo imports and uses MixinStorage, MixinAuthorization, AccessControl modules with include syntax and with migration actor declaration.",
+      "reason": "These advanced Motoko mixin patterns are not mentioned in the build request and may not be supported by the current Motoko compiler, potentially introducing new compilation errors rather than fixing existing ones.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    }
+  ],
+  "confidence": 0.52,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.html",
     "frontend/src/App.tsx",
+    "frontend/src/components/FeaturedProducts.tsx",
+    "frontend/src/components/Footer.tsx",
+    "frontend/src/components/admin/AdminGuard.tsx",
+    "frontend/src/components/admin/AdminLayout.tsx",
+    "frontend/src/hooks/useAdminSession.ts",
+    "frontend/src/hooks/useAuth.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/lib/demoProducts.ts",
+    "frontend/src/pages/CartPage.tsx",
+    "frontend/src/pages/CheckoutPage.tsx",
+    "frontend/src/pages/CreateAccountPage.tsx",
+    "frontend/src/pages/ForgotPasswordPage.tsx",
+    "frontend/src/pages/HomePage.tsx",
+    "frontend/src/pages/LoginPage.tsx",
+    "frontend/src/pages/MyOrdersPage.tsx",
+    "frontend/src/pages/OrderConfirmationPage.tsx",
+    "frontend/src/pages/OrderDetailPage.tsx",
+    "frontend/src/pages/ProductDetailPage.tsx",
+    "frontend/src/utils/imageHelpers.ts",
     "project_state.json"
   ]
 }

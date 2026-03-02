@@ -1,36 +1,67 @@
+import React from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { getImageSrc } from '../utils/imageHelpers';
 
 const frameSizes = [
-  { size: '4×6', label: '4×6 inches', subtitle: 'Classic Wallet Size', image: '/assets/generated/frame-size-4x6.dim_400x500.png' },
-  { size: '6×8', label: '6×8 inches', subtitle: 'Standard Portrait', image: '/assets/generated/frame-size-6x8.dim_400x500.png' },
-  { size: '9×12', label: '9×12 inches', subtitle: 'Large Portrait', image: '/assets/generated/frame-size-9x12.dim_400x500.png' },
-  { size: '12×12', label: '12×12 inches', subtitle: 'Square Format', image: '/assets/generated/frame-size-12x12.dim_400x500.png' },
-  { size: '12×18', label: '12×18 inches', subtitle: 'Panoramic Print', image: '/assets/generated/frame-size-12x18.dim_400x500.png' },
-  { size: '14×18', label: '14×18 inches', subtitle: 'Gallery Size', image: '/assets/generated/frame-size-14x18.dim_400x500.png' },
-  { size: '18×24', label: '18×24 inches', subtitle: 'Poster Size', image: '/assets/generated/frame-size-18x24.dim_400x500.png' },
-  { size: '20×24', label: '20×24 inches', subtitle: 'Statement Piece', image: '/assets/generated/frame-size-20x24.dim_400x500.png' },
+  {
+    size: '4 × 6 in',
+    subtitle: 'Desktop stand only',
+    image: '/assets/generated/frame-4x6-demo.dim_400x500.png',
+  },
+  {
+    size: '6 × 8 in',
+    subtitle: 'Desk & wall mount',
+    image: '/assets/generated/frame-6x8-demo.dim_400x530.png',
+  },
+  {
+    size: '9 × 12 in',
+    subtitle: 'Wall Mount',
+    image: '/assets/generated/frame-9x12-demo.dim_400x500.png',
+  },
+  {
+    size: '12 × 12 in',
+    subtitle: 'Wall mount',
+    image: '/assets/generated/frame-12x12-demo.dim_500x500.png',
+  },
+  {
+    size: '12 × 18 in',
+    subtitle: 'Wall Mount',
+    image: '/assets/generated/frame-12x18-demo.dim_400x560.png',
+  },
+  {
+    size: '14 × 18 in',
+    subtitle: 'Wall mount',
+    image: '/assets/generated/frame-14x18-demo.dim_400x520.png',
+  },
+  {
+    size: '18 × 24 in',
+    subtitle: 'Wall mount',
+    image: '/assets/generated/frame-18x24-demo.dim_400x550.png',
+  },
+  {
+    size: '27 × 36 in',
+    subtitle: 'Wall mount',
+    image: '/assets/generated/frame-27x36-demo.dim_400x560.png',
+  },
 ];
 
 export default function ShopFramesBySize() {
   const navigate = useNavigate();
 
   const handleSizeClick = () => {
-    navigate({
-      to: '/',
-      search: { category: 'Photo Frames' },
-    });
+    navigate({ to: '/', search: { category: 'Photo Frames' } });
   };
 
   return (
-    <section className="py-12 bg-muted/30">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold font-serif text-foreground mb-2">Shop Photo Frames by Sizes</h2>
-          <p className="text-muted-foreground">Find the perfect frame size for your cherished memories</p>
+    <section className="py-14 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Shop Photo Frames by Sizes</h2>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        {/* Frame Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-6">
           {frameSizes.map((frame) => {
             const imageSrc = getImageSrc(frame.image);
             return (
@@ -39,15 +70,23 @@ export default function ShopFramesBySize() {
                 className="group cursor-pointer flex flex-col items-center"
                 onClick={handleSizeClick}
               >
-                <div className="w-full aspect-[4/5] rounded-lg overflow-hidden bg-card shadow-sm group-hover:shadow-md transition-all duration-200 border border-border mb-2">
+                {/* Frame image with thick black border - no rounded corners */}
+                <div
+                  className="w-full overflow-hidden mb-3 group-hover:opacity-90 transition-opacity duration-200"
+                  style={{
+                    border: '6px solid #111',
+                    borderRadius: '0',
+                    aspectRatio: '4/5',
+                  }}
+                >
                   <img
                     src={imageSrc}
-                    alt={`${frame.label} photo frame`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    alt={`${frame.size} photo frame`}
+                    className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="font-bold text-sm text-foreground">{frame.size}</span>
-                <span className="text-xs text-muted-foreground text-center">{frame.subtitle}</span>
+                <span className="font-bold text-sm text-gray-900 text-center">{frame.size}</span>
+                <span className="text-xs text-blue-500 text-center mt-0.5">{frame.subtitle}</span>
               </div>
             );
           })}

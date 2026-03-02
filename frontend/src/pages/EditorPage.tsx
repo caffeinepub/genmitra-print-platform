@@ -7,7 +7,11 @@ import {
   Type,
   RectangleVertical,
   Monitor,
-  ArrowRight,
+  Check,
+  Trash2,
+  Undo2,
+  Redo2,
+  Info,
 } from 'lucide-react';
 import { useAddToCart } from '../hooks/useQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
@@ -26,6 +30,14 @@ const DEMO_PRODUCT: ProductInfo = {
   description: 'Create your custom photo frame',
   dpiSettings: BigInt(300),
 };
+
+const FRAME_STYLES = [
+  'Plain Black',
+  'Plain Brown',
+  'Goldline Brown',
+  'Gold Sash (Brown)',
+  'Zigzag Brown',
+];
 
 type Orientation = 'portrait' | 'landscape';
 
@@ -54,6 +66,7 @@ export default function EditorPage() {
   const addToCart = useAddToCart();
 
   const [orientation, setOrientation] = useState<Orientation>('portrait');
+  const [frameStyle, setFrameStyle] = useState('Plain Black');
   const [imageState, setImageState] = useState<ImageState>({
     src: null,
     zoom: 1,
@@ -74,12 +87,12 @@ export default function EditorPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Frame dimensions based on orientation
-  const frameWidth = orientation === 'portrait' ? 310 : 460;
-  const frameHeight = orientation === 'portrait' ? 420 : 310;
+  const frameWidth = orientation === 'portrait' ? 210 : 340;
+  const frameHeight = orientation === 'portrait' ? 280 : 210;
 
   // Canvas dimensions (inner white area)
-  const canvasWidth = frameWidth - 32;
-  const canvasHeight = frameHeight - 32;
+  const canvasWidth = frameWidth - 24;
+  const canvasHeight = frameHeight - 24;
 
   const renderCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -88,8 +101,6 @@ export default function EditorPage() {
     if (!ctx) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // White background
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -103,7 +114,6 @@ export default function EditorPage() {
         ctx.drawImage(img, -img.width / 2, -img.height / 2);
         ctx.restore();
 
-        // Draw text overlay
         if (textOverlay) {
           ctx.font = 'bold 20px sans-serif';
           ctx.fillStyle = 'white';
@@ -122,7 +132,6 @@ export default function EditorPage() {
     renderCanvas();
   }, [renderCanvas]);
 
-  // Re-render when canvas size changes (orientation switch)
   useEffect(() => {
     renderCanvas();
   }, [canvasWidth, canvasHeight, renderCanvas]);
@@ -204,6 +213,11 @@ export default function EditorPage() {
     setImageState((prev) => ({ ...prev, rotation: (prev.rotation + 90) % 360 }));
   };
 
+  const handleDelete = () => {
+    setImageState({ src: null, zoom: 1, offsetX: 0, offsetY: 0, rotation: 0 });
+    setTextOverlay(null);
+  };
+
   const handleAddText = () => {
     const text = window.prompt('Enter text to overlay:');
     if (text) {
@@ -238,7 +252,7 @@ export default function EditorPage() {
   return (
     <div
       className="min-h-screen w-full flex flex-col"
-      style={{ backgroundColor: '#eef0f2' }}
+      style={{ backgroundColor: '#f0f2f5' }}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -246,13 +260,13 @@ export default function EditorPage() {
       {/* Top Bar */}
       <div className="w-full bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
         {/* Orientation Toggle */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={() => setOrientation('portrait')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all border ${
               orientation === 'portrait'
-                ? 'bg-teal-600 text-white shadow-sm'
-                : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+                ? 'bg-white text-gray-800 border-gray-300 shadow-sm'
+                : 'bg-transparent text-gray-500 border-transparent hover:border-gray-200'
             }`}
           >
             <RectangleVertical className="h-4 w-4" />
@@ -260,10 +274,10 @@ export default function EditorPage() {
           </button>
           <button
             onClick={() => setOrientation('landscape')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all border ${
               orientation === 'landscape'
-                ? 'bg-teal-600 text-white shadow-sm'
-                : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
+                ? 'bg-white text-gray-800 border-gray-300 shadow-sm'
+                : 'bg-transparent text-gray-500 border-transparent hover:border-gray-200'
             }`}
           >
             <Monitor className="h-4 w-4" />
@@ -275,7 +289,7 @@ export default function EditorPage() {
         <button
           onClick={handleSaveAndSelectSize}
           disabled={addToCart.isPending}
-          className="flex items-center gap-2 px-5 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors disabled:opacity-60"
+          className="flex items-center gap-2 px-5 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-60"
         >
           {addToCart.isPending ? (
             <>
@@ -285,134 +299,199 @@ export default function EditorPage() {
           ) : (
             <>
               Save &amp; Select Size
-              <ArrowRight className="h-4 w-4" />
+              <Check className="h-4 w-4" />
             </>
           )}
         </button>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center py-10 px-4">
-        {/* Frame Mockup */}
-        <div
-          className="relative flex items-center justify-center transition-all duration-300"
-          style={{
-            width: frameWidth,
-            height: frameHeight,
-            backgroundColor: '#7a5c3a',
-            borderRadius: 28,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
-            padding: 14,
-          }}
-        >
-          {/* Inner white area / canvas */}
+      {/* Main Content Area */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left: Canvas Area */}
+        <div className="flex-1 flex items-center justify-center p-8">
+          {/* Frame Mockup */}
           <div
-            className="relative overflow-hidden bg-white"
+            className="relative flex items-center justify-center transition-all duration-300"
             style={{
-              width: canvasWidth,
-              height: canvasHeight,
-              borderRadius: 14,
+              width: frameWidth,
+              height: frameHeight,
+              backgroundColor: '#111111',
+              borderRadius: 6,
+              boxShadow: '0 12px 40px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.12)',
+              padding: 12,
             }}
           >
-            {imageState.src ? (
-              <canvas
-                ref={canvasRef}
-                width={canvasWidth}
-                height={canvasHeight}
-                className="block"
-                style={{ cursor: dragState.isDragging ? 'grabbing' : 'grab' }}
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                onWheel={handleWheel}
-              />
-            ) : (
-              <>
-                {/* Hidden canvas for export even without image */}
+            {/* Inner white area / canvas */}
+            <div
+              className="relative overflow-hidden bg-white"
+              style={{
+                width: canvasWidth,
+                height: canvasHeight,
+                borderRadius: 2,
+              }}
+            >
+              {imageState.src ? (
                 <canvas
                   ref={canvasRef}
                   width={canvasWidth}
                   height={canvasHeight}
-                  className="hidden"
+                  className="block"
+                  style={{ cursor: dragState.isDragging ? 'grabbing' : 'grab' }}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  onWheel={handleWheel}
                 />
-                {/* Upload placeholder */}
-                <div
-                  className={`w-full h-full flex flex-col items-center justify-center gap-3 transition-colors ${
-                    isDragOver ? 'bg-teal-50' : 'bg-white'
-                  }`}
-                >
-                  <Upload className="h-10 w-10 text-gray-400" strokeWidth={1.5} />
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-5 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors"
+              ) : (
+                <>
+                  {/* Hidden canvas for export even without image */}
+                  <canvas
+                    ref={canvasRef}
+                    width={canvasWidth}
+                    height={canvasHeight}
+                    className="hidden"
+                  />
+                  {/* Upload placeholder */}
+                  <div
+                    className={`w-full h-full flex flex-col items-center justify-center gap-2 transition-colors ${
+                      isDragOver ? 'bg-blue-50' : 'bg-white'
+                    }`}
                   >
-                    Select Photo
-                  </button>
-                  <p className="text-sm text-gray-400">or drag &amp; drop your image</p>
-                </div>
-              </>
-            )}
+                    <Upload className="h-8 w-8 text-gray-300" strokeWidth={1.5} />
+                    <p className="text-xs text-gray-400 mt-1">No photo selected</p>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Icon Toolbar */}
-        <div className="mt-6 flex items-center gap-3">
-          {/* Upload */}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            title="Upload Photo"
-            className="w-11 h-11 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-teal-600 transition-colors shadow-sm"
-          >
-            <Upload className="h-5 w-5" />
-          </button>
+        {/* Right Sidebar */}
+        <div
+          className="w-64 bg-white border-l border-gray-200 flex flex-col gap-0 overflow-y-auto"
+          style={{ minWidth: 220 }}
+        >
+          {/* Upload Photo + Add Text */}
+          <div className="flex border-b border-gray-100">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex-1 flex flex-col items-center gap-1 py-5 text-blue-600 hover:bg-blue-50 transition-colors text-xs font-medium"
+            >
+              <Upload className="h-5 w-5" strokeWidth={2} />
+              Upload Photo
+            </button>
+            <div className="w-px bg-gray-100" />
+            <button
+              onClick={handleAddText}
+              className="flex-1 flex flex-col items-center gap-1 py-5 text-blue-600 hover:bg-blue-50 transition-colors text-xs font-medium"
+            >
+              <Type className="h-5 w-5" strokeWidth={2} />
+              Add Text
+            </button>
+          </div>
 
-          {/* Zoom In */}
-          <button
-            onClick={handleZoomIn}
-            title="Zoom In"
-            className="w-11 h-11 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-teal-600 transition-colors shadow-sm"
-          >
-            <ZoomIn className="h-5 w-5" />
-          </button>
+          {/* Adjustments */}
+          <div className="px-4 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-semibold text-gray-800">Adjustments</span>
+              <div className="flex items-center gap-1">
+                <button
+                  className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Undo"
+                >
+                  <Undo2 className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Redo"
+                >
+                  <Redo2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Zoom In */}
+              <button
+                onClick={handleZoomIn}
+                title="Zoom In"
+                className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </button>
+              {/* Zoom Out */}
+              <button
+                onClick={handleZoomOut}
+                title="Zoom Out"
+                className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </button>
+              {/* Rotate */}
+              <button
+                onClick={handleRotate}
+                title="Rotate"
+                className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <RotateCw className="h-4 w-4" />
+              </button>
+              {/* Delete */}
+              <button
+                onClick={handleDelete}
+                title="Delete"
+                className="w-10 h-10 flex items-center justify-center rounded-full border border-red-200 bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
 
-          {/* Zoom Out */}
-          <button
-            onClick={handleZoomOut}
-            title="Zoom Out"
-            className="w-11 h-11 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-teal-600 transition-colors shadow-sm"
-          >
-            <ZoomOut className="h-5 w-5" />
-          </button>
+          {/* Frame Styles */}
+          <div className="px-4 py-4 border-b border-gray-100">
+            <label className="block text-sm font-semibold text-gray-800 mb-2">Frame Styles</label>
+            <div className="relative">
+              <select
+                value={frameStyle}
+                onChange={(e) => setFrameStyle(e.target.value)}
+                className="w-full appearance-none border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-8"
+              >
+                {FRAME_STYLES.map((style) => (
+                  <option key={style} value={style}>
+                    {style}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center">
+                <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+          </div>
 
-          {/* Rotate */}
-          <button
-            onClick={handleRotate}
-            title="Rotate"
-            className="w-11 h-11 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-teal-600 transition-colors shadow-sm"
-          >
-            <RotateCw className="h-5 w-5" />
-          </button>
-
-          {/* Add Text */}
-          <button
-            onClick={handleAddText}
-            title="Add Text"
-            className="w-11 h-11 flex items-center justify-center rounded-xl bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-teal-600 transition-colors shadow-sm"
-          >
-            <Type className="h-5 w-5" />
-          </button>
+          {/* Pro Tip */}
+          <div className="px-4 py-4">
+            <div className="rounded-lg bg-blue-50 border border-blue-100 p-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Info className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                <span className="text-sm font-semibold text-blue-700">Pro Tip</span>
+              </div>
+              <p className="text-xs text-blue-600 leading-relaxed">
+                Use high-quality images for the best printing results. You can drag and resize photos directly on the canvas.
+              </p>
+            </div>
+          </div>
         </div>
-
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleImageUpload}
-        />
       </div>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleImageUpload}
+      />
     </div>
   );
 }

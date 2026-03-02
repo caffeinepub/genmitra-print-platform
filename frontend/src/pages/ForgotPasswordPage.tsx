@@ -1,94 +1,110 @@
 import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Printer, ArrowLeft, Mail } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
+import { Printer, ArrowLeft, CheckCircle } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
-    if (!email.trim()) {
-      toast.error('Please enter your email address');
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setSubmitted(true);
-    toast.success('If an account exists, a reset link has been sent.');
+    setIsSubmitting(false);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-secondary via-background to-secondary/50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4 shadow-purple">
-            <Printer className="h-8 w-8 text-primary-foreground" />
-          </div>
-          <h1 className="text-3xl font-bold text-foreground font-display">PrintCraft Studio</h1>
-          <p className="text-muted-foreground mt-2">Reset your password</p>
-        </div>
-
-        {/* Card */}
-        <div className="bg-card rounded-3xl shadow-card-hover p-8 border border-border">
-          {submitted ? (
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-                <Mail className="h-8 w-8 text-green-600" />
-              </div>
-              <h2 className="text-xl font-bold text-foreground mb-2">Check your email</h2>
-              <p className="text-muted-foreground text-sm mb-6">
-                If an account exists for <strong>{email}</strong>, we've sent a password reset link.
-              </p>
-              <Button
-                className="w-full bg-primary text-primary-foreground hover:opacity-90 rounded-xl"
-                onClick={() => navigate({ to: '/login', search: { mode: undefined, redirect: undefined } })}
-              >
-                Back to Login
-              </Button>
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
-          ) : (
-            <>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Forgot Password?</h2>
-              <p className="text-muted-foreground mb-6 text-sm">
-                Enter your email address and we'll send you a reset link.
-              </p>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Check Your Email</h1>
+            <p className="text-gray-500 mb-6">
+              We've sent password reset instructions to <strong>{email}</strong>
+            </p>
+            <button
+              onClick={() => navigate({ to: '/login', search: { mode: undefined, redirect: undefined } })}
+              className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+            >
+              Back to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    className="mt-1 rounded-xl"
-                  />
-                </div>
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-2xl shadow-lg p-8">
+          {/* Logo */}
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+              <Printer className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-gray-900">GenMitra</span>
+          </div>
 
-                <Button
-                  className="w-full bg-primary text-primary-foreground hover:opacity-90 rounded-xl h-12 text-base font-semibold shadow-purple"
-                  onClick={handleSubmit}
-                >
-                  Send Reset Link
-                </Button>
-              </div>
+          <button
+            onClick={() => navigate({ to: '/login', search: { mode: undefined, redirect: undefined } })}
+            className="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-6"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Login
+          </button>
 
-              <div className="mt-6 text-center">
-                <button
-                  onClick={() => navigate({ to: '/login', search: { mode: undefined, redirect: undefined } })}
-                  className="text-sm text-primary hover:underline flex items-center justify-center gap-1 w-full"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Back to Login
-                </button>
-              </div>
-            </>
-          )}
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Forgot Password</h1>
+          <p className="text-gray-500 mb-8">
+            Enter your email address and we'll send you instructions to reset your password.
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting || !email}
+              className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                'Send Reset Instructions'
+              )}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-gray-500 text-sm">
+              Remember your password?{' '}
+              <button
+                onClick={() => navigate({ to: '/login', search: { mode: undefined, redirect: undefined } })}
+                className="text-primary font-medium hover:underline"
+              >
+                Sign In
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>

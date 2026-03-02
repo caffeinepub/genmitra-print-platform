@@ -39,7 +39,7 @@ export interface ProductInfo {
   'imageData' : string,
   'name' : string,
   'description' : string,
-  'dpiSettings' : bigint,
+  'dpiSettings' : [] | [bigint],
   'deliveryTime' : string,
   'sizeOptions' : Array<string>,
   'category' : string,

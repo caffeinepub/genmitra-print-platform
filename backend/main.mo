@@ -1,19 +1,18 @@
 import Map "mo:core/Map";
-import Array "mo:core/Array";
 import Text "mo:core/Text";
 import Set "mo:core/Set";
 import Iter "mo:core/Iter";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
-
+import Array "mo:core/Array";
+import Float "mo:core/Float";
+import Migration "migration";
+import MixinStorage "blob-storage/Mixin";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-import Float "mo:core/Float";
-import MixinStorage "blob-storage/Mixin";
 
-
-
+(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -31,7 +30,7 @@ actor {
     templateImageData : Text; // Base64 image as Text
     deliveryTime : Text;
     category : Text;
-    dpiSettings : Nat;
+    dpiSettings : ?Nat;
   };
 
   public type Template = {
@@ -109,8 +108,14 @@ actor {
 
   // ---- Lifecycle Method ----
 
+  system func preupgrade() {
+    upsertAdminSeeds();
+    upsertDemoProducts();
+  };
+
   system func postupgrade() {
     upsertAdminSeeds();
+    upsertDemoProducts();
   };
 
   // ---- Admin Account Seeding ----
@@ -130,6 +135,88 @@ actor {
         role = "admin";
       },
     );
+    users.add(
+      "genmitra_user",
+      {
+        password = "1234";
+        role = "user";
+      },
+    );
+  };
+
+  // ---- Demo Product Seeding ----
+
+  func upsertDemoProducts() {
+    let product1 : ProductInfo = {
+      id = "1";
+      name = "Wall Decor Collage";
+      price = 599.0;
+      description = "Transform your space with our Wall Decor Collage kit. Create a stunning gallery of memories with customizable photo layouts.";
+      sizeOptions = ["A4", "A3", "A2"];
+      imageData = "";
+      templateImageData = "";
+      deliveryTime = "5-7 business days";
+      category = "Posters with Photo";
+      dpiSettings = ?300;
+    };
+
+    let product2 : ProductInfo = {
+      id = "2";
+      name = "Poster Collage with Photo";
+      price = 799.0;
+      description = "Celebrate your favorite moments with our Poster Collage featuring a central photo surrounded by beautiful designs.";
+      sizeOptions = ["A4", "A3", "A2"];
+      imageData = "";
+      templateImageData = "";
+      deliveryTime = "5-7 business days";
+      category = "Posters with Photo";
+      dpiSettings = ?300;
+    };
+
+    let product3 : ProductInfo = {
+      id = "3";
+      name = "Custom Canvas Prints";
+      price = 1299.0;
+      description = "Create personalized canvas prints with your own photos and text. Perfect for gifts and home decor.";
+      sizeOptions = ["12x12 inch", "16x20 inch", "20x30 inch"];
+      imageData = "";
+      templateImageData = "";
+      deliveryTime = "7-10 business days";
+      category = "Canvas Prints";
+      dpiSettings = ?300;
+    };
+
+    let product4 : ProductInfo = {
+      id = "4";
+      name = "Framed Photo Collage";
+      price = 1499.0;
+      description = "Display your memories in style with our Framed Photo Collage. Choose from various layouts and frame options.";
+      sizeOptions = ["A4", "A3", "A2"];
+      imageData = "";
+      templateImageData = "";
+      deliveryTime = "5-7 business days";
+      category = "Framed Prints";
+      dpiSettings = ?300;
+    };
+
+    let product5 : ProductInfo = {
+      id = "5";
+      name = "Custom Poster Printing";
+      price = 499.0;
+      description = "Get your favorite photos printed as high-quality posters. Available in multiple sizes.";
+      sizeOptions = ["A4", "A3", "A2"];
+      imageData = "";
+      templateImageData = "";
+      deliveryTime = "3-5 business days";
+      category = "Unframed Posters";
+      dpiSettings = ?300;
+    };
+
+    products.add(product1.id, product1);
+    products.add(product2.id, product2);
+    products.add(product3.id, product3);
+    products.add(product4.id, product4);
+    products.add(product5.id, product5);
   };
 
   // ---- Authentication (Login / Logout) ----
@@ -521,4 +608,3 @@ actor {
     };
   };
 };
-

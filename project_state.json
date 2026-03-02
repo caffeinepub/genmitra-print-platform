@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 59,
+  "projectStateVersion": 69,
   "summary": "Production-ready full-stack online printing and personalized gift platform (similar to Printo.in) with original branding. Frontend: Next.js 14, Tailwind CSS, Redux Toolkit, Fabric.js, PWA. Backend: Node.js + Express, PostgreSQL (Supabase), Sharp, Razorpay, WhatsApp API. Deployment: Vercel (frontend), Railway/Render (backend), Supabase (DB/storage).",
   "architectural_notes": [
     "Frontend: Next.js 14 + Tailwind CSS + Redux Toolkit + Fabric.js, deployed on Vercel",
@@ -546,6 +546,222 @@
         "REQ-88"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-frontend-src-index-css-and-frontend-tailwind-config-js-to-define-a-new-design-system-based-on-the-uploaded-reference-screenshots-the-primary-accent-color-must-be-bright-blue-2563eb-or-similar-replace-all-current-purple-teal-tokens-with-this-blue-based-palette-define-css-custom-property-tokens-for-primary-blue-accent-dark-navy-background-0f1729-or-similar-for-footer-dark-sections-light-gray-page-background-f3f4f6-white-card-backgrounds-dark-navy-typography-for-headings-medium-gray-for-body-text-and-matching-border-radius-and-shadow-scales-ensure-all-tailwind-utility-classes-used-across-the-application-map-to-these-new-tokens",
+      "title": "Update `frontend/src/index.css` and `frontend/tailwind.config.js` to define a new design system based on the uploaded reference screenshots. The primary accent color must be bright blue (`#2563EB` or similar). Replace all current purple/teal tokens with this blue-based palette. Define CSS custom property tokens for: primary blue accent, dark navy background (`#0f1729` or similar for footer/dark sections), light gray page background (`#f3f4f6`), white card backgrounds, dark navy typography for headings, medium gray for body text, and matching border-radius and shadow scales. Ensure all Tailwind utility classes used across the application map to these new tokens.",
+      "reqIds": [
+        "REQ-89"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-components-layout-tsx-the-main-navigation-header-to-match-the-reference-screenshot-screenshot-2026-03-02-073759-png-white-background-header-with-a-blue-printer-icon-genmitra-logo-text-on-the-left-a-centered-rounded-search-bar-with-placeholder-search-for-gifts-frames-prints-and-cart-icon-user-account-icon-on-the-right-remove-the-category-dropdown-nav-links-from-the-top-bar-and-instead-rely-on-the-category-grid-below-apply-clean-minimal-spacing-no-bottom-border-shadow-on-the-header-and-matching-font-weight",
+      "title": "Redesign `frontend/src/components/Layout.tsx` (the main navigation header) to match the reference screenshot (Screenshot 2026-03-02 073759.png): white background header with a blue printer icon + 'GenMitra' logo text on the left, a centered rounded search bar with placeholder 'Search for gifts, frames, prints...', and cart icon + user account icon on the right. Remove the category dropdown nav links from the top bar and instead rely on the category grid below. Apply clean minimal spacing, no bottom border shadow on the header, and matching font weight.",
+      "reqIds": [
+        "REQ-90"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-components-herobanner-tsx-to-match-the-reference-screenshot-screenshot-2026-03-02-073759-png-a-full-width-hero-image-with-a-dark-scenic-photo-as-background-large-white-bold-headline-text-memories-that-on-the-first-line-and-bright-blue-bold-text-last-forever-on-the-second-line-a-white-subtitle-paragraph-personalized-gifts-for-every-occasion-high-quality-prints-delivered-to-your-doorstep-and-a-blue-rounded-shop-now-cta-button-the-hero-must-have-rounded-corners-on-the-container-and-fill-the-viewport-width",
+      "title": "Redesign `frontend/src/components/HeroBanner.tsx` to match the reference screenshot (Screenshot 2026-03-02 073759.png): a full-width hero image with a dark scenic photo as background, large white bold headline text 'Memories that' on the first line and bright blue bold text 'Last Forever' on the second line, a white subtitle paragraph 'Personalized gifts for every occasion. High quality prints delivered to your doorstep.', and a blue rounded 'Shop Now' CTA button. The hero must have rounded corners on the container and fill the viewport width.",
+      "reqIds": [
+        "REQ-91"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-components-productcategorygrid-tsx-to-match-the-reference-screenshot-screenshot-2026-03-02-073824-png-light-gray-off-white-section-background-a-centered-blue-uppercase-label-collections-above-a-large-bold-dark-heading-shop-by-category-and-a-gray-subtitle-explore-our-wide-range-of-personalized-products-crafted-just-for-you-display-5-category-cards-in-a-horizontal-row-photo-frames-blue-icon-on-light-blue-background-photo-prints-purple-icon-on-light-purple-background-photo-magnets-green-icon-on-light-green-background-mugs-orange-icon-on-light-orange-background-corporate-gifts-red-pink-icon-on-light-pink-background-each-card-shows-a-large-rounded-square-icon-container-the-category-name-in-bold-dark-text-below-and-a-short-subtitle-description-the-active-hovered-card-must-show-a-right-arrow-chevron-each-card-navigates-to-the-correct-category-filtered-listing",
+      "title": "Redesign `frontend/src/components/ProductCategoryGrid.tsx` to match the reference screenshot (Screenshot 2026-03-02 073824.png): light gray/off-white section background, a centered blue uppercase label 'COLLECTIONS' above a large bold dark heading 'Shop by Category', and a gray subtitle 'Explore our wide range of personalized products crafted just for you'. Display 5 category cards in a horizontal row: Photo Frames (blue icon on light blue background), Photo Prints (purple icon on light purple background), Photo Magnets (green icon on light green background), Mugs (orange icon on light orange background), Corporate Gifts (red/pink icon on light pink background). Each card shows a large rounded-square icon container, the category name in bold dark text below, and a short subtitle description. The active/hovered card must show a right-arrow chevron. Each card navigates to the correct category-filtered listing.",
+      "reqIds": [
+        "REQ-92"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-components-shopframesbysize-tsx-to-match-the-reference-screenshots-screenshot-2026-03-02-073842-png-and-screenshot-2026-03-02-073858-png-light-gray-page-background-bold-dark-heading-shop-photo-frames-by-sizes-centered-at-the-top-display-frame-size-cards-in-a-grid-row-where-each-card-shows-a-photo-inside-a-thick-black-rectangular-border-no-rounded-corners-sharp-right-angle-frame-border-the-photo-filling-the-frame-with-a-lifestyle-nature-portrait-image-below-each-frame-display-the-size-in-bold-dark-text-e-g-4-6-in-6-8-in-and-the-mount-type-in-blue-gray-subtitle-text-e-g-desktop-stand-only-desk-wall-mount-wall-mount-no-card-border-or-shadow-the-frame-image-itself-provides-the-visual-boundary",
+      "title": "Redesign `frontend/src/components/ShopFramesBySize.tsx` to match the reference screenshots (Screenshot 2026-03-02 073842.png and Screenshot 2026-03-02 073858.png): light gray page background, bold dark heading 'Shop Photo Frames by Sizes' centered at the top. Display frame size cards in a grid/row where each card shows a photo inside a thick black rectangular border (no rounded corners — sharp right-angle frame border), the photo filling the frame with a lifestyle/nature/portrait image. Below each frame, display the size in bold dark text (e.g., '4 × 6 in', '6 × 8 in') and the mount type in blue/gray subtitle text (e.g., 'Desktop stand only', 'Desk & wall mount', 'Wall Mount'). No card border or shadow — the frame image itself provides the visual boundary.",
+      "reqIds": [
+        "REQ-93"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-components-featuredproducts-tsx-to-match-the-reference-screenshot-screenshot-2026-03-02-073923-png-white-card-background-with-soft-shadow-product-image-filling-the-top-of-the-card-a-star-rating-badge-yellow-star-numeric-rating-in-the-top-right-corner-of-the-image-overlay-product-name-in-bold-dark-text-below-the-image-price-in-blue-xxx-xx-on-the-left-and-a-blue-circular-cart-icon-button-on-the-right-section-header-shows-featured-products-in-bold-dark-text-on-the-left-and-view-all-in-blue-on-the-right-cards-are-displayed-in-a-4-column-grid-preserve-all-existing-product-fetching-and-navigation-behavior",
+      "title": "Redesign `frontend/src/components/FeaturedProducts.tsx` to match the reference screenshot (Screenshot 2026-03-02 073923.png): white card background with soft shadow, product image filling the top of the card, a star rating badge (yellow star + numeric rating) in the top-right corner of the image overlay, product name in bold dark text below the image, price in blue (`₹XXX.XX`) on the left, and a blue circular cart icon button on the right. Section header shows 'Featured Products' in bold dark text on the left and 'View All' in blue on the right. Cards are displayed in a 4-column grid. Preserve all existing product fetching and navigation behavior.",
+      "reqIds": [
+        "REQ-94"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-components-offersbanner-tsx-to-match-the-reference-screenshot-screenshot-2026-03-02-073946-png-a-full-width-blue-gradient-banner-bright-blue-to-slightly-darker-blue-with-rounded-corners-on-the-left-show-a-limited-time-offer-pill-badge-in-white-a-large-white-bold-heading-get-20-off-on-your-first-order-and-white-subtitle-text-use-code-welcome20-at-checkout-on-the-right-show-a-white-rounded-claim-now-button-with-dark-text",
+      "title": "Redesign `frontend/src/components/OffersBanner.tsx` to match the reference screenshot (Screenshot 2026-03-02 073946.png): a full-width blue gradient banner (bright blue to slightly darker blue) with rounded corners. On the left, show a 'LIMITED TIME OFFER' pill badge in white, a large white bold heading 'Get 20% OFF on your first order', and white subtitle text 'Use code WELCOME20 at checkout.' On the right, show a white rounded 'Claim Now' button with dark text.",
+      "reqIds": [
+        "REQ-95"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-components-trustfeatures-tsx-to-match-the-reference-screenshot-screenshot-2026-03-02-073946-png-a-clean-white-light-gray-horizontal-strip-with-4-equally-spaced-trust-blocks-separated-by-thin-dividers-each-block-shows-a-small-blue-icon-above-a-bold-dark-title-and-a-gray-subtitle-blocks-1-google-review-with-a-blue-star-icon-subtitle-4-5-star-customer-rating-2-nationwide-delivery-with-a-blue-delivery-truck-icon-subtitle-delivery-within-india-and-internationally-3-satisfaction-guaranteed-with-a-blue-shield-icon-subtitle-free-replacement-or-hassle-free-refund-4-24-7-support-with-a-blue-headset-icon-subtitle-have-a-question-talk-to-us-today-use-blue-themed-minimal-icon-style-matching-the-reference",
+      "title": "Redesign `frontend/src/components/TrustFeatures.tsx` to match the reference screenshot (Screenshot 2026-03-02 073946.png): a clean white/light gray horizontal strip with 4 equally-spaced trust blocks separated by thin dividers. Each block shows a small blue icon above a bold dark title and a gray subtitle. Blocks: (1) 'Google Review' with a blue star icon — subtitle '4.5 star customer rating', (2) 'Nationwide Delivery' with a blue delivery truck icon — subtitle 'Delivery within India and internationally', (3) 'Satisfaction Guaranteed' with a blue shield icon — subtitle 'Free replacement or hassle-free refund', (4) '24/7 Support' with a blue headset icon — subtitle 'Have a question? Talk to us today!'. Use blue-themed minimal icon style matching the reference.",
+      "reqIds": [
+        "REQ-96"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-components-customerreviews-tsx-to-match-the-reference-screenshot-screenshot-2026-03-02-073946-png-white-light-gray-section-background-bold-dark-centered-heading-new-review-yellow-star-rating-display-overall-5-out-of-5-from-1-reviews-subtitle-in-dark-text-review-card-has-white-background-with-soft-shadow-and-rounded-corners-yellow-star-rating-on-the-top-left-date-thu-24-apr-2025-in-gray-on-the-top-right-reviewer-avatar-circle-with-initial-a-and-name-arjun-saini-and-the-review-text-in-dark-italic-pagination-controls-left-right-circular-arrow-buttons-on-the-bottom-left-highest-to-lowest-sort-dropdown-on-the-bottom-right",
+      "title": "Redesign `frontend/src/components/CustomerReviews.tsx` to match the reference screenshot (Screenshot 2026-03-02 073946.png): white/light gray section background, bold dark centered heading 'New Review', yellow star rating display, 'Overall 5 out of 5 from 1 Reviews' subtitle in dark text. Review card has white background with soft shadow and rounded corners, yellow star rating on the top-left, date 'THU, 24 APR, 2025' in gray on the top-right, reviewer avatar circle with initial 'A' and name 'Arjun Saini', and the review text in dark italic. Pagination controls (left/right circular arrow buttons) on the bottom-left, 'Highest to lowest' sort dropdown on the bottom-right.",
+      "reqIds": [
+        "REQ-97"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-components-faqsection-tsx-to-match-the-reference-screenshot-screenshot-2026-03-02-073957-png-white-light-gray-section-background-bold-dark-centered-heading-frequently-asked-questions-faq-items-are-displayed-in-a-2-column-grid-each-item-is-a-white-rounded-rectangle-card-with-a-thin-gray-border-the-question-text-on-the-left-and-a-blue-toggle-icon-on-the-right-when-expanded-the-answer-text-appears-below-the-question-no-category-labels-or-colored-headers-plain-clean-accordion-rows",
+      "title": "Redesign `frontend/src/components/FAQSection.tsx` to match the reference screenshot (Screenshot 2026-03-02 073957.png): white/light gray section background, bold dark centered heading 'Frequently Asked Questions'. FAQ items are displayed in a 2-column grid. Each item is a white rounded-rectangle card with a thin gray border, the question text on the left and a blue '+' toggle icon on the right. When expanded, the answer text appears below the question. No category labels or colored headers — plain clean accordion rows.",
+      "reqIds": [
+        "REQ-98"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-components-footer-tsx-to-match-the-reference-screenshot-screenshot-2026-03-02-073957-png-dark-navy-background-0f1729-or-similar-left-column-blue-printer-icon-genmitra-brand-name-in-white-bold-description-text-in-blue-light-text-india-s-leading-personalized-gifting-platform-we-bring-your-memories-to-life-with-premium-quality-prints-phone-91-951-373-4374-and-email-care-genmitra-in-with-small-icons-middle-columns-our-company-about-us-careers-blog-support-help-center-track-order-my-account-legal-privacy-policy-terms-of-service-return-policy-all-in-white-light-link-text-on-dark-background-bottom-bar-thin-separator-2026-genmitra-all-rights-reserved-on-the-left-payment-icons-visa-mastercard-upi-on-the-right-remove-the-social-media-icons-row",
+      "title": "Redesign `frontend/src/components/Footer.tsx` to match the reference screenshot (Screenshot 2026-03-02 073957.png): dark navy background (`#0f1729` or similar). Left column: blue printer icon + 'GenMitra' brand name in white bold, description text in blue/light text 'India's leading personalized gifting platform. We bring your memories to life with premium quality prints.', phone '+91 951 373 4374' and email 'care@genmitra.in' with small icons. Middle columns: 'Our Company' (About Us, Careers, Blog), 'Support' (Help Center, Track Order, My Account), 'Legal' (Privacy Policy, Terms of Service, Return Policy) — all in white/light link text on dark background. Bottom bar: thin separator, '© 2026 GenMitra. All Rights Reserved.' on the left, payment icons (Visa, Mastercard, UPI) on the right. Remove the social media icons row.",
+      "reqIds": [
+        "REQ-99"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-pages-editorpage-tsx-to-match-the-layout-shown-in-screenshot-2026-03-02-075441-png-exactly-the-page-must-have-a-light-gray-f0f2f5-full-page-background-the-top-bar-must-contain-on-the-left-a-portrait-button-outlined-with-a-portrait-rectangle-icon-and-a-landscape-button-outlined-with-a-monitor-landscape-icon-as-toggle-controls-the-active-toggle-must-appear-filled-selected-on-the-right-a-blue-save-select-size-button-the-main-content-area-must-be-split-into-two-panels-1-a-large-left-center-area-displaying-the-centered-photo-frame-mockup-with-a-thick-black-rectangular-border-white-interior-and-a-drop-shadow-inside-the-frame-before-a-photo-is-uploaded-show-a-gray-upload-arrow-icon-and-no-photo-selected-helper-text-2-a-right-sidebar-panel-containing-an-upload-photo-icon-button-and-an-add-text-icon-button-at-the-top-an-adjustments-section-with-undo-redo-controls-and-four-circular-icon-buttons-zoom-in-zoom-out-rotate-delete-the-delete-button-in-red-a-frame-styles-labeled-dropdown-defaulting-to-plain-black-and-a-blue-pro-tip-info-card-reading-use-high-quality-images-for-the-best-printing-results-you-can-drag-and-resize-photos-directly-on-the-canvas-after-a-photo-is-uploaded-the-photo-must-fill-the-white-interior-of-the-frame-and-be-fully-manipulable-drag-zoom-rotate-within-the-frame-boundary-the-portrait-landscape-toggle-must-resize-the-frame-accordingly-preserve-all-existing-editor-functionality-image-upload-drag-to-reposition-zoom-rotation-text-overlay-low-resolution-warning-and-save-design-action",
+      "title": "Redesign `frontend/src/pages/EditorPage.tsx` to match the layout shown in Screenshot 2026-03-02 075441.png exactly. The page must have a light gray (`#f0f2f5`) full-page background. The top bar must contain: on the left, a 'Portrait' button (outlined, with a portrait-rectangle icon) and a 'Landscape' button (outlined, with a monitor/landscape icon) as toggle controls — the active toggle must appear filled/selected; on the right, a blue 'Save & Select Size ✓' button. The main content area must be split into two panels: (1) a large left/center area displaying the centered photo frame mockup with a thick black rectangular border, white interior, and a drop shadow — inside the frame before a photo is uploaded show a gray upload arrow icon and 'No photo selected' helper text; (2) a right sidebar panel containing: an 'Upload Photo' icon button and an 'Add Text' icon button at the top, an 'Adjustments' section with undo/redo controls and four circular icon buttons (zoom in, zoom out, rotate, delete — the delete button in red), a 'Frame Styles' labeled dropdown (defaulting to 'Plain Black'), and a blue 'Pro Tip' info card reading 'Use high-quality images for the best printing results. You can drag and resize photos directly on the canvas.' After a photo is uploaded, the photo must fill the white interior of the frame and be fully manipulable (drag, zoom, rotate) within the frame boundary. The portrait/landscape toggle must resize the frame accordingly. Preserve all existing editor functionality: image upload, drag-to-reposition, zoom, rotation, text overlay, low-resolution warning, and save design action.",
+      "reqIds": [
+        "REQ-100"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-frontend-src-pages-productdetailpage-tsx-to-match-the-layout-shown-in-screenshot-2026-03-02-075420-png-exactly-the-page-must-display-1-left-side-a-large-product-image-main-hero-image-of-the-product-e-g-a-framed-underwater-nature-photo-with-a-row-of-5-thumbnail-images-below-it-with-a-right-arrow-navigation-button-2-right-side-product-name-in-bold-dark-text-e-g-ornate-baroque-frame-12-16-with-a-share-icon-a-short-product-description-paragraph-a-bullet-point-list-print-media-standard-coated-paper-premium-textured-paper-comes-with-strong-table-standing-option-multiple-frame-styles-to-choose-from-photo-frame-comes-with-clear-acrylic-a-bordered-info-box-with-bold-text-place-your-order-before-3-pm-and-receive-same-day-delivery-in-bengaluru-hyderabad-chennai-and-delhi-a-labeled-native-dropdown-for-print-media-options-coated-matte-paper-premium-textured-paper-a-labeled-native-dropdown-for-frame-styles-options-plain-black-plain-brown-goldline-brown-gold-sash-brown-zigzag-brown-a-labeled-native-dropdown-for-orientation-options-portrait-landscape-a-labeled-numeric-input-for-quantity-range-1-100-with-helper-text-choose-a-quantity-between-1-100-for-instant-ordering-for-higher-quantities-you-will-be-allowed-to-request-quotations-from-sales-team-price-displayed-in-orange-as-price-00-inclusive-of-all-taxes-with-for-1-qty-price-piece-breakdown-and-a-buy-in-bulk-and-save-link-in-blue-a-full-width-purple-upload-your-files-button-with-an-upload-icon-that-navigates-authenticated-users-to-the-editor-page-for-this-product-and-an-estimate-delivery-section-with-a-plain-pincode-text-input-preserve-all-existing-functional-behavior-fetching-product-data-by-id-from-the-backend-pincode-delivery-check-and-auth-gated-navigation-to-the-editor",
+      "title": "Redesign `frontend/src/pages/ProductDetailPage.tsx` to match the layout shown in Screenshot 2026-03-02 075420.png exactly. The page must display: (1) Left side — a large product image (main hero image of the product, e.g. a framed underwater/nature photo), with a row of 5 thumbnail images below it with a right-arrow navigation button; (2) Right side — product name in bold dark text (e.g. 'Ornate Baroque Frame (12×16\")') with a share icon, a short product description paragraph, a bullet-point list ('Print Media: Standard coated paper | Premium textured paper', 'Comes with strong table standing option', 'Multiple frame styles to choose from', 'Photo frame comes with clear acrylic'), a bordered info box with bold text 'Place your order before 3 PM and receive same-day delivery in Bengaluru, Hyderabad, Chennai, and Delhi.', a labeled native dropdown for 'Print Media' (options: 'Coated Matte Paper', 'Premium Textured Paper'), a labeled native dropdown for 'Frame Styles' (options: 'Plain Black', 'Plain Brown', 'Goldline Brown', 'Gold Sash (Brown)', 'Zigzag Brown'), a labeled native dropdown for 'Orientation' (options: 'Portrait', 'Landscape'), a labeled numeric input for 'Quantity' (range 1–100) with helper text 'Choose a quantity between 1–100 for instant ordering. For higher quantities, you will be allowed to request quotations from Sales Team.', price displayed in orange as '₹[price].00 inclusive of all taxes' with 'for 1 Qty (₹[price] / piece)' breakdown and a 'Buy in bulk and save ⓘ' link in blue, a full-width purple 'UPLOAD YOUR FILES' button with an upload icon that navigates authenticated users to the editor page for this product, and an 'Estimate Delivery' section with a plain pincode text input. Preserve all existing functional behavior: fetching product data by ID from the backend, pincode delivery check, and auth-gated navigation to the editor.",
+      "reqIds": [
+        "REQ-101"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-in-frontend-index-html-remove-the-frame-ancestors-directive-from-the-content-security-policy-meta-tag-the-frame-ancestors-directive-is-ignored-when-delivered-via-a-meta-element-it-is-only-effective-as-an-http-response-header-so-it-must-be-removed-to-eliminate-the-browser-warning-all-other-csp-directives-in-the-same-meta-tag-must-be-preserved-exactly-as-is",
+      "title": "In `frontend/index.html`, remove the `frame-ancestors` directive from the Content-Security-Policy `<meta>` tag. The `frame-ancestors` directive is ignored when delivered via a `<meta>` element (it is only effective as an HTTP response header), so it must be removed to eliminate the browser warning. All other CSP directives in the same `<meta>` tag must be preserved exactly as-is.",
+      "reqIds": [
+        "REQ-102"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-all-dialogcontent-usages-across-the-entire-frontend-codebase-including-all-admin-panel-pages-productmanagementpage-tsx-templatemanagementpage-tsx-ordermanagementpage-tsx-customermanagementpage-tsx-adminsettingspage-tsx-admindashboardpage-tsx-and-any-other-page-or-component-that-renders-a-radix-ui-shadcn-dialogcontent-and-add-a-dialogdescription-child-element-or-set-aria-describedby-undefined-as-a-prop-to-every-dialogcontent-that-is-missing-one-where-a-visible-description-is-not-appropriate-for-the-ui-use-a-visually-hidden-dialogdescription-e-g-via-the-shadcn-visuallyhidden-utility-or-a-sr-only-class-to-satisfy-the-accessibility-requirement-without-altering-the-visual-layout",
+      "title": "Audit all `DialogContent` usages across the entire frontend codebase — including all admin panel pages (`ProductManagementPage.tsx`, `TemplateManagementPage.tsx`, `OrderManagementPage.tsx`, `CustomerManagementPage.tsx`, `AdminSettingsPage.tsx`, `AdminDashboardPage.tsx`) and any other page or component that renders a Radix UI / shadcn `DialogContent` — and add a `<DialogDescription>` child element (or set `aria-describedby={undefined}` as a prop) to every `DialogContent` that is missing one. Where a visible description is not appropriate for the UI, use a visually hidden `<DialogDescription>` (e.g., via the shadcn `VisuallyHidden` utility or a `sr-only` class) to satisfy the accessibility requirement without altering the visual layout.",
+      "reqIds": [
+        "REQ-103"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-the-createtemplate-save-handler-in-frontend-src-pages-admin-templatemanagementpage-tsx-and-identify-why-submitting-a-new-template-form-produces-a-failed-to-create-template-error-toast-check-for-missing-required-fields-incorrect-payload-serialization-dropped-image-fields-and-any-early-return-or-silent-failure-paths-in-the-submit-handler-fix-all-identified-issues-so-that-a-valid-template-form-submission-succeeds",
+      "title": "Audit the `createTemplate` save handler in `frontend/src/pages/admin/TemplateManagementPage.tsx` and identify why submitting a new template form produces a 'failed to create template' error toast. Check for missing required fields, incorrect payload serialization, dropped image fields, and any early-return or silent-failure paths in the submit handler. Fix all identified issues so that a valid template form submission succeeds.",
+      "reqIds": [
+        "REQ-104"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-createtemplate-and-updatetemplate-mutation-hooks-in-frontend-src-hooks-usequeries-ts-use-the-authenticated-actor-instance-not-the-anonymous-actor-when-called-from-templatemanagementpage-tsx-if-the-mutation-hook-captures-an-anonymous-actor-at-definition-time-update-it-to-derive-the-actor-from-the-current-authenticated-admin-identity-context-so-the-backend-receives-the-correct-caller-principal",
+      "title": "Ensure the `createTemplate` and `updateTemplate` mutation hooks in `frontend/src/hooks/useQueries.ts` use the authenticated actor instance (not the anonymous actor) when called from `TemplateManagementPage.tsx`. If the mutation hook captures an anonymous actor at definition time, update it to derive the actor from the current authenticated admin identity context so the backend receives the correct caller principal.",
+      "reqIds": [
+        "REQ-105"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-all-typescript-compilation-errors-across-the-entire-frontend-codebase-including-frontend-src-app-tsx-all-page-components-all-hooks-and-all-utility-files-so-that-the-frontend-bundle-builds-successfully-without-type-errors-missing-imports-undefined-variables-or-broken-module-references",
+      "title": "Audit and fix all TypeScript compilation errors across the entire frontend codebase — including `frontend/src/App.tsx`, all page components, all hooks, and all utility files — so that the frontend bundle builds successfully without type errors, missing imports, undefined variables, or broken module references.",
+      "reqIds": [
+        "REQ-107"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-frontend-src-app-tsx-to-remove-any-route-definitions-that-simultaneously-set-both-an-id-and-a-path-option-on-the-same-route-object-remove-or-rename-the-conflicting-id-property-so-the-router-initializes-without-throwing-route-cannot-have-both-an-id-and-a-path-option-verify-all-existing-route-paths-and-navigation-links-remain-functional-after-the-fix",
+      "title": "Audit and fix `frontend/src/App.tsx` to remove any route definitions that simultaneously set both an `id` and a `path` option on the same route object. Remove or rename the conflicting `id` property so the router initializes without throwing 'Route cannot have both an id and a path option'. Verify all existing route paths and navigation links remain functional after the fix.",
+      "reqIds": [
+        "REQ-108"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-image-source-rendering-utility-in-frontend-src-utils-imagehelpers-ts-and-audit-every-component-and-page-that-renders-product-or-template-images-featuredproducts-tsx-productdetailpage-tsx-shopframesbysize-tsx-productcategorygrid-tsx-admindashboardpage-tsx-productmanagementpage-tsx-templatemanagementpage-tsx-cartpage-tsx-orderdetailpage-tsx-wherever-an-image-src-is-constructed-by-prepending-a-data-image-base64-prefix-to-a-plain-http-https-url-remove-the-erroneous-prefix-so-the-src-attribute-receives-the-raw-url-images-stored-as-genuine-base64-data-uris-must-continue-to-render-correctly",
+      "title": "Fix the image source rendering utility in `frontend/src/utils/imageHelpers.ts` and audit every component and page that renders product or template images (`FeaturedProducts.tsx`, `ProductDetailPage.tsx`, `ShopFramesBySize.tsx`, `ProductCategoryGrid.tsx`, `AdminDashboardPage.tsx`, `ProductManagementPage.tsx`, `TemplateManagementPage.tsx`, `CartPage.tsx`, `OrderDetailPage.tsx`). Wherever an image `src` is constructed by prepending a `data:image/...;base64,` prefix to a plain HTTP/HTTPS URL, remove the erroneous prefix so the `src` attribute receives the raw URL. Images stored as genuine base64 data URIs must continue to render correctly.",
+      "reqIds": [
+        "REQ-110"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-admin-session-credential-validation-in-frontend-src-hooks-useadminsession-ts-so-that-the-login-function-correctly-accepts-both-hardcoded-admin-accounts-1-username-genmitra-password-12345678-and-2-username-admin-password-admin-1234-and-sets-session-state-with-role-admin-on-a-successful-match-eliminate-any-typos-strict-equality-issues-or-stale-cached-state-that-cause-valid-credentials-to-be-rejected",
+      "title": "Fix the admin session credential validation in `frontend/src/hooks/useAdminSession.ts` so that the `login` function correctly accepts both hardcoded admin accounts — (1) username `genmitra`, password `12345678` and (2) username `admin`, password `Admin@1234` — and sets session state with role `admin` on a successful match. Eliminate any typos, strict equality issues, or stale cached state that cause valid credentials to be rejected.",
+      "reqIds": [
+        "REQ-111"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-frontend-src-pages-loginpage-tsx-to-ensure-a-in-admin-login-mode-triggered-when-arriving-from-an-admin-route-only-the-credential-based-username-password-form-is-rendered-and-internet-identity-is-never-triggered-or-displayed-b-the-form-correctly-calls-login-from-useadminsession-with-no-early-returns-or-silent-swallows-c-on-successful-validation-the-user-is-redirected-to-admin-or-the-originally-requested-admin-url-d-in-regular-user-login-mode-login-from-useinternetidentity-is-called-correctly-and-the-user-is-redirected-to-the-main-website-after-successful-authentication",
+      "title": "Audit and fix `frontend/src/pages/LoginPage.tsx` to ensure: (a) in admin login mode (triggered when arriving from an `/admin` route), only the credential-based username/password form is rendered and Internet Identity is never triggered or displayed; (b) the form correctly calls `login` from `useAdminSession` with no early returns or silent swallows; (c) on successful validation the user is redirected to `/admin` or the originally requested admin URL; (d) in regular user login mode, `login` from `useInternetIdentity` is called correctly and the user is redirected to the main website after successful authentication.",
+      "reqIds": [
+        "REQ-112"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-and-fix-frontend-src-components-admin-adminguard-tsx-to-ensure-it-never-calls-login-from-useinternetidentity-or-any-internet-identity-hook-the-guard-must-only-check-the-local-credential-based-admin-session-via-useadminsession-and-redirect-unauthenticated-visitors-to-the-login-page-if-the-session-is-valid-allow-the-protected-route-to-render",
+      "title": "Audit and fix `frontend/src/components/admin/AdminGuard.tsx` to ensure it never calls `login()` from `useInternetIdentity` or any Internet Identity hook. The guard must only check the local credential-based admin session via `useAdminSession` and redirect unauthenticated visitors to the login page. If the session is valid, allow the protected route to render.",
+      "reqIds": [
+        "REQ-113"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-verify-and-fix-all-mutation-hooks-in-frontend-src-hooks-usequeries-ts-specifically-createtemplate-updatetemplate-deletetemplate-createproduct-updateproduct-and-deleteproduct-to-ensure-they-use-the-authenticated-actor-instance-derived-from-the-logged-in-admin-identity-context-not-an-anonymous-actor-if-any-hook-captures-an-anonymous-actor-at-definition-time-update-it-to-derive-the-actor-from-the-current-authenticated-identity-on-each-call",
+      "title": "Verify and fix all mutation hooks in `frontend/src/hooks/useQueries.ts` — specifically `createTemplate`, `updateTemplate`, `deleteTemplate`, `createProduct`, `updateProduct`, and `deleteProduct` — to ensure they use the authenticated actor instance derived from the logged-in admin identity context, not an anonymous actor. If any hook captures an anonymous actor at definition time, update it to derive the actor from the current authenticated identity on each call.",
+      "reqIds": [
+        "REQ-115"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-usegetproduct-query-hook-in-frontend-src-hooks-usequeries-ts-and-frontend-src-pages-productdetailpage-tsx-to-correctly-extract-the-product-id-from-route-parameters-and-pass-it-to-the-backend-getproduct-call-with-the-correct-type-nat-vs-text-verify-the-backend-getproduct-function-in-backend-main-mo-correctly-looks-up-the-product-by-id-from-the-stable-products-map-ensure-system-func-init-and-system-func-postupgrade-upsert-all-demo-product-seeds-so-they-are-always-present-after-every-deploy",
+      "title": "Fix the `useGetProduct` query hook in `frontend/src/hooks/useQueries.ts` and `frontend/src/pages/ProductDetailPage.tsx` to correctly extract the product ID from route parameters and pass it to the backend `getProduct` call with the correct type (Nat vs. Text). Verify the backend `getProduct` function in `backend/main.mo` correctly looks up the product by ID from the stable products map. Ensure `system func init()` and `system func postupgrade()` upsert all demo product seeds so they are always present after every deploy.",
+      "reqIds": [
+        "REQ-116"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-frontend-index-html-content-security-policy-meta-tag-and-all-window-addeventlistener-message-handler-callbacks-across-the-frontend-codebase-ensure-https-sole-aqua-rc6-draft-caffeine-xyz-is-present-in-every-origin-whitelist-and-csp-frame-src-script-src-directive-remove-the-frame-ancestors-directive-from-the-csp-meta-tag-it-is-ineffective-there-all-other-csp-directives-must-be-preserved-exactly-as-is",
+      "title": "Audit `frontend/index.html` Content-Security-Policy `<meta>` tag and all `window.addEventListener('message', handler)` callbacks across the frontend codebase. Ensure `https://sole-aqua-rc6-draft.caffeine.xyz` is present in every origin whitelist and CSP `frame-src`/`script-src` directive. Remove the `frame-ancestors` directive from the CSP `<meta>` tag (it is ineffective there). All other CSP directives must be preserved exactly as-is.",
+      "reqIds": [
+        "REQ-117"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-all-dialogcontent-usages-across-the-entire-frontend-codebase-including-productmanagementpage-tsx-templatemanagementpage-tsx-ordermanagementpage-tsx-customermanagementpage-tsx-adminsettingspage-tsx-admindashboardpage-tsx-cartpage-tsx-checkoutpage-tsx-and-any-other-component-rendering-a-radix-ui-shadcn-dialogcontent-and-add-a-dialogdescription-child-element-to-every-dialogcontent-that-is-missing-one-where-a-visible-description-is-not-appropriate-use-a-visually-hidden-dialogdescription-with-a-sr-only-class",
+      "title": "Audit all `DialogContent` usages across the entire frontend codebase — including `ProductManagementPage.tsx`, `TemplateManagementPage.tsx`, `OrderManagementPage.tsx`, `CustomerManagementPage.tsx`, `AdminSettingsPage.tsx`, `AdminDashboardPage.tsx`, `CartPage.tsx`, `CheckoutPage.tsx`, and any other component rendering a Radix UI / shadcn `DialogContent` — and add a `<DialogDescription>` child element to every `DialogContent` that is missing one. Where a visible description is not appropriate, use a visually hidden `<DialogDescription>` with a `sr-only` class.",
+      "reqIds": [
+        "REQ-118"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -868,6 +1084,30 @@
       "summary": "Audit and fix any compilation or runtime errors in `backend/main.mo` and `backend/migration.mo` that are preventing the canister from deploying successfully. Ensure all Motoko syntax is valid, all imported modules resolve correctly, all stable variable declarations are compatible, and the actor compiles without errors so the canister can be initialized and upgraded.",
       "reqIds": [
         "REQ-82"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-73",
+      "summary": "Verify the backend `createTemplate` function in `backend/main.mo` correctly accepts the template record payload (including base64 image strings stored as `Text` fields), stores it in the stable templates map, and returns a success result. Fix any type mismatches, missing field mappings, or guard logic errors (e.g., role check rejecting the admin caller) that cause the function to return an error instead of persisting the record.",
+      "reqIds": [
+        "REQ-106"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-76",
+      "summary": "Audit and fix all compilation and runtime errors in `backend/main.mo` and `backend/migration.mo` that prevent the canister from deploying successfully. Ensure all Motoko syntax is valid, all imported modules resolve correctly, all stable variable declarations are compatible with the current Motoko compiler version, and the actor compiles and deploys without errors.",
+      "reqIds": [
+        "REQ-109"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-81",
+      "summary": "Fix the backend role-check guard in `backend/main.mo` for all write-protected functions (`createProduct`, `updateProduct`, `deleteProduct`, `createTemplate`, `updateTemplate`, `deleteTemplate`) so that the caller's role is resolved by looking up the caller's principal in the stable users map. Remove any broken JWT string parsing, stale in-memory lookups, or principal mismatches that cause valid admin sessions to be rejected with 'Unauthorized' errors. Ensure `system func init()` and `system func postupgrade()` upsert both admin seed accounts — (1) username `genmitra`, password `12345678`, role `admin` and (2) username `admin`, password `Admin@1234`, role `admin` — and the regular user seed (username `genmitra`, password `1234`, role `user`) into stable storage on every canister initialization and upgrade.",
+      "reqIds": [
+        "REQ-114"
       ],
       "status": "pending"
     }

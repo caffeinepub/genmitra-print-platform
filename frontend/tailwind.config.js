@@ -61,14 +61,14 @@ export default {
           accent: 'var(--sidebar-accent)',
           border: 'var(--sidebar-border)',
         },
-        // Category colors
+        // Category colors - updated for blue theme
         category: {
-          bg: 'oklch(0.97 0.01 240)',
-          heading: 'oklch(0.15 0.02 240)',
-          subtitle: 'oklch(0.52 0.02 240)',
-          icon: 'oklch(0.35 0.12 255)',
-          'icon-bg': 'oklch(0.92 0.05 255)',
-          'icon-bg-hover': 'oklch(0.88 0.08 255)',
+          bg: 'oklch(0.97 0.005 240)',
+          heading: 'oklch(0.13 0.025 240)',
+          subtitle: 'oklch(0.52 0.015 240)',
+          icon: 'oklch(0.51 0.22 264)',
+          'icon-bg': 'oklch(0.93 0.04 264)',
+          'icon-bg-hover': 'oklch(0.88 0.07 264)',
         },
       },
       borderRadius: {

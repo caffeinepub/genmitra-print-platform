@@ -1,30 +1,21 @@
 import { useInternetIdentity } from './useInternetIdentity';
-import { useQueryClient } from '@tanstack/react-query';
 import { useGetCallerUserProfile } from './useQueries';
 
 export function useAuth() {
-  const { identity, login, clear, loginStatus, isInitializing, isLoggingIn } = useInternetIdentity();
-  const queryClient = useQueryClient();
+  const { identity, loginStatus, login, clear } = useInternetIdentity();
   const isAuthenticated = !!identity;
+  const isLoggingIn = loginStatus === 'logging-in';
 
-  const { data: userProfile, isLoading: profileLoading, isFetched: profileFetched } = useGetCallerUserProfile();
-
-  const logout = async () => {
-    await clear();
-    queryClient.clear();
-  };
+  const profileQuery = useGetCallerUserProfile();
 
   return {
     identity,
     isAuthenticated,
-    login,
-    logout,
-    loginStatus,
-    isInitializing,
     isLoggingIn,
-    userProfile,
-    profileLoading,
-    profileFetched,
-    principalId: identity?.getPrincipal().toString(),
+    login,
+    logout: clear,
+    userProfile: profileQuery.data ?? null,
+    profileLoading: profileQuery.isLoading,
+    profileFetched: profileQuery.isFetched,
   };
 }

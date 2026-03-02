@@ -1,10 +1,20 @@
 # Specification
 
 ## Summary
-**Goal:** Fix two runtime errors: a disallowed origin error for iframe/postMessage communication and a router crash caused by routes having both an `id` and a `path` option.
+**Goal:** Fix all TypeScript compilation errors, routing issues, backend Motoko compilation errors, and runtime bugs across the GenMitra application so that it deploys and runs successfully.
 
 **Planned changes:**
-- Audit all `postMessage` origin whitelists, hardcoded allowed-origin arrays, and CSP `<meta>` tags in `frontend/index.html` to add `https://sole-aqua-rc6-draft.caffeine.xyz` without removing any existing allowed origins.
-- Audit `frontend/src/App.tsx` and remove the conflicting `id` property from any route that simultaneously defines both `id` and `path`, so the router initializes without error.
+- Fix all TypeScript compilation errors in the frontend codebase (App.tsx, page components, hooks, utility files) so the frontend bundle builds without errors
+- Remove conflicting `id` + `path` properties on route objects in App.tsx so the router initializes without errors
+- Fix Motoko compilation and runtime errors in `backend/main.mo` and `backend/migration.mo` so the canister deploys successfully
+- Fix `imageHelpers.ts` and all image-rendering components to remove erroneous `data:image/...;base64,` prefixes prepended to plain HTTP URLs
+- Fix `useAdminSession.ts` so the `login` function correctly accepts both hardcoded admin credentials (`genmitra`/`12345678` and `admin`/`Admin@1234`)
+- Fix `LoginPage.tsx` to show only the username/password form in admin mode and correctly call the appropriate login hook based on mode, with proper redirects
+- Fix `AdminGuard.tsx` to only use `useAdminSession` for session checking and never trigger Internet Identity
+- Fix backend role-check guards in `main.mo` for all write-protected functions, and ensure both admin seed accounts and the user seed are upserted in `init()` and `postupgrade()`
+- Fix all mutation hooks in `useQueries.ts` to use the authenticated actor instead of an anonymous actor
+- Fix `useGetProduct` hook and `ProductDetailPage.tsx` to correctly extract and pass the product ID, and ensure demo product seeds are always present after deploy
+- Fix `index.html` CSP meta tag to remove `frame-ancestors` and add `https://sole-aqua-rc6-draft.caffeine.xyz` to all relevant directives and origin whitelists
+- Add missing `<DialogDescription>` elements to every `DialogContent` across the frontend codebase
 
-**User-visible outcome:** The app loads at `https://sole-aqua-rc6-draft.caffeine.xyz` without a "disallowed origin" console error or an uncaught "Route cannot have both an id and a path option" crash, and all existing routes remain accessible.
+**User-visible outcome:** The application builds and deploys without errors. Admin login works with valid credentials, product images display correctly, admin CRUD operations succeed, product detail pages load properly, and no accessibility warnings or CSP errors appear in the browser console.

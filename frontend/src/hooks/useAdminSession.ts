@@ -8,10 +8,10 @@ interface AdminSession {
 
 const SESSION_KEY = 'admin_session';
 
-const ADMIN_CREDENTIALS: Record<string, string> = {
-  genmitra: '12345678',
-  admin: 'Admin@1234',
-};
+const VALID_CREDENTIALS = [
+  { username: 'genmitra', password: '12345678', role: 'admin' },
+  { username: 'admin', password: 'Admin@1234', role: 'admin' },
+];
 
 export function useAdminSession() {
   const [session, setSession] = useState<AdminSession | null>(null);
@@ -32,39 +32,35 @@ export function useAdminSession() {
   }, []);
 
   const loginAdmin = (username: string, password: string): boolean => {
-    const expectedPassword = ADMIN_CREDENTIALS[username];
-    if (!expectedPassword || expectedPassword !== password) {
-      return false;
-    }
-    const newSession: AdminSession = {
-      username,
-      role: 'admin',
-      loggedInAt: Date.now(),
-    };
-    try {
+    const match = VALID_CREDENTIALS.find(
+      (cred) => cred.username === username && cred.password === password
+    );
+
+    if (match) {
+      const newSession: AdminSession = {
+        username: match.username,
+        role: match.role,
+        loggedInAt: Date.now(),
+      };
       sessionStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
       setSession(newSession);
       return true;
-    } catch {
-      return false;
     }
+
+    return false;
   };
 
   const logoutAdmin = () => {
-    try {
-      sessionStorage.removeItem(SESSION_KEY);
-    } catch {
-      // ignore
-    }
+    sessionStorage.removeItem(SESSION_KEY);
     setSession(null);
   };
 
-  const isAdminLoggedIn = session !== null;
+  const isAuthenticated = session !== null;
 
   return {
     session,
+    isAuthenticated,
     isLoading,
-    isAdminLoggedIn,
     loginAdmin,
     logoutAdmin,
   };
