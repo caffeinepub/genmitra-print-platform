@@ -190,7 +190,7 @@ export default function LoginPage() {
 
           <div className="mt-4 text-center">
             <button
-              onClick={() => navigate({ to: '/create-account' })}
+              onClick={() => navigate({ to: '/create-account', search: { category: undefined } })}
               className="text-sm text-primary hover:underline"
             >
               Create an account

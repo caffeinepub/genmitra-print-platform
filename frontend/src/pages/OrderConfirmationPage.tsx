@@ -4,7 +4,7 @@ import { CheckCircle, Package, Home, ShoppingBag } from 'lucide-react';
 import { useTrackOrder } from '../hooks/useQueries';
 
 export default function OrderConfirmationPage() {
-  const { orderId } = useParams({ from: '/order-confirmation/$orderId' });
+  const { orderId } = useParams({ from: '/layout/order-confirmation/$orderId' });
   const navigate = useNavigate();
   const { data: order, isLoading } = useTrackOrder(orderId || '');
 
@@ -68,7 +68,7 @@ export default function OrderConfirmationPage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Order ID</span>
-                <span className="font-medium text-foreground">#{(orderId || '').slice(-10).toUpperCase()}</span>
+                <span className="font-medium text-foreground">#{orderId.slice(-10).toUpperCase()}</span>
               </div>
               <p className="text-muted-foreground text-xs">Order details will be available shortly.</p>
             </div>

@@ -1,62 +1,25 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-03-01T16:41:27.625Z",
-  "summary": "The diff addresses REQ-82 (backend Motoko fixes), REQ-83 (frontend TypeScript fixes), and partially REQ-84 (canister configuration). Backend main.mo is rewritten with correct syntax and seed accounts. Frontend components, hooks, pages, and routing are fixed. However, dfx.json is not visible in the diff (listed as omitted due to limits), so REQ-84 configuration verification cannot be fully confirmed. Additionally, backend/migration.mo is not shown in the diff despite REQ-82 requiring it to be audited and fixed. The user seed account (genmitra/1234) and demo/seeded products are also not visible in the backend seed logic.",
+  "generatedAt": "2026-03-01T20:34:56.596Z",
+  "summary": "The diff addresses both REQ-87 and REQ-88. REQ-88 (route id/path conflict) is fully fixed in App.tsx by removing the conflicting `id` from `adminLayoutRoute`. REQ-87 (origin whitelist) is partially addressed via CSP meta tags in index.html, but there is no evidence of auditing or fixing `window.addEventListener('message', handler)` callbacks that check `event.origin` or hardcoded origin whitelist arrays in the broader frontend codebase.",
   "missing_requirements": [
     {
-      "id": "REQ-82",
-      "requirement": "Audit and fix any compilation or runtime errors in backend/migration.mo",
-      "reason": "backend/migration.mo is not present in the diff at all — it was neither modified nor shown. REQ-82 explicitly requires auditing and fixing this file.",
-      "evidence": []
-    },
-    {
-      "id": "REQ-82",
-      "requirement": "The user seed account (genmitra/1234) must be present in stable storage after deploy",
-      "reason": "The upsertAdminSeeds() function in backend/main.mo only seeds 'genmitra/12345678' (admin) and 'admin/Admin@1234' (admin). There is no user seed for 'genmitra' with password '1234' and role 'user'.",
+      "id": "REQ-87",
+      "requirement": "Audit the entire frontend codebase for all locations that perform origin validation on incoming postMessage events or construct/check allowed-origin lists — including window.addEventListener('message', handler) callbacks that check event.origin and any hardcoded origin whitelist arrays — and ensure https://sole-aqua-rc6-draft.caffeine.xyz is present in every such whitelist.",
+      "reason": "The diff only adds CSP meta tags to frontend/index.html. There is no evidence of any audit or changes to JavaScript files containing postMessage event listeners or hardcoded origin whitelist arrays. The frontend-file-summaries.txt does not mention any such changes to hooks, components, or utility files. The acceptance criterion requires the new origin to be present in every postMessage origin whitelist, not just the CSP.",
       "evidence": [
-        "backend/main.mo"
+        "frontend/index.html",
+        "frontend-file-summaries.txt"
       ]
-    },
-    {
-      "id": "REQ-82",
-      "requirement": "All demo/seeded products must be present in stable storage after deploy",
-      "reason": "The backend/main.mo diff shows no product seeding logic in init or postupgrade hooks. Products map is initialized empty and no seed products are inserted.",
-      "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-84",
-      "requirement": "Verify and fix dfx.json canister configuration to ensure correct build output directory and entry points",
-      "reason": "dfx.json is listed among the omitted files (2 modified files omitted due to limits). Its content is not visible in the diff, so it cannot be confirmed whether the configuration was fixed.",
-      "evidence": []
     }
   ],
   "hallucinated_features": [],
-  "confidence": 0.72,
+  "confidence": 0.8,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
+    "frontend/index.html",
     "frontend/src/App.tsx",
-    "frontend/src/components/FeaturedProducts.tsx",
-    "frontend/src/components/Layout.tsx",
-    "frontend/src/components/admin/AdminGuard.tsx",
-    "frontend/src/hooks/useAdminSession.ts",
-    "frontend/src/hooks/useAuth.ts",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/CheckoutPage.tsx",
-    "frontend/src/pages/HomePage.tsx",
-    "frontend/src/pages/LoginPage.tsx",
-    "frontend/src/pages/MyOrdersPage.tsx",
-    "frontend/src/pages/OrderConfirmationPage.tsx",
-    "frontend/src/pages/ProductDetailPage.tsx",
-    "frontend/src/pages/admin/AdminDashboardPage.tsx",
-    "frontend/src/pages/admin/AdminSettingsPage.tsx",
-    "frontend/src/pages/admin/CustomerManagementPage.tsx",
-    "frontend/src/pages/admin/OrderManagementPage.tsx",
-    "frontend/src/pages/admin/ProductManagementPage.tsx",
-    "frontend/src/pages/admin/TemplateManagementPage.tsx",
     "project_state.json"
   ]
 }

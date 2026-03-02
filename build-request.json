@@ -1,76 +1,56 @@
 {
   "kind": "build_request",
-  "title": "Fix application not opening / deployment error",
-  "projectName": "GenMitra Print Platform",
+  "title": "Fix disallowed origin error and route id/path conflict crash",
+  "projectName": "GenMitra",
   "priority": "high",
   "requirements": [
     {
-      "id": "REQ-82",
-      "text": "Audit and fix any compilation or runtime errors in `backend/main.mo` and `backend/migration.mo` that are preventing the canister from deploying successfully. Ensure all Motoko syntax is valid, all imported modules resolve correctly, all stable variable declarations are compatible, and the actor compiles without errors so the canister can be initialized and upgraded.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "not opeing"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The backend canister compiles without any Motoko type or syntax errors.",
-        "The canister deploys successfully and the init/postupgrade hooks run without trapping.",
-        "Both admin seed accounts (genmitra/12345678 and admin/Admin@1234) and the user seed (genmitra/1234) are present in stable storage after deploy.",
-        "All demo/seeded products are present in stable storage after deploy."
-      ]
-    },
-    {
-      "id": "REQ-83",
-      "text": "Audit and fix all frontend TypeScript compilation errors in the React application that could prevent the frontend bundle from building or the app from loading in the browser. Check `frontend/src/App.tsx`, all page components, hooks, and utility files for type errors, missing imports, undefined variables, or broken module references. Ensure the frontend builds and renders without a blank screen or uncaught JavaScript errors on initial load.",
+      "id": "REQ-87",
+      "text": "Audit the entire frontend codebase for all locations that perform origin validation on incoming `postMessage` events or that construct/check allowed-origin lists for iframe communication — including any `window.addEventListener('message', handler)` callbacks that check `event.origin`, any hardcoded origin whitelist arrays, and any Content-Security-Policy `<meta>` tags in `frontend/index.html`. Ensure `https://sole-aqua-rc6-draft.caffeine.xyz` is present in every such whitelist. Remove or broaden any overly restrictive origin checks that would cause a `draft-editor:error disallowed origin` error for this domain. The fix must not introduce security regressions for other already-allowed origins.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-3"
         ],
         "quotes": [
-          "not opeing"
+          "draft-script.js:700 draft-editor:error disallowed origin: https://sole-aqua-rc6-draft.caffeine.xyz"
         ]
       },
       "acceptanceCriteria": [
-        "The frontend TypeScript build completes without compilation errors.",
-        "The application renders its homepage without a blank screen or console errors that block rendering.",
-        "Navigation between pages works without runtime crashes.",
-        "The admin route guard correctly redirects unauthenticated users to the login page without triggering Internet Identity."
+        "No `draft-editor:error disallowed origin` console error appears when the app is loaded at https://sole-aqua-rc6-draft.caffeine.xyz.",
+        "`https://sole-aqua-rc6-draft.caffeine.xyz` is present in every postMessage origin whitelist and CSP frame-ancestors/frame-src directive in `frontend/index.html`.",
+        "Other previously allowed origins continue to work without regression."
       ]
     },
     {
-      "id": "REQ-84",
-      "text": "Verify and fix the canister configuration (`dfx.json` or equivalent) to ensure both the frontend and backend canisters are correctly specified, the frontend asset canister points to the correct build output directory, and the backend canister entry point resolves to `backend/main.mo`. Ensure the full-stack deployment pipeline (backend compile → frontend build → asset upload) completes without errors.",
-      "target": "both",
+      "id": "REQ-88",
+      "text": "Audit `frontend/src/App.tsx` to identify and fix every route definition that simultaneously sets both an `id` and a `path` option on the same route object. TanStack Router (or React Router) does not permit a route to have both options at once — remove or rename the conflicting `id` property on any such route so the router initializes without throwing 'Route cannot have both an id and a path option'. Verify that all existing route paths and their navigation links remain functional after the fix.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-3"
         ],
         "quotes": [
-          "not opeing"
+          "index-zqd3Repb.js:32324 Uncaught Error: Route cannot have both an 'id' and a 'path' option."
         ]
       },
       "acceptanceCriteria": [
-        "Running the deployment pipeline produces no configuration or path resolution errors.",
-        "The frontend canister serves the built React app at the root URL.",
-        "The backend canister is reachable and responds to query/update calls.",
-        "The deployed app opens correctly in a browser without a blank or error screen."
+        "The app loads in the browser without throwing 'Route cannot have both an id and a path option' or any related uncaught router error.",
+        "No route in `App.tsx` has both an `id` and a `path` property set simultaneously.",
+        "All existing routes (public and admin) remain accessible and navigable after the fix.",
+        "The browser console shows no uncaught JavaScript errors on initial page load."
       ]
     }
   ],
   "constraints": [
-    "Do not change the single-actor backend architecture — all Motoko logic must remain in backend/main.mo.",
-    "Do not edit any files listed in frontend.immutablePaths.",
-    "Preserve all existing features and data structures; only fix errors preventing deployment and loading."
+    "Do not modify any files under `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`, or `frontend/src/components/ui`.",
+    "Origin whitelist changes must not remove or break any existing allowed origins.",
+    "Route fix must preserve all existing route paths and their associated page components."
   ],
   "nonGoals": [
-    "Adding new features or redesigning UI components.",
-    "Changing authentication logic beyond what is needed to fix the deployment error.",
-    "Migrating to a different tech stack or backend language."
+    "Adding new routes or pages.",
+    "Changing any backend Motoko logic.",
+    "Modifying authentication flows beyond what is needed to fix the two reported errors."
   ],
   "imageRequirements": {
     "required": [],

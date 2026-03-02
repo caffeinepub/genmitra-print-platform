@@ -1,244 +1,243 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Download, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, ChevronUp, Download, FileText, Search } from 'lucide-react';
 import { useGetAllOrders, useUpdateOrderStatus, useSetProductionFileData } from '../../hooks/useQueries';
+import { getImageSrc } from '../../utils/imageHelpers';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select';
 import { OrderStatus } from '../../backend';
-import type { Order } from '../../backend';
 import { toast } from 'sonner';
 
-const STATUS_OPTIONS: OrderStatus[] = [
-  OrderStatus.New,
-  OrderStatus.Processing,
-  OrderStatus.Printed,
-  OrderStatus.Shipped,
-  OrderStatus.Delivered,
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All Orders' },
+  { value: OrderStatus.New, label: 'New' },
+  { value: OrderStatus.Processing, label: 'Processing' },
+  { value: OrderStatus.Printed, label: 'Printed' },
+  { value: OrderStatus.Shipped, label: 'Shipped' },
+  { value: OrderStatus.Delivered, label: 'Delivered' },
 ];
 
-const STATUS_COLORS: Record<string, string> = {
-  [OrderStatus.New]: 'bg-blue-100 text-blue-800',
-  [OrderStatus.Processing]: 'bg-yellow-100 text-yellow-800',
-  [OrderStatus.Printed]: 'bg-purple-100 text-purple-800',
-  [OrderStatus.Shipped]: 'bg-orange-100 text-orange-800',
-  [OrderStatus.Delivered]: 'bg-green-100 text-green-800',
-};
+function getStatusBadgeVariant(status: OrderStatus) {
+  switch (status) {
+    case OrderStatus.Delivered: return 'default' as const;
+    case OrderStatus.Shipped: return 'secondary' as const;
+    default: return 'outline' as const;
+  }
+}
 
 export default function OrderManagementPage() {
-  const { data: orders, isLoading } = useGetAllOrders();
-  const updateStatus = useUpdateOrderStatus();
-  const setProductionFile = useSetProductionFileData();
+  const { data: orders = [], isLoading } = useGetAllOrders();
+  const updateOrderStatus = useUpdateOrderStatus();
+  const setProductionFileData = useSetProductionFileData();
 
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string>('all');
 
-  const filteredOrders = orders?.filter(o =>
-    filterStatus === 'all' || o.status === filterStatus
-  ) ?? [];
+  const filtered = orders.filter((order) => {
+    const matchesSearch =
+      order.orderId.toLowerCase().includes(search.toLowerCase()) ||
+      order.shippingAddress.fullName.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
-  const handleStatusChange = async (orderId: string, status: OrderStatus) => {
+  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     try {
-      await updateStatus.mutateAsync({ orderId, status });
+      await updateOrderStatus.mutateAsync({ orderId, status: newStatus });
       toast.success('Order status updated');
     } catch {
-      toast.error('Failed to update status');
+      toast.error('Failed to update order status');
     }
   };
 
-  const handleDownloadCustomImage = (order: Order) => {
-    const item = order.items[0];
-    if (!item?.customImageData) {
-      toast.error('No custom image available');
-      return;
-    }
-    try {
-      const link = document.createElement('a');
-      link.href = `data:image/jpeg;base64,${item.customImageData}`;
-      link.download = `order-${order.orderId}-custom.jpg`;
-      link.click();
-    } catch {
-      toast.error('Failed to download image');
-    }
+  const handleDownloadCustomImage = (customImageData: string, orderId: string) => {
+    const src = getImageSrc(customImageData);
+    if (!src) return;
+    const link = document.createElement('a');
+    link.href = src;
+    link.download = `custom-image-${orderId}.jpg`;
+    link.click();
   };
 
-  const handleGenerateProductionFile = async (order: Order) => {
+  const handleGenerateProductionFile = async (orderId: string) => {
+    const fileData = `Production file for order ${orderId} - Generated at ${new Date().toISOString()}`;
     try {
-      const canvas = document.createElement('canvas');
-      canvas.width = 1200;
-      canvas.height = 800;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        toast.error('Canvas not available');
-        return;
-      }
-
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = '#000000';
-      ctx.font = 'bold 24px Arial';
-      ctx.fillText(`Order: ${order.orderId}`, 40, 60);
-      ctx.font = '18px Arial';
-      ctx.fillText(`Customer: ${order.shippingAddress.fullName}`, 40, 100);
-      ctx.fillText(`Total: ₹${order.total.toFixed(2)}`, 40, 130);
-      ctx.fillText(`Status: ${order.status}`, 40, 160);
-      ctx.fillText(`Payment: ${order.paymentMethod} - ${order.paymentStatus}`, 40, 190);
-
-      ctx.fillText('Items:', 40, 240);
-      let y = 270;
-      for (const item of order.items) {
-        ctx.fillText(`- ${item.product.name} x${Number(item.quantity)} (${item.selectedSize})`, 60, y);
-        y += 30;
-      }
-
-      const fileData = canvas.toDataURL('image/jpeg', 0.9).split(',')[1];
-      await setProductionFile.mutateAsync({ orderId: order.orderId, fileData });
-
-      const link = document.createElement('a');
-      link.href = `data:image/jpeg;base64,${fileData}`;
-      link.download = `production-${order.orderId}.jpg`;
-      link.click();
-
-      toast.success('Production file generated and saved');
+      await setProductionFileData.mutateAsync({ orderId, fileData });
+      toast.success('Production file generated');
     } catch {
       toast.error('Failed to generate production file');
     }
   };
 
+  const handleDownloadProductionFile = (productionFileData: string, orderId: string) => {
+    if (!productionFileData) return;
+    const blob = new Blob([productionFileData], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `production-file-${orderId}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Orders</h1>
-          <p className="text-muted-foreground text-sm mt-1">Manage customer orders</p>
+      <div>
+        <h1 className="text-2xl font-bold font-serif text-foreground">Orders</h1>
+        <p className="text-muted-foreground text-sm mt-1">Manage and track all customer orders</p>
+      </div>
+
+      <div className="flex gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by order ID or customer name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
         </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm text-muted-foreground">Filter:</label>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-1.5 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-          >
-            <option value="all">All Orders</option>
-            {STATUS_OPTIONS.map(s => (
-              <option key={s} value={s}>{s}</option>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
             ))}
-          </select>
-        </div>
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading ? (
         <div className="space-y-3">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="animate-pulse bg-muted rounded-xl h-16" />
           ))}
         </div>
-      ) : filteredOrders.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <p>No orders found.</p>
-        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">No orders found</div>
       ) : (
-        <div className="space-y-3">
-          {filteredOrders.map((order) => (
-            <div key={order.orderId} className="bg-card border border-border rounded-xl overflow-hidden">
-              <div
-                className="p-4 flex items-center justify-between cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => setExpandedOrder(expandedOrder === order.orderId ? null : order.orderId)}
-              >
-                <div className="flex items-center gap-4 flex-wrap">
-                  <div>
-                    <p className="font-medium text-sm">#{order.orderId.slice(-8)}</p>
-                    <p className="text-xs text-muted-foreground">{order.shippingAddress.fullName}</p>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-800'}`}>
-                    {order.status}
-                  </span>
-                  <span className="text-sm font-semibold">₹{order.total.toFixed(2)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={order.status}
-                    onChange={(e) => {
-                      e.stopPropagation();
-                      handleStatusChange(order.orderId, e.target.value as OrderStatus);
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-xs px-2 py-1 border border-border rounded bg-background focus:outline-none"
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="divide-y divide-border">
+            {filtered.map((order) => {
+              const isExpanded = expandedOrder === order.orderId;
+              return (
+                <div key={order.orderId}>
+                  <div
+                    className="flex items-center gap-4 p-4 cursor-pointer hover:bg-muted/30 transition-colors"
+                    onClick={() => setExpandedOrder(isExpanded ? null : order.orderId)}
                   >
-                    {STATUS_OPTIONS.map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                  {expandedOrder === order.orderId ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </div>
-              </div>
-
-              {expandedOrder === order.orderId && (
-                <div className="border-t border-border p-4 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <h4 className="text-sm font-semibold mb-2">Shipping Address</h4>
-                      <div className="text-sm text-muted-foreground space-y-0.5">
-                        <p>{order.shippingAddress.fullName}</p>
-                        <p>{order.shippingAddress.addressLine1}</p>
-                        {order.shippingAddress.addressLine2 && <p>{order.shippingAddress.addressLine2}</p>}
-                        <p>{order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}</p>
-                        <p>Phone: {order.shippingAddress.phone}</p>
-                      </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-foreground text-sm truncate">{order.orderId}</p>
+                      <p className="text-xs text-muted-foreground">{order.shippingAddress.fullName}</p>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-semibold mb-2">Order Details</h4>
-                      <div className="text-sm text-muted-foreground space-y-0.5">
-                        <p>Payment: {order.paymentMethod} ({order.paymentStatus})</p>
-                        <p>Estimated: {order.estimatedDelivery}</p>
-                        <p>Items: {order.items.length}</p>
-                      </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-bold text-primary text-sm">₹{order.total.toFixed(2)}</p>
+                      <Badge variant={getStatusBadgeVariant(order.status)} className="text-xs mt-1">
+                        {order.status}
+                      </Badge>
                     </div>
+                    {isExpanded ? (
+                      <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+                    )}
                   </div>
 
-                  <div>
-                    <h4 className="text-sm font-semibold mb-2">Items</h4>
-                    <div className="space-y-2">
-                      {order.items.map((item, idx) => (
-                        <div key={idx} className="flex items-center gap-3 text-sm">
-                          <div className="w-10 h-10 bg-muted rounded overflow-hidden shrink-0">
-                            {item.customImageData ? (
-                              <img
-                                src={`data:image/jpeg;base64,${item.customImageData}`}
-                                alt="Custom"
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">N/A</div>
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium">{item.product.name}</p>
-                            <p className="text-xs text-muted-foreground">Size: {item.selectedSize} · Qty: {Number(item.quantity)}</p>
-                          </div>
-                          <p className="font-semibold">₹{(item.product.price * Number(item.quantity)).toFixed(2)}</p>
+                  {isExpanded && (
+                    <div className="px-4 pb-4 bg-muted/20 space-y-4">
+                      {/* Order Items */}
+                      <div>
+                        <h3 className="font-semibold text-foreground text-sm mb-2">Items</h3>
+                        <div className="space-y-2">
+                          {order.items.map((item, idx) => {
+                            const productImageSrc = getImageSrc(item.product.imageData);
+                            const customImageSrc = getImageSrc(item.customImageData);
+                            return (
+                              <div key={idx} className="flex items-center gap-3 bg-card rounded-lg p-3 border border-border">
+                                <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted shrink-0">
+                                  {customImageSrc ? (
+                                    <img src={customImageSrc} alt="Custom" className="w-full h-full object-cover" />
+                                  ) : productImageSrc ? (
+                                    <img src={productImageSrc} alt={item.product.name} className="w-full h-full object-cover" />
+                                  ) : null}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-foreground text-sm truncate">{item.product.name}</p>
+                                  <p className="text-xs text-muted-foreground">Size: {item.selectedSize} · Qty: {Number(item.quantity)}</p>
+                                </div>
+                                <div className="flex gap-2 shrink-0">
+                                  {item.customImageData && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleDownloadCustomImage(item.customImageData, order.orderId)}
+                                    >
+                                      <Download className="w-3 h-3 mr-1" /> Custom Image
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
 
-                  <div className="flex gap-2 flex-wrap">
-                    <button
-                      onClick={() => handleDownloadCustomImage(order)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-border rounded-lg hover:bg-muted transition-colors"
-                    >
-                      <Download className="w-3.5 h-3.5" /> Download Image
-                    </button>
-                    <button
-                      onClick={() => handleGenerateProductionFile(order)}
-                      disabled={setProductionFile.isPending}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      {setProductionFile.isPending ? 'Generating...' : 'Generate Production File'}
-                    </button>
-                  </div>
+                      {/* Actions */}
+                      <div className="flex flex-wrap gap-3 items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">Status:</span>
+                          <Select
+                            value={order.status}
+                            onValueChange={(val) => handleStatusChange(order.orderId, val as OrderStatus)}
+                          >
+                            <SelectTrigger className="w-36 h-8 text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {STATUS_OPTIONS.filter((o) => o.value !== 'all').map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleGenerateProductionFile(order.orderId)}
+                          disabled={setProductionFileData.isPending}
+                        >
+                          <FileText className="w-3 h-3 mr-1" /> Generate Production File
+                        </Button>
+
+                        {order.productionFileData && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDownloadProductionFile(order.productionFileData, order.orderId)}
+                          >
+                            <Download className="w-3 h-3 mr-1" /> Download Production File
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Shipping Address */}
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-medium text-foreground">Ship to: </span>
+                        {order.shippingAddress.fullName}, {order.shippingAddress.addressLine1}, {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

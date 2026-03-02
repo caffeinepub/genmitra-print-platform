@@ -1,85 +1,35 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-03-01T16:41:27.631Z",
+  "generatedAt": "2026-03-01T20:34:56.602Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
+    "total": 2,
     "implemented": 2,
     "items": [
       {
-        "id": "REQ-82",
-        "summary": "Audit and fix any compilation or runtime errors in `backend/main.mo` and `backend/migration.mo` that are preventing the canister from deploying successfully. Ensure all Motoko syntax is valid, all imported modules resolve correctly, all stable variable declarations are compatible, and the actor compiles without errors so the canister can be initialized and upgraded.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-83",
-        "summary": "Audit and fix all frontend TypeScript compilation errors in the React application that could prevent the frontend bundle from building or the app from loading in the browser. Check `frontend/src/App.tsx`, all page components, hooks, and utility files for type errors, missing imports, undefined variables, or broken module references. Ensure the frontend builds and renders without a blank screen or uncaught JavaScript errors on initial load.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/admin/AdminGuard.tsx",
-          "frontend/src/hooks/useAuth.ts",
-          "frontend/src/hooks/useActor.ts",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/HomePage.tsx",
-          "frontend/src/pages/LoginPage.tsx",
-          "frontend/src/pages/admin/AdminDashboardPage.tsx",
-          "frontend/src/pages/admin/ProductManagementPage.tsx",
-          "frontend/src/pages/admin/TemplateManagementPage.tsx",
-          "frontend/src/pages/admin/OrderManagementPage.tsx",
-          "frontend/src/pages/admin/CustomerManagementPage.tsx",
-          "frontend/src/pages/admin/AdminSettingsPage.tsx",
-          "frontend/src/pages/ProductDetailPage.tsx",
-          "frontend/src/pages/EditorPage.tsx",
-          "frontend/src/pages/CartPage.tsx",
-          "frontend/src/pages/CheckoutPage.tsx",
-          "frontend/src/pages/OrderConfirmationPage.tsx",
-          "frontend/src/pages/OrderDetailPage.tsx",
-          "frontend/src/pages/MyOrdersPage.tsx",
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/components/HeroBanner.tsx",
-          "frontend/src/components/FeaturedProducts.tsx",
-          "frontend/src/components/ProductCategoryGrid.tsx",
-          "frontend/src/components/ShopFramesBySize.tsx",
-          "frontend/src/components/admin/AdminLayout.tsx",
-          "frontend/src/main.tsx",
-          "frontend/src/hooks/useInternetIdentity.ts",
-          "frontend/src/hooks/useAdminSession.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/src/components/admin/AdminGuard.tsx",
-          "frontend/src/hooks/useAuth.ts",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/HomePage.tsx",
-          "frontend/src/pages/LoginPage.tsx",
-          "frontend/src/pages/admin/AdminDashboardPage.tsx",
-          "frontend/src/pages/admin/ProductManagementPage.tsx",
-          "frontend/src/pages/admin/TemplateManagementPage.tsx",
-          "frontend/src/pages/admin/OrderManagementPage.tsx",
-          "frontend/src/pages/admin/CustomerManagementPage.tsx",
-          "frontend/src/pages/admin/AdminSettingsPage.tsx",
-          "frontend/src/pages/ProductDetailPage.tsx",
-          "frontend/src/pages/CheckoutPage.tsx",
-          "frontend/src/pages/OrderConfirmationPage.tsx",
-          "frontend/src/pages/MyOrdersPage.tsx",
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/components/FeaturedProducts.tsx",
-          "frontend/src/hooks/useAdminSession.ts"
-        ]
-      },
-      {
-        "id": "REQ-84",
-        "summary": "Verify and fix the canister configuration (`dfx.json` or equivalent) to ensure both the frontend and backend canisters are correctly specified, the frontend asset canister points to the correct build output directory, and the backend canister entry point resolves to `backend/main.mo`. Ensure the full-stack deployment pipeline (backend compile → frontend build → asset upload) completes without errors.",
+        "id": "REQ-87",
+        "summary": "Audit the entire frontend codebase for all locations that perform origin validation on incoming `postMessage` events or that construct/check allowed-origin lists for iframe communication — including any `window.addEventListener('message', handler)` callbacks that check `event.origin`, any hardcoded origin whitelist arrays, and any Content-Security-Policy `<meta>` tags in `frontend/index.html`. Ensure `https://sole-aqua-rc6-draft.caffeine.xyz` is present in every such whitelist. Remove or broaden any overly restrictive origin checks that would cause a `draft-editor:error disallowed origin` error for this domain. The fix must not introduce security regressions for other already-allowed origins.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/index.html",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/EditorPage.tsx",
+          "frontend/src/components/Layout.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/index.html",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-88",
+        "summary": "Audit `frontend/src/App.tsx` to identify and fix every route definition that simultaneously sets both an `id` and a `path` option on the same route object. TanStack Router (or React Router) does not permit a route to have both options at once — remove or rename the conflicting `id` property on any such route so the router initializes without throwing 'Route cannot have both an id and a path option'. Verify that all existing route paths and their navigation links remain functional after the fix.",
+        "status": "implemented",
+        "plannedFiles": [
           "frontend/src/App.tsx"
         ],
         "matchedFiles": [
@@ -89,30 +39,12 @@
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/index.html",
     "frontend/src/App.tsx",
-    "frontend/src/components/FeaturedProducts.tsx",
-    "frontend/src/components/Layout.tsx",
-    "frontend/src/components/admin/AdminGuard.tsx",
-    "frontend/src/hooks/useAdminSession.ts",
-    "frontend/src/hooks/useAuth.ts",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/CheckoutPage.tsx",
-    "frontend/src/pages/HomePage.tsx",
-    "frontend/src/pages/LoginPage.tsx",
-    "frontend/src/pages/MyOrdersPage.tsx",
-    "frontend/src/pages/OrderConfirmationPage.tsx",
-    "frontend/src/pages/ProductDetailPage.tsx",
-    "frontend/src/pages/admin/AdminDashboardPage.tsx",
-    "frontend/src/pages/admin/AdminSettingsPage.tsx",
-    "frontend/src/pages/admin/CustomerManagementPage.tsx",
-    "frontend/src/pages/admin/OrderManagementPage.tsx",
-    "frontend/src/pages/admin/ProductManagementPage.tsx",
-    "frontend/src/pages/admin/TemplateManagementPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

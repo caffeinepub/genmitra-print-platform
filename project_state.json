@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 55,
+  "projectStateVersion": 59,
   "summary": "Production-ready full-stack online printing and personalized gift platform (similar to Printo.in) with original branding. Frontend: Next.js 14, Tailwind CSS, Redux Toolkit, Fabric.js, PWA. Backend: Node.js + Express, PostgreSQL (Supabase), Sharp, Razorpay, WhatsApp API. Deployment: Vercel (frontend), Railway/Render (backend), Supabase (DB/storage).",
   "architectural_notes": [
     "Frontend: Next.js 14 + Tailwind CSS + Redux Toolkit + Fabric.js, deployed on Vercel",
@@ -21,7 +21,9 @@
     "Admin gets 'Unauthorized: Only admins can manage products' error when saving products/templates even when logged in as admin — JWT role validation failing in backend middleware or token not attached correctly in frontend requests",
     "Admin route /admin has no route guard — unauthenticated users can access the admin panel directly without logging in",
     "Visiting /admin while logged out triggers Internet Identity (id.ai) instead of showing custom username/password login form — admin auth must bypass Internet Identity entirely",
-    "Admin login failing — credential validation not working for either admin account (genmitra/12345678 or admin/Admin@1234)"
+    "Admin login failing — credential validation not working for either admin account (genmitra/12345678 or admin/Admin@1234)",
+    "Product images fail to load — backend image fields contain plain HTTP URLs but frontend is prepending 'data:image/jpeg;base64,' prefix to them, resulting in malformed URLs like 'data:image/jpeg;base64,https://...' that cannot be fetched",
+    "React Router route conflict: a route in App.tsx has both an 'id' and a 'path' option simultaneously, causing 'Route cannot have both an id and a path option' crash on app load"
   ],
   "isFixRequest": true,
   "existing_features": [
@@ -510,6 +512,38 @@
       "title": "Verify and fix the canister configuration (`dfx.json` or equivalent) to ensure both the frontend and backend canisters are correctly specified, the frontend asset canister points to the correct build output directory, and the backend canister entry point resolves to `backend/main.mo`. Ensure the full-stack deployment pipeline (backend compile → frontend build → asset upload) completes without errors.",
       "reqIds": [
         "REQ-84"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-all-frontend-components-pages-hooks-and-utility-files-that-render-product-or-template-images-wherever-an-image-src-is-constructed-by-prepending-data-image-jpeg-base64-or-any-data-image-base64-prefix-to-a-value-that-is-actually-a-plain-http-https-url-string-remove-the-erroneous-prefix-so-the-src-attribute-receives-the-raw-url-directly-the-fix-must-cover-every-location-where-this-concatenation-occurs-including-featuredproducts-tsx-productdetailpage-tsx-shopframesbysize-tsx-productcategorygrid-tsx-admindashboardpage-tsx-productmanagementpage-tsx-templatemanagementpage-tsx-cartpage-tsx-orderdetailpage-tsx-and-any-shared-image-rendering-utility-after-the-fix-images-whose-stored-value-is-a-plain-http-url-must-render-correctly-and-images-whose-stored-value-is-a-genuine-base64-data-uri-must-also-continue-to-render-correctly",
+      "title": "Audit all frontend components, pages, hooks, and utility files that render product or template images. Wherever an image `src` is constructed by prepending `data:image/jpeg;base64,` (or any `data:image/...;base64,` prefix) to a value that is actually a plain HTTP/HTTPS URL string, remove the erroneous prefix so the `src` attribute receives the raw URL directly. The fix must cover every location where this concatenation occurs — including `FeaturedProducts.tsx`, `ProductDetailPage.tsx`, `ShopFramesBySize.tsx`, `ProductCategoryGrid.tsx`, `AdminDashboardPage.tsx`, `ProductManagementPage.tsx`, `TemplateManagementPage.tsx`, `CartPage.tsx`, `OrderDetailPage.tsx`, and any shared image-rendering utility. After the fix, images whose stored value is a plain HTTP URL must render correctly, and images whose stored value is a genuine base64 data URI must also continue to render correctly.",
+      "reqIds": [
+        "REQ-85"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-the-entire-frontend-codebase-for-all-locations-that-perform-origin-validation-on-incoming-postmessage-events-or-that-construct-check-allowed-origin-lists-for-iframe-communication-this-includes-any-window-addeventlistener-message-handler-callbacks-that-check-event-origin-any-hardcoded-origin-whitelist-arrays-and-any-content-security-policy-meta-tags-in-frontend-index-html-ensure-https-sole-aqua-rc6-draft-caffeine-xyz-is-present-in-every-such-whitelist-remove-or-broaden-any-overly-restrictive-origin-checks-that-would-cause-a-draft-editor-error-disallowed-origin-error-for-this-domain-the-fix-must-not-introduce-security-regressions-for-other-already-allowed-origins",
+      "title": "Audit the entire frontend codebase for all locations that perform origin validation on incoming `postMessage` events or that construct/check allowed-origin lists for iframe communication. This includes any `window.addEventListener('message', handler)` callbacks that check `event.origin`, any hardcoded origin whitelist arrays, and any Content-Security-Policy `<meta>` tags in `frontend/index.html`. Ensure `https://sole-aqua-rc6-draft.caffeine.xyz` is present in every such whitelist. Remove or broaden any overly restrictive origin checks that would cause a `draft-editor:error disallowed origin` error for this domain. The fix must not introduce security regressions for other already-allowed origins.",
+      "reqIds": [
+        "REQ-86"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-the-entire-frontend-codebase-for-all-locations-that-perform-origin-validation-on-incoming-postmessage-events-or-that-construct-check-allowed-origin-lists-for-iframe-communication-including-any-window-addeventlistener-message-handler-callbacks-that-check-event-origin-any-hardcoded-origin-whitelist-arrays-and-any-content-security-policy-meta-tags-in-frontend-index-html-ensure-https-sole-aqua-rc6-draft-caffeine-xyz-is-present-in-every-such-whitelist-remove-or-broaden-any-overly-restrictive-origin-checks-that-would-cause-a-draft-editor-error-disallowed-origin-error-for-this-domain-the-fix-must-not-introduce-security-regressions-for-other-already-allowed-origins",
+      "title": "Audit the entire frontend codebase for all locations that perform origin validation on incoming `postMessage` events or that construct/check allowed-origin lists for iframe communication — including any `window.addEventListener('message', handler)` callbacks that check `event.origin`, any hardcoded origin whitelist arrays, and any Content-Security-Policy `<meta>` tags in `frontend/index.html`. Ensure `https://sole-aqua-rc6-draft.caffeine.xyz` is present in every such whitelist. Remove or broaden any overly restrictive origin checks that would cause a `draft-editor:error disallowed origin` error for this domain. The fix must not introduce security regressions for other already-allowed origins.",
+      "reqIds": [
+        "REQ-87"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-audit-frontend-src-app-tsx-to-identify-and-fix-every-route-definition-that-simultaneously-sets-both-an-id-and-a-path-option-on-the-same-route-object-tanstack-router-or-react-router-does-not-permit-a-route-to-have-both-options-at-once-remove-or-rename-the-conflicting-id-property-on-any-such-route-so-the-router-initializes-without-throwing-route-cannot-have-both-an-id-and-a-path-option-verify-that-all-existing-route-paths-and-their-navigation-links-remain-functional-after-the-fix",
+      "title": "Audit `frontend/src/App.tsx` to identify and fix every route definition that simultaneously sets both an `id` and a `path` option on the same route object. TanStack Router (or React Router) does not permit a route to have both options at once — remove or rename the conflicting `id` property on any such route so the router initializes without throwing 'Route cannot have both an id and a path option'. Verify that all existing route paths and their navigation links remain functional after the fix.",
+      "reqIds": [
+        "REQ-88"
       ],
       "version": 1
     }

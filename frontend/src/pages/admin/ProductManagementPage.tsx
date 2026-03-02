@@ -1,6 +1,14 @@
-import React, { useState } from 'react';
-import { Plus, Edit, Trash2, X, Upload } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Pencil, Trash2, Search, X } from 'lucide-react';
 import { useGetAllProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '../../hooks/useQueries';
+import { getImageSrc } from '../../utils/imageHelpers';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
 import type { ProductInfo } from '../../backend';
 import { toast } from 'sonner';
 
@@ -14,8 +22,8 @@ const emptyProduct: Omit<ProductInfo, 'dpiSettings'> & { dpiSettings: number } =
   sizeOptions: [],
   imageData: '',
   templateImageData: '',
-  deliveryTime: '3-5 business days',
-  category: CATEGORIES[0],
+  deliveryTime: '5-7 business days',
+  category: 'Photo Prints',
   dpiSettings: 300,
 };
 
@@ -38,11 +46,10 @@ function compressImage(file: File, maxSize = 800, quality = 0.75): Promise<strin
         }
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) { reject(new Error('Canvas context unavailable')); return; }
+        const ctx = canvas.getContext('2d')!;
         ctx.drawImage(img, 0, 0, width, height);
         const dataUrl = canvas.toDataURL('image/jpeg', quality);
-        resolve(dataUrl.split(',')[1]);
+        resolve(dataUrl);
       };
       img.onerror = reject;
       img.src = e.target?.result as string;
@@ -53,67 +60,74 @@ function compressImage(file: File, maxSize = 800, quality = 0.75): Promise<strin
 }
 
 export default function ProductManagementPage() {
-  const { data: products, isLoading } = useGetAllProducts();
+  const { data: products = [], isLoading } = useGetAllProducts();
   const createProduct = useCreateProduct();
   const updateProduct = useUpdateProduct();
   const deleteProduct = useDeleteProduct();
 
-  const [showModal, setShowModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<(Omit<ProductInfo, 'dpiSettings'> & { dpiSettings: number }) | null>(null);
-  const [form, setForm] = useState<Omit<ProductInfo, 'dpiSettings'> & { dpiSettings: number }>(emptyProduct);
+  const [search, setSearch] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<ProductInfo | null>(null);
+  const [form, setForm] = useState<typeof emptyProduct>({ ...emptyProduct });
   const [sizeInput, setSizeInput] = useState('');
   const [imageUploading, setImageUploading] = useState(false);
   const [templateUploading, setTemplateUploading] = useState(false);
 
+  const filtered = products.filter((p) =>
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    p.category.toLowerCase().includes(search.toLowerCase())
+  );
+
   const openCreate = () => {
     setEditingProduct(null);
-    setForm({ ...emptyProduct, id: `prod_${Date.now()}` });
+    setForm({ ...emptyProduct, id: `product_${Date.now()}` });
     setSizeInput('');
-    setShowModal(true);
+    setIsModalOpen(true);
   };
 
   const openEdit = (product: ProductInfo) => {
-    setEditingProduct({
-      ...product,
-      dpiSettings: Number(product.dpiSettings),
-    });
+    setEditingProduct(product);
     setForm({
       ...product,
       dpiSettings: Number(product.dpiSettings),
     });
-    setSizeInput(product.sizeOptions.join(', '));
-    setShowModal(true);
+    setSizeInput('');
+    setIsModalOpen(true);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'imageData' | 'templateImageData') => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const setter = field === 'imageData' ? setImageUploading : setTemplateUploading;
-    setter(true);
+    if (field === 'imageData') setImageUploading(true);
+    else setTemplateUploading(true);
     try {
       const compressed = await compressImage(file);
-      setForm(prev => ({ ...prev, [field]: compressed }));
+      setForm((prev) => ({ ...prev, [field]: compressed }));
     } catch {
       toast.error('Failed to process image');
     } finally {
-      setter(false);
+      if (field === 'imageData') setImageUploading(false);
+      else setTemplateUploading(false);
     }
+  };
+
+  const handleAddSize = () => {
+    if (sizeInput.trim() && !form.sizeOptions.includes(sizeInput.trim())) {
+      setForm((prev) => ({ ...prev, sizeOptions: [...prev.sizeOptions, sizeInput.trim()] }));
+      setSizeInput('');
+    }
+  };
+
+  const handleRemoveSize = (size: string) => {
+    setForm((prev) => ({ ...prev, sizeOptions: prev.sizeOptions.filter((s) => s !== size) }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.id.trim()) {
-      toast.error('Name and ID are required');
-      return;
-    }
-
-    const sizes = sizeInput.split(',').map(s => s.trim()).filter(Boolean);
     const productData: ProductInfo = {
       ...form,
-      sizeOptions: sizes,
       dpiSettings: BigInt(form.dpiSettings),
     };
-
     try {
       if (editingProduct) {
         await updateProduct.mutateAsync(productData);
@@ -122,9 +136,9 @@ export default function ProductManagementPage() {
         await createProduct.mutateAsync(productData);
         toast.success('Product created successfully');
       }
-      setShowModal(false);
-    } catch (err) {
-      toast.error('Failed to save product');
+      setIsModalOpen(false);
+    } catch (err: unknown) {
+      toast.error(editingProduct ? 'Failed to update product' : 'Failed to create product');
     }
   };
 
@@ -142,234 +156,197 @@ export default function ProductManagementPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Products</h1>
+          <h1 className="text-2xl font-bold font-serif text-foreground">Products</h1>
           <p className="text-muted-foreground text-sm mt-1">Manage your product catalog</p>
         </div>
-        <button
-          onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm"
-        >
-          <Plus className="w-4 h-4" /> Add Product
-        </button>
+        <Button onClick={openCreate}>
+          <Plus className="w-4 h-4 mr-2" /> Add Product
+        </Button>
+      </div>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="Search products..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-9"
+        />
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-48 bg-muted rounded-xl animate-pulse" />
+        <div className="space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="animate-pulse bg-muted rounded-xl h-16" />
           ))}
         </div>
-      ) : !products || products.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <Package className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>No products yet. Add your first product!</p>
-        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">No products found</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((product) => (
-            <div key={product.id} className="bg-card border border-border rounded-xl overflow-hidden">
-              <div className="aspect-video bg-muted overflow-hidden">
-                {product.imageData ? (
-                  <img
-                    src={`data:image/jpeg;base64,${product.imageData}`}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/assets/generated/photo-print-1.dim_600x600.png'; }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">No image</div>
-                )}
-              </div>
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground truncate">{product.name}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">{product.category}</p>
-                    <p className="text-primary font-bold mt-1">₹{product.price}</p>
+        <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="divide-y divide-border">
+            {filtered.map((product) => {
+              const imageSrc = getImageSrc(product.imageData);
+              return (
+                <div key={product.id} className="flex items-center gap-4 p-4">
+                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-muted shrink-0">
+                    {imageSrc ? (
+                      <img src={imageSrc} alt={product.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No img</div>
+                    )}
                   </div>
-                  <div className="flex gap-1 shrink-0">
-                    <button
-                      onClick={() => openEdit(product)}
-                      className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground truncate">{product.name}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary" className="text-xs">{product.category}</Badge>
+                      <span className="text-xs text-muted-foreground">₹{product.price}</span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <Button variant="outline" size="icon" onClick={() => openEdit(product)}>
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
                       onClick={() => handleDelete(product.id)}
-                      className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors"
+                      disabled={deleteProduct.isPending}
+                      className="text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
                     >
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-border flex items-center justify-between">
-              <h2 className="text-lg font-semibold">{editingProduct ? 'Edit Product' : 'Add Product'}</h2>
-              <button onClick={() => setShowModal(false)} className="p-1 hover:bg-muted rounded">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Product ID</label>
-                  <input
-                    type="text"
-                    value={form.id}
-                    onChange={(e) => setForm(prev => ({ ...prev, id: e.target.value }))}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    disabled={!!editingProduct}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Name</label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Price (₹)</label>
-                  <input
-                    type="number"
-                    value={form.price}
-                    onChange={(e) => setForm(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Category</label>
-                  <select
-                    value={form.category}
-                    onChange={(e) => setForm(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  >
-                    {CATEGORIES.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea
-                  value={form.description}
-                  onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Size Options (comma-separated)</label>
-                <input
-                  type="text"
-                  value={sizeInput}
-                  onChange={(e) => setSizeInput(e.target.value)}
-                  placeholder="e.g. 4x6, 5x7, 8x10"
-                  className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Delivery Time</label>
-                <input
-                  type="text"
-                  value={form.deliveryTime}
-                  onChange={(e) => setForm(prev => ({ ...prev, deliveryTime: e.target.value }))}
-                  className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Product Image</label>
-                <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted transition-colors">
-                  <Upload className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {imageUploading ? 'Processing...' : form.imageData ? 'Image uploaded ✓' : 'Upload image'}
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleImageUpload(e, 'imageData')}
-                    disabled={imageUploading}
-                  />
-                </label>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Template Overlay Image</label>
-                <label className="flex items-center gap-2 px-3 py-2 border border-dashed border-border rounded-lg cursor-pointer hover:bg-muted transition-colors">
-                  <Upload className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {templateUploading ? 'Processing...' : form.templateImageData ? 'Template uploaded ✓' : 'Upload template'}
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => handleImageUpload(e, 'templateImageData')}
-                    disabled={templateUploading}
-                  />
-                </label>
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 py-2.5 border border-border rounded-lg text-sm font-medium hover:bg-muted transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={createProduct.isPending || updateProduct.isPending || imageUploading || templateUploading}
-                  className="flex-1 py-2.5 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {(createProduct.isPending || updateProduct.isPending) ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    editingProduct ? 'Update' : 'Create'
-                  )}
-                </button>
-              </div>
-            </form>
+              );
+            })}
           </div>
         </div>
       )}
-    </div>
-  );
-}
 
-// Fix missing import
-function Package({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-    </svg>
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingProduct ? 'Edit Product' : 'Add New Product'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <Label>Product Name</Label>
+                <Input
+                  value={form.name}
+                  onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                  required
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Price (₹)</Label>
+                <Input
+                  type="number"
+                  value={form.price}
+                  onChange={(e) => setForm((p) => ({ ...p, price: parseFloat(e.target.value) || 0 }))}
+                  required
+                  min={0}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>Category</Label>
+                <select
+                  value={form.category}
+                  onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                >
+                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="col-span-2">
+                <Label>Description</Label>
+                <textarea
+                  value={form.description}
+                  onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                  rows={3}
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
+                />
+              </div>
+              <div>
+                <Label>Delivery Time</Label>
+                <Input
+                  value={form.deliveryTime}
+                  onChange={(e) => setForm((p) => ({ ...p, deliveryTime: e.target.value }))}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label>DPI Settings</Label>
+                <Input
+                  type="number"
+                  value={form.dpiSettings}
+                  onChange={(e) => setForm((p) => ({ ...p, dpiSettings: parseInt(e.target.value) || 300 }))}
+                  className="mt-1"
+                />
+              </div>
+              <div className="col-span-2">
+                <Label>Size Options</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    value={sizeInput}
+                    onChange={(e) => setSizeInput(e.target.value)}
+                    placeholder="e.g. 4x6"
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSize(); } }}
+                  />
+                  <Button type="button" variant="outline" onClick={handleAddSize}>Add</Button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {form.sizeOptions.map((size) => (
+                    <span key={size} className="flex items-center gap-1 bg-muted px-2 py-1 rounded text-sm">
+                      {size}
+                      <button type="button" onClick={() => handleRemoveSize(size)}>
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label>Product Image</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, 'imageData')}
+                  className="mt-1"
+                  disabled={imageUploading}
+                />
+                {imageUploading && <p className="text-xs text-muted-foreground mt-1">Processing...</p>}
+                {form.imageData && (
+                  <img src={getImageSrc(form.imageData)} alt="Preview" className="mt-2 w-24 h-24 object-cover rounded-lg border border-border" />
+                )}
+              </div>
+              <div>
+                <Label>Template Overlay Image</Label>
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, 'templateImageData')}
+                  className="mt-1"
+                  disabled={templateUploading}
+                />
+                {templateUploading && <p className="text-xs text-muted-foreground mt-1">Processing...</p>}
+                {form.templateImageData && (
+                  <img src={getImageSrc(form.templateImageData)} alt="Template Preview" className="mt-2 w-24 h-24 object-cover rounded-lg border border-border" />
+                )}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={createProduct.isPending || updateProduct.isPending}>
+                {(createProduct.isPending || updateProduct.isPending) ? 'Saving...' : editingProduct ? 'Update Product' : 'Create Product'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
