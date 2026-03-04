@@ -16,6 +16,7 @@ import AdminLayout from "./components/admin/AdminLayout";
 
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import CircleMagnetEditorPage from "./pages/CircleMagnetEditorPage";
 import CreateAccountPage from "./pages/CreateAccountPage";
 import EditorPage from "./pages/EditorPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
@@ -91,6 +92,15 @@ const magnetEditorRoute = createRoute({
     magnet: search.magnet as string | undefined,
   }),
   component: MagnetEditorPage,
+});
+
+const circleMagnetEditorRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: "/circle-magnet-editor/$productId",
+  validateSearch: (search: Record<string, unknown>) => ({
+    size: search.size as string | undefined,
+  }),
+  component: CircleMagnetEditorPage,
 });
 
 const cartRoute = createRoute({
@@ -208,6 +218,7 @@ const routeTree = rootRoute.addChildren([
     productDetailRoute,
     editorRoute,
     magnetEditorRoute,
+    circleMagnetEditorRoute,
     cartRoute,
     checkoutRoute,
     orderConfirmationRoute,

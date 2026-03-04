@@ -146,6 +146,21 @@ export const demoProducts: ProductInfo[] = [
     category: "Photo Magnets",
     dpiSettings: BigInt(300),
   },
+  // Circle Magnets
+  {
+    id: "demo-circle-magnet-1",
+    name: "Circle Photo Magnet",
+    price: BigInt(199),
+    description:
+      "Custom circle photo magnets with vibrant full-color print. Strong magnetic backing. Perfect for fridges, lockers, and whiteboards.",
+    sizeOptions: ["2.5 inch dia", "3.5 inch dia", "5 inch dia"],
+    imageData: "/assets/generated/photo-magnet-1.dim_600x600.png",
+    templateImageData:
+      "/assets/generated/demo-frame-photo-magnet.dim_400x400.png",
+    deliveryTime: "3-5 business days",
+    category: "Circle Magnets",
+    dpiSettings: BigInt(300),
+  },
   // Mugs
   {
     id: "demo-mug-1",

@@ -98,9 +98,16 @@ export default function ProductDetailPage() {
   const originalPrice = Math.round(priceNum * 1.2);
 
   const isMagnet = product.category === "Photo Magnets";
+  const isCircleMagnet = product.category === "Circle Magnets";
 
   const handleStartCustomizing = () => {
-    if (isMagnet) {
+    if (isCircleMagnet) {
+      navigate({
+        to: "/circle-magnet-editor/$productId",
+        params: { productId: product.id },
+        search: { size: sizeToUse },
+      });
+    } else if (isMagnet) {
       navigate({
         to: "/magnet-editor/$productId",
         params: { productId: product.id },
@@ -267,13 +274,19 @@ export default function ProductDetailPage() {
                 data-ocid="product.primary_button"
                 onClick={handleStartCustomizing}
                 className={`w-full py-3 font-bold rounded transition-colors flex items-center justify-center gap-2 text-base ${
-                  isMagnet
-                    ? "bg-purple-600 text-white hover:bg-purple-700"
-                    : "bg-[#2874f0] text-white hover:bg-[#1f5bb8]"
+                  isCircleMagnet
+                    ? "bg-pink-600 text-white hover:bg-pink-700"
+                    : isMagnet
+                      ? "bg-purple-600 text-white hover:bg-purple-700"
+                      : "bg-[#2874f0] text-white hover:bg-[#1f5bb8]"
                 }`}
               >
                 <Zap className="w-5 h-5" />
-                {isMagnet ? "Create your Design" : "Customize & Add to Cart"}
+                {isCircleMagnet
+                  ? "Design your Circle Magnet"
+                  : isMagnet
+                    ? "Create your Design"
+                    : "Customize & Add to Cart"}
               </button>
               <button
                 type="button"
