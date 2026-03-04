@@ -1,0 +1,83 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: oklch(0.97 0.003 240);
+    --foreground: oklch(0.15 0.01 240);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.15 0.01 240);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.15 0.01 240);
+    --primary: oklch(0.52 0.18 250);
+    --primary-foreground: oklch(1 0 0);
+    --primary-dark: oklch(0.42 0.18 250);
+    --secondary: oklch(0.95 0.005 240);
+    --secondary-foreground: oklch(0.25 0.01 240);
+    --muted: oklch(0.95 0.005 240);
+    --muted-foreground: oklch(0.5 0.01 240);
+    --accent: oklch(0.93 0.02 250);
+    --accent-foreground: oklch(0.52 0.18 250);
+    --destructive: oklch(0.55 0.22 25);
+    --destructive-foreground: oklch(1 0 0);
+    --border: oklch(0.88 0.005 240);
+    --input: oklch(0.88 0.005 240);
+    --ring: oklch(0.52 0.18 250);
+    --radius: 0.5rem;
+    --success: oklch(0.55 0.15 145);
+    --warning: oklch(0.7 0.15 60);
+    --amazon-blue: #2874f0;
+    --amazon-blue-dark: #1f5bb8;
+    --page-bg: #f5f6f7;
+    --card-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+
+  .dark {
+    --background: oklch(0.12 0.01 240);
+    --foreground: oklch(0.95 0.005 240);
+    --card: oklch(0.18 0.01 240);
+    --card-foreground: oklch(0.95 0.005 240);
+    --popover: oklch(0.18 0.01 240);
+    --popover-foreground: oklch(0.95 0.005 240);
+    --primary: oklch(0.6 0.18 250);
+    --primary-foreground: oklch(1 0 0);
+    --primary-dark: oklch(0.5 0.18 250);
+    --secondary: oklch(0.22 0.01 240);
+    --secondary-foreground: oklch(0.9 0.005 240);
+    --muted: oklch(0.22 0.01 240);
+    --muted-foreground: oklch(0.6 0.01 240);
+    --accent: oklch(0.25 0.02 250);
+    --accent-foreground: oklch(0.6 0.18 250);
+    --destructive: oklch(0.55 0.22 25);
+    --destructive-foreground: oklch(1 0 0);
+    --border: oklch(0.28 0.01 240);
+    --input: oklch(0.28 0.01 240);
+    --ring: oklch(0.6 0.18 250);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Inter", "Poppins", sans-serif;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[#2874f0] hover:bg-[#1f5bb8] text-white font-medium px-4 py-2 rounded transition-colors;
+  }
+
+  .card-amazon {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200;
+  }
+
+  .page-bg {
+    background-color: #f5f6f7;
+  }
+}
