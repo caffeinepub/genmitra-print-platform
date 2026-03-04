@@ -113,37 +113,19 @@ export const demoProducts: ProductInfo[] = [
     category: "Photo Magnets",
     dpiSettings: BigInt(300),
   },
+  // Acrylic Photo Fridge Magnets
   {
-    id: "demo-photo-magnet-3",
-    name: "Heart Photo Magnet",
-    price: BigInt(199),
+    id: "demo-acrylic-fridge-magnet-1",
+    name: "Acrylic Photo Fridge Magnets",
+    price: BigInt(884),
     description:
-      "Adorable heart-shaped photo magnets. Perfect for Valentine's Day or anniversaries.",
-    sizeOptions: ["3 inch", "4 inch"],
-    imageData: "/assets/generated/photo-magnet-3.dim_600x600.png",
+      "Make gorgeous photo magnets from your favorite photos.\n• Premium Glossy finish magnets\n• High quality full colour printing\n• Edge to edge printing on the magnets\n• Fancy 5 shapes comes with attractive packaging\n• Magnet 4mm thick acrylic & magnet.",
+    sizeOptions: ["Circle", "Square", "Rectangle", "Heart", "Star"],
+    imageData: "/assets/generated/acrylic-fridge-magnets.dim_600x600.png",
     templateImageData:
       "/assets/generated/demo-frame-photo-magnet.dim_400x400.png",
     deliveryTime: "3-5 business days",
-    category: "Photo Magnets",
-    dpiSettings: BigInt(300),
-  },
-  // Photo Magnet Set
-  {
-    id: "demo-photo-magnet-set",
-    name: "Rectangle & Square Fridge Magnets — Set of 4",
-    price: BigInt(856),
-    description:
-      "Re-visit those blessed moments every time! Square magnet combos come in a set of 4 magnets. Printed on 2mm thick flexible magnet. Liven up your fridge or desk-space with holiday memories as magnets. Each piece in the set measures 4×3 in (2 Qty), 5×5 in (2 Qty).",
-    sizeOptions: [
-      "Magnet 1 (4.42×3.84 in)",
-      "Magnet 2 (5×5 in)",
-      "Magnet 3 (5×5 in)",
-      "Magnet 4 (4.42×3.84 in)",
-    ],
-    imageData: "/assets/generated/magnet-set-product.dim_600x600.jpg",
-    templateImageData: "/assets/generated/magnet-set-product.dim_600x600.jpg",
-    deliveryTime: "3-5 business days",
-    category: "Photo Magnets",
+    category: "Acrylic Magnets",
     dpiSettings: BigInt(300),
   },
   // Circle Magnets

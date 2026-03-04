@@ -2,11 +2,15 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import {
   ChevronLeft,
   Heart,
+  Info,
+  Pencil,
   RotateCcw,
+  Share2,
   Shield,
   ShoppingCart,
   Star,
   Truck,
+  Upload,
   Zap,
 } from "lucide-react";
 import React, { useState } from "react";
@@ -99,6 +103,7 @@ export default function ProductDetailPage() {
 
   const isMagnet = product.category === "Photo Magnets";
   const isCircleMagnet = product.category === "Circle Magnets";
+  const isAcrylicMagnet = product.category === "Acrylic Magnets";
 
   const handleStartCustomizing = () => {
     if (isCircleMagnet) {
@@ -107,7 +112,7 @@ export default function ProductDetailPage() {
         params: { productId: product.id },
         search: { size: sizeToUse },
       });
-    } else if (isMagnet) {
+    } else if (isMagnet || isAcrylicMagnet) {
       navigate({
         to: "/magnet-editor/$productId",
         params: { productId: product.id },
@@ -121,6 +126,298 @@ export default function ProductDetailPage() {
       });
     }
   };
+
+  // Parse bullet description lines (lines starting with •)
+  const descriptionLines = product.description.split("\n");
+  const descriptionIntro = descriptionLines[0];
+  const descriptionBullets = descriptionLines
+    .slice(1)
+    .filter((l) => l.trim().startsWith("•"))
+    .map((l) => l.replace(/^•\s*/, "").trim());
+
+  // Acrylic Magnets get a special product detail layout matching the reference
+  if (isAcrylicMagnet) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="max-w-6xl mx-auto px-4 py-6">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+            <button
+              type="button"
+              onClick={() =>
+                navigate({
+                  to: "/",
+                  search: { category: undefined, search: undefined },
+                })
+              }
+              className="hover:text-purple-600 transition-colors flex items-center gap-1"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Home
+            </button>
+            <span>/</span>
+            <button
+              type="button"
+              onClick={() =>
+                navigate({
+                  to: "/",
+                  search: { category: product.category, search: undefined },
+                })
+              }
+              className="hover:text-purple-600 transition-colors"
+            >
+              {product.category}
+            </button>
+            <span>/</span>
+            <span className="text-gray-700 font-medium truncate max-w-xs">
+              {product.name}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            {/* Left: Product Images */}
+            <div>
+              <div className="bg-gray-50 rounded-lg overflow-hidden mb-3 border border-gray-100">
+                <img
+                  src={
+                    imgSrc ||
+                    "/assets/generated/acrylic-fridge-magnets.dim_600x600.png"
+                  }
+                  alt={product.name}
+                  className="w-full object-contain"
+                  style={{ maxHeight: "440px" }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      "/assets/generated/acrylic-fridge-magnets.dim_600x600.png";
+                  }}
+                />
+              </div>
+              {/* Thumbnail strip */}
+              <div className="flex gap-2">
+                <div className="w-20 h-20 border-2 border-purple-600 rounded overflow-hidden cursor-pointer">
+                  <img
+                    src={
+                      imgSrc ||
+                      "/assets/generated/acrylic-fridge-magnets.dim_600x600.png"
+                    }
+                    alt="thumb"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "/assets/generated/acrylic-fridge-magnets.dim_600x600.png";
+                    }}
+                  />
+                </div>
+                <div className="w-20 h-20 border border-gray-200 rounded overflow-hidden cursor-pointer bg-gray-50 flex items-center justify-center">
+                  <div className="text-center p-1">
+                    <div className="text-xs font-semibold text-gray-500 leading-tight">
+                      Size chart
+                    </div>
+                    <div className="flex gap-0.5 mt-1 justify-center flex-wrap">
+                      {["circle", "square", "rect", "circle2"].map((id, _i) => {
+                        const shapes: Record<string, string> = {
+                          circle: "○",
+                          square: "□",
+                          rect: "◻",
+                          circle2: "○",
+                        };
+                        return (
+                          <span key={id} className="text-gray-400 text-xs">
+                            {shapes[id]}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                <div className="w-20 h-20 border border-gray-200 rounded overflow-hidden cursor-pointer bg-gray-50 flex items-center justify-center">
+                  <div className="text-center p-1">
+                    <div className="text-xs font-semibold text-gray-500 leading-tight">
+                      Material chart
+                    </div>
+                    <div className="flex gap-1 mt-1 justify-center">
+                      <div className="w-5 h-5 rounded-full bg-gray-200 border border-gray-300" />
+                      <div className="w-5 h-5 rounded-full bg-gray-700 border border-gray-600" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Product Info */}
+            <div>
+              <div className="flex items-start justify-between mb-2">
+                <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+                  {product.name}
+                </h1>
+                <button
+                  type="button"
+                  className="text-gray-400 hover:text-gray-600 transition-colors ml-4 mt-1"
+                >
+                  <Share2 className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Short description */}
+              <p className="text-sm text-teal-600 mb-3">{descriptionIntro}</p>
+
+              {/* Bullet points */}
+              {descriptionBullets.length > 0 && (
+                <ul className="mb-5 space-y-1">
+                  {descriptionBullets.map((bullet) => (
+                    <li
+                      key={bullet}
+                      className="flex items-start gap-2 text-sm text-teal-700"
+                    >
+                      <span className="text-teal-500 mt-0.5">•</span>
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Shape & Style dropdown */}
+              <div className="flex items-center gap-4 mb-4">
+                <label
+                  htmlFor="shape-style-select"
+                  className="text-sm font-semibold text-gray-700 whitespace-nowrap w-28"
+                >
+                  Shape &amp; Style
+                </label>
+                <select
+                  id="shape-style-select"
+                  data-ocid="product.select"
+                  value={selectedSize || product.sizeOptions[0]}
+                  onChange={(e) => setSelectedSize(e.target.value)}
+                  className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-purple-500 bg-white"
+                >
+                  {product.sizeOptions.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Quantity */}
+              <div className="flex items-center gap-4 mb-6">
+                <label
+                  htmlFor="acrylic-quantity-input"
+                  className="text-sm font-semibold text-gray-700 whitespace-nowrap w-28"
+                >
+                  Quantity
+                </label>
+                <div className="flex-1">
+                  <input
+                    id="acrylic-quantity-input"
+                    type="number"
+                    data-ocid="product.input"
+                    min={1}
+                    max={50}
+                    value={quantity}
+                    onChange={(e) =>
+                      setQuantity(
+                        Math.max(1, Math.min(50, Number(e.target.value))),
+                      )
+                    }
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-purple-500"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    Choose a quantity between 1 - 50 for instant ordering. For
+                    higher quantities, you will be allowed to request quotations
+                    from Sales Team.
+                  </p>
+                </div>
+              </div>
+
+              {/* Price */}
+              <div className="mb-4">
+                <div className="flex items-baseline gap-2 mb-0.5">
+                  <span className="text-2xl font-bold text-orange-500">
+                    ₹
+                    {priceNum.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    inclusive of all taxes
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500">
+                  for {quantity} Qty (₹
+                  {priceNum.toLocaleString("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  / piece)
+                </p>
+                <button
+                  type="button"
+                  className="text-sm text-purple-600 font-medium mt-1 flex items-center gap-1 hover:underline"
+                >
+                  Buy in bulk and save
+                  <Info className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex gap-3 mb-5">
+                <button
+                  type="button"
+                  data-ocid="product.upload_button"
+                  onClick={handleStartCustomizing}
+                  className="flex-1 bg-purple-700 hover:bg-purple-800 text-white font-semibold py-3 rounded flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  Upload your Files
+                </button>
+                <button
+                  type="button"
+                  data-ocid="product.primary_button"
+                  onClick={handleStartCustomizing}
+                  className="flex-1 border border-gray-300 hover:border-purple-600 hover:text-purple-700 text-gray-700 font-semibold py-3 rounded flex items-center justify-center gap-2 transition-colors bg-white"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Create your Design
+                </button>
+              </div>
+
+              {/* Wishlist */}
+              <button
+                type="button"
+                data-ocid="product.secondary_button"
+                onClick={handleToggleWishlist}
+                className={`w-full py-2.5 border font-semibold rounded transition-colors flex items-center justify-center gap-2 text-sm mb-5 ${
+                  inWishlist
+                    ? "border-red-400 text-red-500 bg-red-50 hover:bg-red-100"
+                    : "border-gray-300 text-gray-600 hover:border-red-300 hover:text-red-500"
+                }`}
+              >
+                <Heart
+                  className={`w-4 h-4 ${inWishlist ? "fill-red-500 text-red-500" : ""}`}
+                />
+                {inWishlist ? "Remove from Wishlist" : "Add to Wishlist"}
+              </button>
+
+              {/* Estimate Delivery */}
+              <div className="border border-gray-200 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-700 mb-2 text-sm">
+                  Estimate Delivery
+                </h4>
+                <input
+                  type="text"
+                  placeholder="Pincode"
+                  data-ocid="product.input"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-gray-700 focus:outline-none focus:border-purple-500"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ backgroundColor: "#f5f6f7" }} className="min-h-screen">

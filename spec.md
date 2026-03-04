@@ -1,9 +1,27 @@
-# Specification
+# GenMitra Print Platform
 
-## Summary
-**Goal:** Remove the multi-row product listing grid section from the homepage.
+## Current State
+Full-stack print and personalised gifts platform with Photo Prints, Photo Frames, Photo Magnets (square/rectangle), Circle Magnets, Mugs, and Corporate Gifts. Includes magnet editors (MagnetEditorPage, CircleMagnetEditorPage), a frame editor (EditorPage), product detail pages, admin panel, cart, checkout, and user profile.
 
-**Planned changes:**
-- Remove the product listing grid section from `frontend/src/pages/HomePage.tsx` and any component it delegates to that displays product cards with category labels, prices, and delivery times (e.g., Digital Printed Notebook, Digital Wall Art, Custom Canvas Prints, Custom Water Bottles, Wooden Photo Frame, Metallic Frame, Collage Frame, Square Photo Magnets, Family Magnet Set, Classic White Photo Mug, Color Changing Mug, Classic 4×6 Prints, Premium Matte Prints, Square Prints, etc.)
+## Requested Changes (Diff)
 
-**User-visible outcome:** The homepage no longer shows the multi-row product listing grid, while all other sections (hero banner, category grid, featured products, shop frames by size, offers banner, trust features, customer reviews, FAQ, footer) remain intact.
+### Add
+- New demo product "Acrylic Photo Fridge Magnets" (id: demo-acrylic-fridge-magnet-1, category: "Acrylic Magnets", price ₹884, sizeOptions: Circle/Square/Rectangle/Heart/Star, bullet-point description)
+- Generated product image for acrylic fridge magnets
+- "Acrylic Magnets" category entry in ProductCategoryGrid (6th category, pink theme)
+- Special ProductDetailPage layout for isAcrylicMagnet products matching the reference: Shape & Style dropdown, quantity number input with helper text, price in orange with tax info, bulk savings link, "Upload your Files" purple CTA + "Create your Design" outlined CTA, pincode delivery estimate, thumbnail strip
+
+### Modify
+- demoProducts.ts — added acrylic fridge magnet entry
+- ProductDetailPage.tsx — added isAcrylicMagnet detection and dedicated layout branch
+- ProductCategoryGrid.tsx — added Acrylic Magnets category, grid updated to 6 columns
+
+### Remove
+- Nothing removed
+
+## Implementation Plan
+1. Generate acrylic-fridge-magnets product image
+2. Add demo product entry to demoProducts.ts
+3. Add Acrylic Magnets category to ProductCategoryGrid
+4. Add isAcrylicMagnet layout branch to ProductDetailPage with full reference-matching UI
+5. Deploy

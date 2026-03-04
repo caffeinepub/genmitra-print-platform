@@ -57,6 +57,15 @@ const categories = [
     subtitle: "Bulk orders",
     demoProductId: "demo-corporate-gift-1",
   },
+  {
+    name: "Acrylic Magnets",
+    icon: Magnet,
+    color: "bg-pink-50 text-pink-600",
+    border: "border-pink-200",
+    hover: "hover:bg-pink-100",
+    subtitle: "Acrylic photo magnets",
+    demoProductId: "demo-acrylic-fridge-magnet-1",
+  },
 ];
 
 export default function ProductCategoryGrid() {
@@ -80,7 +89,7 @@ export default function ProductCategoryGrid() {
       </h2>
       <div
         data-ocid="categories.list"
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4"
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4"
       >
         {categories.map((cat, catIndex) => {
           const Icon = cat.icon;
